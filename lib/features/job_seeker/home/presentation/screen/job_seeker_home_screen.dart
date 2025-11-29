@@ -29,9 +29,9 @@ class JobSeekerHomeScreen extends StatelessWidget {
               color: AppColors.background,
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
               child: HomeHeader(
-                profileImage: AppImages.profile,
-                userName: 'Shakir Ahmed',
-                userRole: 'UI/UX Designer',
+                profileImage: controller.image.value,
+                userName: controller.name.value,
+                userRole: controller.designation.value,
                 onNotificationTap: () {
                   // Handle notification tap
                   JobSeekerRoutes.goToNotifications();
@@ -84,7 +84,6 @@ class JobSeekerHomeScreen extends StatelessWidget {
                     child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20.w),
                       child: HeroBanner(
-                        bannerImage: AppImages.heroBanner,
                         onTap: () {
                           // Handle banner tap
                         },
@@ -114,48 +113,47 @@ class JobSeekerHomeScreen extends StatelessWidget {
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: 10.w),
-                      child: GridView.count(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisCount: 4,
-                        mainAxisSpacing: 10.h,
-                        crossAxisSpacing: 10.w,
-                        childAspectRatio: 1,
-                        children: [
-                          JobCategoryCard(
-                            imageSrc: AppIcons.education,
-                            title: 'Education',
-                            onTap: () {
-                              // Handle category tap
-                            },
-                            isJobCountVisible: false,
-                          ),
-                          JobCategoryCard(
-                            imageSrc: AppIcons.restaurant,
-                            title: 'Restaurant',
-                            onTap: () {
-                              // Handle category tap
-                            },
-                            isJobCountVisible: false,
-                          ),
-                          JobCategoryCard(
-                            imageSrc: AppIcons.marketing,
-                            title: 'Marketing',
-                            onTap: () {
-                              // Handle category tap
-                            },
-                            isJobCountVisible: false,
-                          ),
-                          JobCategoryCard(
-                            imageSrc: AppIcons.accounting,
-                            title: 'Accounting',
-                            onTap: () {
-                              // Handle category tap
-                            },
-                            isJobCountVisible: false,
-                          ),
-                        ],
-                      ),
+                      child: Obx(() {
+                        final categoriesList = controller.categories;
+
+                        // 1. Show a loader or an empty state if data is being fetched
+                        if (categoriesList.isEmpty) {
+                          // Return a loading spinner aligned with the expected GridView size
+                          return Container(
+                            height: 100.h,
+                            alignment: Alignment.center,
+                            child: const CircularProgressIndicator(),
+                          );
+                        }
+
+                        // 2. Build the GridView with fetched data
+                        return GridView.count(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          crossAxisCount: 4,
+                          mainAxisSpacing: 10.h,
+                          crossAxisSpacing: 10.w,
+                          childAspectRatio: 1,
+                          // Map the fetched list of categories to JobCategoryCard widgets
+                          children: categoriesList.map((category) {
+                            return JobCategoryCard(
+                              // Pass the ICON path from the fetched data
+                              imageSrc: category['image']??"",
+                              // Pass the NAME from the fetched data
+                              title: category['name'],
+                              onTap: () {
+                                // Handle category tap with category details
+                                Get.toNamed(
+                                    '/jobs-by-category',
+                                    arguments: {'categoryId': category['id'], 'title': category['name']}
+                                );
+                              },
+                              // You can toggle visibility or pass the actual job count here
+                              isJobCountVisible: false,
+                            );
+                          }).toList(),
+                        );
+                      }),
                     ),
                   ),
 

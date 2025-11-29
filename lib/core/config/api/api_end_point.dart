@@ -1,17 +1,20 @@
 class ApiEndPoint {
-  static const baseUrl = "http://103.145.138.74:3000/api/v1";
-  static const imageUrl = "http://103.145.138.74:3000";
-  static const socketUrl = "http://103.145.138.74:3001";
+  static const baseUrl = "https://shariful5001.binarybards.online/api/v1/";
+  static const imageUrl = "https://shariful5001.binarybards.online";
+  static const socketUrl = "https://shariful5001.binarybards.online";
 
   static const signUp = "users/sign-up";
   static const verifyEmail = "users/verify-email";
-  static const signIn = "users/sign-in";
+  static const signIn = "auth/login";
   static const forgotPassword = "users/forget-password";
   static const verifyOtp = "users/verify-otp";
   static const resetPassword = "users/reset-password";
   static const changePassword = "users/change-password";
-  static const user = "users";
+  static const user = "user/profile";
+  static const banner = "spotlight";
   static const notifications = "notifications";
+  static const Categorys = "job-category";
+  static const job_post = "job-category";
   static const privacyPolicies = "privacy-policies";
   static const termsOfServices = "terms-and-conditions";
   static const chats = "chats";
