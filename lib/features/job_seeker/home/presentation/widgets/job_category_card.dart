@@ -1,5 +1,6 @@
 import 'package:embeyi/core/component/image/common_image.dart';
 import 'package:embeyi/core/component/text/common_text.dart';
+import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/core/utils/extensions/extension.dart';
 import 'package:flutter/material.dart';
@@ -48,11 +49,12 @@ class JobCategoryCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CommonImage(
-              imageSrc: imageSrc,
-              size: 30.sp,
-              imageColor: iconColor ?? AppColors.primaryColor,
-            ),
+        Image.network(
+        ApiEndPoint.imageUrl + imageSrc,
+          width: 40.w,
+          height: 40.h,
+          fit: BoxFit.cover,
+        ),
             10.height,
             CommonText(
               text: title,

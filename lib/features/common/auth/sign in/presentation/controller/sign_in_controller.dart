@@ -26,14 +26,14 @@ class SignInController extends GetxController {
   /// Sign in Api call here
 
   Future<void> signInUser() async {
-    if (LocalStorage.userRole == UserRole.jobSeeker) {
+    /*if (LocalStorage.userRole == UserRole.jobSeeker) {
       LocalStorage.isLogIn = true;
       Get.toNamed(JobSeekerRoutes.home);
     } else {
       LocalStorage.isLogIn = true;
       Get.toNamed(RecruiterRoutes.home);
-    }
-    return;
+    }*/
+    //return;
 
     isLoading = true;
     update();
@@ -51,26 +51,25 @@ class SignInController extends GetxController {
     if (response.statusCode == 200) {
       var data = response.data;
 
-      LocalStorage.token = data['data']["accessToken"];
-      LocalStorage.userId = data['data']["attributes"]["_id"];
-      LocalStorage.myImage = data['data']["attributes"]["image"];
-      LocalStorage.myName = data['data']["attributes"]["fullName"];
+      LocalStorage.token = data['data']["createToken"];
+      Get.offAllNamed(JobSeekerRoutes.home);
+      //LocalStorage.userId = data['data']["attributes"]["_id"];
+      //LocalStorage.myImage = data['data']["attributes"]["image"];
+      //LocalStorage.myName = data['data']["attributes"]["fullName"];
 
-      LocalStorage.myEmail = data['data']["attributes"]["email"];
+      //LocalStorage.myEmail = data['data']["attributes"]["email"];
       LocalStorage.isLogIn = true;
 
       LocalStorage.setBool(LocalStorageKeys.isLogIn, LocalStorage.isLogIn);
       LocalStorage.setString(LocalStorageKeys.token, LocalStorage.token);
-      LocalStorage.setString(LocalStorageKeys.userId, LocalStorage.userId);
-      LocalStorage.setString(LocalStorageKeys.myImage, LocalStorage.myImage);
-      LocalStorage.setString(LocalStorageKeys.myName, LocalStorage.myName);
-      LocalStorage.setString(LocalStorageKeys.myEmail, LocalStorage.myEmail);
+      LocalStorage.setString(LocalStorageKeys.userRole, UserRole.employer.toString());
 
       // if (LocalStorage.myRole == 'consultant') {
       //   Get.offAllNamed(AppRoutes.doctorHome);
       // } else {
       //   Get.offAllNamed(AppRoutes.patientsHome);
       // }
+      Get.offAllNamed(JobSeekerRoutes.home);
 
       emailController.clear();
       passwordController.clear();

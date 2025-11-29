@@ -14,6 +14,7 @@ class LocalStorage {
   static String myImage = "";
   static String myName = "";
   static String myEmail = "";
+  static String USER = "";
   static UserRole userRole = UserRole.jobSeeker;
 
   // Create Local Storage Instance

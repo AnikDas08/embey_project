@@ -1,11 +1,14 @@
 import 'package:embeyi/core/component/image/common_image.dart';
 import 'package:embeyi/core/component/text/common_text.dart';
+import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:embeyi/core/config/route/job_seeker_routes.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/core/utils/constants/app_icons.dart';
 import 'package:embeyi/core/utils/extensions/extension.dart';
+import 'package:embeyi/features/job_seeker/home/presentation/controller/home_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 
 // Home Header Widget
 class HomeHeader extends StatelessWidget {
@@ -28,45 +31,58 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    HomeController controller=Get.put(HomeController());
     return Row(
       children: [
         GestureDetector(
           onTap: onProfileTap,
           child: CircleAvatar(
-            radius: 24.r,
-            backgroundColor: AppColors.blueLight,
-            child: ClipOval(
-              child: CommonImage(
-                imageSrc: profileImage,
-                size: 48.sp,
-                fill: BoxFit.cover,
+              radius: 24.r,
+              backgroundColor: AppColors.blueLight,
+              child: ClipOval(
+                child:Obx(
+                    ()=> Image.network(
+                    controller.image.value,
+                    fit: BoxFit.cover,
+                    errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+                      return Image.asset(
+                        AppIcons.profile,
+                        fit: BoxFit.cover,
+                      );
+                    }
+                  ),
+                )
+                ),
               ),
             ),
-          ),
-        ),
         12.width,
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CommonText(
-                text: userName,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primaryColor,
-                textAlign: TextAlign.start,
-              ),
-              2.height,
-              CommonText(
-                text: userRole,
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-                color: AppColors.secondaryText,
-                textAlign: TextAlign.start,
-              ),
-            ],
+          child:Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Obx(
+    ()=> CommonText(
+                      text: controller.name.value,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primaryColor,
+                      textAlign: TextAlign.start,
+                    ),
+                ),
+                2.height,
+                Obx(
+                  ()=> CommonText(
+                      text: controller.designation.value,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.secondaryText,
+                      textAlign: TextAlign.start,
+                    ),
+                ),
+              ],
+            ),
           ),
-        ),
+
         _buildActionIcon(
           AppIcons.chat,
           hasNotification: false,
