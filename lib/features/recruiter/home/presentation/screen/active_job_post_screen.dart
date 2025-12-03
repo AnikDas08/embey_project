@@ -18,6 +18,7 @@ class ActiveJobPostScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       //dffgfdg fgfgf
       //sdfsdfdsf
+      ///
       appBar: _buildAppBar(),
       body: Column(
         children: [
