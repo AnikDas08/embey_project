@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../utils/constants/app_colors.dart';
-import '../button/common_button.dart';
-import '../text/common_text.dart';
-import '../text_field/common_text_field.dart';
+import 'package:get/get.dart';
+
+import '../../../../../core/component/button/common_button.dart';
+import '../../../../../core/component/text/common_text.dart';
+import '../../../../../core/component/text_field/common_text_field.dart';
+import '../../../../../core/utils/constants/app_colors.dart';
+import '../../../features/job_seeker/home/presentation/controller/home_controller.dart';
 
 class FilterBottomSheet extends StatefulWidget {
   final VoidCallback? onApply;
   final VoidCallback? onClose;
-  final bool isDateRange;
+
   const FilterBottomSheet({
     super.key,
     this.onApply,
     this.onClose,
-    this.isDateRange = false,
   });
 
   @override
@@ -21,32 +23,42 @@ class FilterBottomSheet extends StatefulWidget {
 }
 
 class _FilterBottomSheetState extends State<FilterBottomSheet> {
+  final HomeController controller = Get.find<HomeController>();
+
   // Controllers
-  final TextEditingController minSalaryController = TextEditingController(
-    text: '\$5000',
-  );
-  final TextEditingController maxSalaryController = TextEditingController(
-    text: '\$8000',
-  );
-  final TextEditingController startDateController = TextEditingController(
-    text: '01 jan 2025',
-  );
-  final TextEditingController endDateController = TextEditingController(
-    text: '31 dec 2025',
-  );
+  final TextEditingController minSalaryController = TextEditingController();
+  final TextEditingController maxSalaryController = TextEditingController();
 
   // State variables
-  String? selectedCategory = 'Sr. UI/UX Designer';
-  String selectedEmployeeType = 'Full Time';
-  String selectedJobType = 'Remote';
-  double distanceValue = 20.0;
+  String? selectedCategory;
+  List<String> selectedEmployeeTypes = [];
+  List<String> selectedJobTypes = [];
+  String? selectedExperienceLevel;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with current filter values
+    minSalaryController.text = controller.minSalary.value > 0
+        ? controller.minSalary.value.toString()
+        : '';
+    maxSalaryController.text = controller.maxSalary.value < 100000
+        ? controller.maxSalary.value.toString()
+        : '';
+    selectedCategory = controller.selectedCategory.value.isEmpty
+        ? null
+        : controller.selectedCategory.value;
+    selectedEmployeeTypes = List.from(controller.selectedJobTypes);
+    selectedJobTypes = List.from(controller.selectedJobLevels);
+    selectedExperienceLevel = controller.selectedExperienceLevel.value.isEmpty
+        ? null
+        : controller.selectedExperienceLevel.value;
+  }
 
   @override
   void dispose() {
     minSalaryController.dispose();
     maxSalaryController.dispose();
-    startDateController.dispose();
-    endDateController.dispose();
     super.dispose();
   }
 
@@ -80,33 +92,28 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
 
                   SizedBox(height: 20.h),
 
-                  // Employee Type Section
+                  // Job Type Section (FULL_TIME, PART_TIME)
                   _buildEmployeeTypeSection(),
 
                   SizedBox(height: 20.h),
 
-                  // Job Type Section
-                  _buildJobTypeSection(),
+                  // Job Level Section (ENTRY_LEVEL, MID_LEVEL, SENIOR_LEVEL)
+                  _buildJobLevelSection(),
+
+                  SizedBox(height: 20.h),
+
+                  // Experience Level Section
+                  _buildExperienceLevelSection(),
 
                   SizedBox(height: 20.h),
 
                   // Salary Range Section
                   _buildSalaryRangeSection(),
 
-                  SizedBox(height: 20.h),
-
-                  // Date Range Section
-                  if (widget.isDateRange) _buildDateRangeSection(),
-
-                  SizedBox(height: 20.h),
-
-                  // Distance Section
-                  _buildDistanceSection(),
-
                   SizedBox(height: 24.h),
 
-                  // Apply Button
-                  _buildApplyButton(),
+                  // Buttons Row
+                  _buildButtonsRow(),
 
                   SizedBox(height: 24.h),
                 ],
@@ -141,7 +148,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
             color: AppColors.black,
           ),
           GestureDetector(
-            onTap: () => widget.onClose?.call(),
+            onTap: () => Get.back(),
             child: Icon(Icons.close, size: 24.sp, color: AppColors.black),
           ),
         ],
@@ -151,126 +158,69 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
 
   // Category Dropdown Section
   Widget _buildCategorySection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CommonText(
-          text: 'Category',
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: AppColors.black,
-          textAlign: TextAlign.left,
-        ),
-        SizedBox(height: 8.h),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.circular(4.r),
-            border: Border.all(color: AppColors.borderColor, width: 1),
+    return Obx(() {
+      final categories = controller.categories;
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CommonText(
+            text: 'Category',
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: AppColors.black,
+            textAlign: TextAlign.left,
           ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: selectedCategory,
-              isExpanded: true,
-              icon: Icon(
-                Icons.keyboard_arrow_down,
-                color: AppColors.black,
-                size: 24.sp,
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 10.w),
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w400,
-                color: AppColors.primaryText,
-              ),
-              items:
-                  [
-                    'Sr. UI/UX Designer',
-                    'Jr. UI/UX Designer',
-                    'Product Designer',
-                    'Graphic Designer',
-                  ].map((String value) {
+          SizedBox(height: 8.h),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(4.r),
+              border: Border.all(color: AppColors.borderColor, width: 1),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: selectedCategory,
+                isExpanded: true,
+                hint: Text('Select Category'),
+                icon: Icon(
+                  Icons.keyboard_arrow_down,
+                  color: AppColors.black,
+                  size: 24.sp,
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 10.w),
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.primaryText,
+                ),
+                items: [
+                  DropdownMenuItem<String>(
+                    value: null,
+                    child: Text('All Categories'),
+                  ),
+                  ...categories.map((category) {
                     return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
+                      value: category['id'],
+                      child: Text(category['name'] ?? ''),
                     );
                   }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  selectedCategory = newValue;
-                });
-              },
+                ],
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedCategory = newValue;
+                  });
+                },
+              ),
             ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
+    });
   }
 
-  // Employee Type Chips Section
+  // Job Type Chips Section (FULL_TIME, PART_TIME)
   Widget _buildEmployeeTypeSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CommonText(
-          text: 'Employee Type',
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: AppColors.black,
-          textAlign: TextAlign.left,
-        ),
-        SizedBox(height: 8.h),
-        Row(
-          children: [
-            Expanded(
-              child: _buildChip(
-                borderRadius: 4,
-                label: 'Full Time',
-                isSelected: selectedEmployeeType == 'Full Time',
-                selectedColor: AppColors.secondaryPrimary,
-                onTap: () {
-                  setState(() {
-                    selectedEmployeeType = 'Full Time';
-                  });
-                },
-              ),
-            ),
-            SizedBox(width: 8.w),
-            Expanded(
-              child: _buildChip(
-                borderRadius: 4,
-                label: 'Part Time',
-                isSelected: selectedEmployeeType == 'Part Time',
-                selectedColor: AppColors.secondaryPrimary,
-                onTap: () {
-                  setState(() {
-                    selectedEmployeeType = 'Part Time';
-                  });
-                },
-              ),
-            ),
-            SizedBox(width: 8.w),
-            Expanded(
-              child: _buildChip(
-                borderRadius: 4,
-                label: 'Intern',
-                isSelected: selectedEmployeeType == 'Intern',
-                selectedColor: AppColors.secondaryPrimary,
-                onTap: () {
-                  setState(() {
-                    selectedEmployeeType = 'Intern';
-                  });
-                },
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  // Job Type Chips Section
-  Widget _buildJobTypeSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -282,48 +232,24 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
           textAlign: TextAlign.left,
         ),
         SizedBox(height: 8.h),
-        Row(
+        Wrap(
+          spacing: 8.w,
+          runSpacing: 8.h,
           children: [
-            Expanded(
-              child: _buildChip(
-                borderRadius: 20,
-                label: 'Remote',
-                isSelected: selectedJobType == 'Remote',
-                selectedColor: AppColors.primaryColor,
-                onTap: () {
-                  setState(() {
-                    selectedJobType = 'Remote';
-                  });
-                },
-              ),
+            _buildMultiSelectChip(
+              label: 'Full Time',
+              value: 'FULL_TIME',
+              selectedList: selectedEmployeeTypes,
             ),
-            SizedBox(width: 8.w),
-            Expanded(
-              child: _buildChip(
-                borderRadius: 20,
-                label: 'Onsite',
-                isSelected: selectedJobType == 'Onsite',
-                selectedColor: AppColors.primaryColor,
-                onTap: () {
-                  setState(() {
-                    selectedJobType = 'Onsite';
-                  });
-                },
-              ),
+            _buildMultiSelectChip(
+              label: 'Part Time',
+              value: 'PART_TIME',
+              selectedList: selectedEmployeeTypes,
             ),
-            SizedBox(width: 8.w),
-            Expanded(
-              child: _buildChip(
-                borderRadius: 20,
-                label: 'Hybrid',
-                isSelected: selectedJobType == 'Hybrid',
-                selectedColor: AppColors.primaryColor,
-                onTap: () {
-                  setState(() {
-                    selectedJobType = 'Hybrid';
-                  });
-                },
-              ),
+            _buildMultiSelectChip(
+              label: 'Contract',
+              value: 'CONTRACT',
+              selectedList: selectedEmployeeTypes,
             ),
           ],
         ),
@@ -331,33 +257,137 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     );
   }
 
-  // Reusable Chip Widget
-  Widget _buildChip({
+  // Job Level Section (ENTRY_LEVEL, MID_LEVEL, SENIOR_LEVEL)
+  Widget _buildJobLevelSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CommonText(
+          text: 'Job Level',
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: AppColors.black,
+          textAlign: TextAlign.left,
+        ),
+        SizedBox(height: 8.h),
+        Wrap(
+          spacing: 8.w,
+          runSpacing: 8.h,
+          children: [
+            _buildMultiSelectChip(
+              label: 'Entry Level',
+              value: 'ENTRY_LEVEL',
+              selectedList: selectedJobTypes,
+            ),
+            _buildMultiSelectChip(
+              label: 'Mid Level',
+              value: 'MID_LEVEL',
+              selectedList: selectedJobTypes,
+            ),
+            _buildMultiSelectChip(
+              label: 'Senior Level',
+              value: 'SENIOR_LEVEL',
+              selectedList: selectedJobTypes,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // Experience Level Section
+  Widget _buildExperienceLevelSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CommonText(
+          text: 'Experience Level',
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: AppColors.black,
+          textAlign: TextAlign.left,
+        ),
+        SizedBox(height: 8.h),
+        Wrap(
+          spacing: 8.w,
+          runSpacing: 8.h,
+          children: [
+            _buildSingleSelectChip(label: '0-1yrs', value: '0-1yrs'),
+            _buildSingleSelectChip(label: '1-3yrs', value: '1-3yrs'),
+            _buildSingleSelectChip(label: '3-5yrs', value: '3-5yrs'),
+            _buildSingleSelectChip(label: '5+yrs', value: '5+yrs'),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // Multi-select Chip Widget
+  Widget _buildMultiSelectChip({
     required String label,
-    required bool isSelected,
-    required Color selectedColor,
-    required VoidCallback onTap,
-    required double borderRadius,
+    required String value,
+    required List<String> selectedList,
   }) {
+    final isSelected = selectedList.contains(value);
+
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        setState(() {
+          if (isSelected) {
+            selectedList.remove(value);
+          } else {
+            selectedList.add(value);
+          }
+        });
+      },
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 10.h),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
         decoration: BoxDecoration(
-          color: isSelected ? selectedColor : AppColors.white,
-          borderRadius: BorderRadius.circular(borderRadius.r),
+          color: isSelected ? AppColors.primaryColor : AppColors.white,
+          borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
-            color: isSelected ? selectedColor : AppColors.borderColor,
+            color: isSelected ? AppColors.primaryColor : AppColors.borderColor,
             width: 1,
           ),
         ),
-        child: Center(
-          child: CommonText(
-            text: label,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: isSelected ? AppColors.white : AppColors.primaryText,
+        child: CommonText(
+          text: label,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: isSelected ? AppColors.white : AppColors.primaryText,
+        ),
+      ),
+    );
+  }
+
+  // Single-select Chip Widget
+  Widget _buildSingleSelectChip({
+    required String label,
+    required String value,
+  }) {
+    final isSelected = selectedExperienceLevel == value;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedExperienceLevel = isSelected ? null : value;
+        });
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.secondaryPrimary : AppColors.white,
+          borderRadius: BorderRadius.circular(4.r),
+          border: Border.all(
+            color: isSelected ? AppColors.secondaryPrimary : AppColors.borderColor,
+            width: 1,
           ),
+        ),
+        child: CommonText(
+          text: label,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: isSelected ? AppColors.white : AppColors.primaryText,
         ),
       ),
     );
@@ -392,7 +422,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                   SizedBox(height: 6.h),
                   CommonTextField(
                     controller: minSalaryController,
-                    hintText: '\$5000',
+                    hintText: '\$0',
                     keyboardType: TextInputType.number,
                     paddingVertical: 12,
                     paddingHorizontal: 12,
@@ -407,7 +437,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CommonText(
-                    text: 'Most Salary',
+                    text: 'Max Salary',
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
                     color: AppColors.secondaryText,
@@ -416,7 +446,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                   SizedBox(height: 6.h),
                   CommonTextField(
                     controller: maxSalaryController,
-                    hintText: '\$8000',
+                    hintText: '\$100000',
                     keyboardType: TextInputType.number,
                     paddingVertical: 12,
                     paddingHorizontal: 12,
@@ -431,168 +461,57 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     );
   }
 
-  Widget _buildDateRangeSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  // Buttons Row (Clear & Apply)
+  Widget _buildButtonsRow() {
+    return Row(
       children: [
-        CommonText(
-          text: 'Date Range',
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: AppColors.black,
-          textAlign: TextAlign.left,
+        Expanded(
+          child: CommonButton(
+            titleText: 'Clear All',
+            buttonHeight: 48.h,
+            buttonRadius: 4,
+            titleSize: 16,
+            titleWeight: FontWeight.w600,
+            buttonColor: AppColors.white,
+            titleColor: Colors.white,
+            borderColor: AppColors.primaryColor,
+            onTap: () {
+              controller.clearFilters();
+              Get.back();
+              widget.onApply?.call();
+            },
+          ),
         ),
-        SizedBox(height: 8.h),
-        Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CommonText(
-                    text: 'Start Date',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.secondaryText,
-                    textAlign: TextAlign.left,
-                  ),
-                  SizedBox(height: 6.h),
-                  CommonTextField(
-                    controller: startDateController,
-                    hintText: 'Start Date',
-                    keyboardType: TextInputType.text,
-                    paddingVertical: 12,
-                    paddingHorizontal: 12,
-                    borderRadius: 4,
-                    readOnly: true,
-                    onTap: () async {
-                      final date = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now(),
-                        firstDate: DateTime(1950),
-                        lastDate: DateTime(4000),
-                      );
-                      if (date != null) {
-                        startDateController.text =
-                            '${date.day}/${date.month}/${date.year}';
-                      }
-                    },
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CommonText(
-                    text: 'End Date',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.secondaryText,
-                    textAlign: TextAlign.left,
-                  ),
-                  SizedBox(height: 6.h),
-                  CommonTextField(
-                    controller: endDateController,
-                    hintText: 'End Date',
-                    keyboardType: TextInputType.number,
-                    paddingVertical: 12,
-                    paddingHorizontal: 12,
-                    borderRadius: 4,
-                    readOnly: true,
-                    onTap: () async {
-                      final date = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now(),
-                        firstDate: DateTime(1950),
-                        lastDate: DateTime(4000),
-                      );
-                      if (date != null) {
-                        endDateController.text =
-                            '${date.day}/${date.month}/${date.year}';
-                      }
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
+        SizedBox(width: 12.w),
+        Expanded(
+          child: CommonButton(
+            titleText: 'Apply Filter',
+            buttonHeight: 48.h,
+            buttonRadius: 4,
+            titleSize: 16,
+            titleWeight: FontWeight.w600,
+            isGradient: true,
+            onTap: () {
+              // Parse salary values
+              int minPrice = int.tryParse(minSalaryController.text.replaceAll(RegExp(r'[^\d]'), '')) ?? 0;
+              int maxPrice = int.tryParse(maxSalaryController.text.replaceAll(RegExp(r'[^\d]'), '')) ?? 100000;
+
+              // Apply filters
+              controller.applyFilters(
+                category: selectedCategory,
+                minPrice: minPrice,
+                maxPrice: maxPrice,
+                jobTypes: selectedEmployeeTypes,
+                jobLevels: selectedJobTypes,
+                experienceLevel: selectedExperienceLevel,
+              );
+
+              Get.back();
+              widget.onApply?.call();
+            },
+          ),
         ),
       ],
-    );
-  }
-
-  // Distance Slider Section
-  Widget _buildDistanceSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CommonText(
-          text: 'Distance',
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: AppColors.black,
-          textAlign: TextAlign.left,
-        ),
-        SizedBox(height: 12.h),
-        Row(
-          children: [
-            CommonText(
-              text: 'km',
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-              color: AppColors.secondaryText,
-            ),
-            Expanded(
-              child: SliderTheme(
-                data: SliderThemeData(
-                  activeTrackColor: AppColors.primaryColor,
-                  inactiveTrackColor: AppColors.borderColor,
-                  thumbColor: AppColors.primaryColor,
-                  overlayColor: AppColors.primaryColor.withOpacity(0.2),
-                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 10.r),
-                  overlayShape: RoundSliderOverlayShape(overlayRadius: 18.r),
-                  trackHeight: 4.h,
-                ),
-                child: Slider(
-                  value: distanceValue,
-                  min: 0,
-                  max: 50,
-                  onChanged: (value) {
-                    setState(() {
-                      distanceValue = value;
-                    });
-                  },
-                ),
-              ),
-            ),
-            CommonText(
-              text: '${distanceValue.toInt()} Km',
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-              color: AppColors.secondaryText,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  // Apply Now Button
-  Widget _buildApplyButton() {
-    return CommonButton(
-      titleText: 'Apply Now',
-      buttonHeight: 48.h,
-      buttonRadius: 4,
-      titleSize: 16,
-      titleWeight: FontWeight.w600,
-      isGradient: true,
-      onTap: () {
-        // Handle apply filter logic
-        widget.onApply?.call();
-      },
     );
   }
 }

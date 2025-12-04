@@ -12,70 +12,152 @@ import '../controller/jobs_controller.dart';
 
 class JobsScreen extends StatelessWidget {
   JobsScreen({super.key});
-  final JobsController controller = Get.put(JobsController());
+  final JobController controller = Get.put(JobController());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Jobs')),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: HomeSearchBar(
-                onFilterTap: () {
-                  Get.bottomSheet(
-                    isScrollControlled: true,
-                    FilterBottomSheet(
-                      onApply: () {
-                        // Handle apply tap
-                      },
-                      onClose: () {
-                        // Handle close tap
-                        Navigator.pop(context);
-                      },
-                    ),
-                  );
-                },
-                onChanged: (value) {
-                  // Handle search
-                },
+      body: Obx(() {
+        // Show loading indicator
+        if (controller.isLoadingJobs.value) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        // Show empty state
+        if (controller.jobPost == null || controller.jobPost!.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.work_off, size: 64.sp, color: Colors.grey),
+                SizedBox(height: 16.h),
+                Text(
+                  'No jobs available',
+                  style: TextStyle(fontSize: 18.sp, color: Colors.grey),
+                ),
+              ],
+            ),
+          );
+        }
+
+        // Show job list
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: HomeSearchBar(
+                  onFilterTap: () {
+                    Get.bottomSheet(
+                      isScrollControlled: true,
+                      FilterBottomSheet(
+                        onApply: () {
+                          // Handle apply tap
+                        },
+                        onClose: () {
+                          // Handle close tap
+                          Navigator.pop(context);
+                        },
+                      ),
+                    );
+                  },
+                  onChanged: (value) {
+                    // Handle search
+                    controller.searchJobs(value);
+                  },
+                ),
               ),
-            ),
-            AutoApply(),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              itemCount: 8,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: EdgeInsets.only(bottom: 16.h),
-                  child: JobCard(
-                    companyName: 'UX-Pilot',
-                    location: 'California, United State.',
-                    jobTitle: 'Sr. UI/UX Designer',
-                    salaryRange: '\$7k - \$15k/month',
-                    timePosted: '01 Dec 25',
-                    isFullTime: true,
-                    companyLogo: AppImages.jobPost,
-                    onTap: () {
-                      JobSeekerRoutes.goToJobDetails();
-                    },
-                    onFavoriteTap: () {
-                      // Handle favorite tap
-                    },
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
+              AutoApply(),
+              // Single ListView.builder for job posts
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: controller.jobPost!.length,
+                  itemBuilder: (context, index) {
+                    final jobPost = controller.jobPost![index];
+
+                    // Calculate salary range safely
+                    final minSalary = jobPost.minSalary ?? 0;
+                    final maxSalary = jobPost.maxSalary ?? 0;
+                    final salaryRange = '\$$minSalary - \$$maxSalary/month';
+
+                    // Get location safely
+                    final location = jobPost.location ?? 'Location not specified';
+
+                    // Get job and recruiter titles safely
+                    final jobTitle = jobPost.title ?? 'No Title Specified';
+                    final companyName = jobPost.recruiter ?? 'Company N/A';
+
+                    // Format deadline date
+                    String timePosted = '01 Dec 25';
+                    if (jobPost.deadline != null) {
+                      try {
+                        final deadline = jobPost.deadline!;
+                        timePosted = '${deadline.day.toString().padLeft(2, '0')} ${_getMonthName(deadline.month)} ${deadline.year.toString().substring(2)}';
+                      } catch (e) {
+                        print("Error formatting date: $e");
+                      }
+                    }
+
+                    // Determine job properties safely
+                    final jobType = jobPost.jobType?.toUpperCase();
+                    final isFullTime = jobType == 'FULL_TIME';
+                    final isRemote = jobType == 'REMOTE';
+
+                    // Get company logo with base URL
+                    final thumbnail = jobPost.thumbnail ?? '';
+                    final companyLogo = thumbnail.isNotEmpty
+                        ? 'https://shariful5001.binarybards.online$thumbnail'
+                        : 'assets/images/noImage.png';
+
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: 16.h),
+                      child: JobCard(
+                        companyName: companyName,
+                        location: location,
+                        jobTitle: jobTitle,
+                        salaryRange: salaryRange,
+                        timePosted: timePosted,
+                        isFullTime: isFullTime,
+                        companyLogo: companyLogo,
+                        showFavoriteButton: true,
+                        isSaved: false,
+                        isRemote: isRemote,
+                        onTap: () {
+                          if (jobPost.id != null && jobPost.id!.isNotEmpty) {
+                            print("Job tapped: ${jobPost.id}");
+                            Get.toNamed(JobSeekerRoutes.jobDetails, arguments: jobPost.id);
+                          }
+                        },
+                        onFavoriteTap: () {
+                          final jobId = jobPost.id;
+                          if (jobId != null && jobId.isNotEmpty) {
+                            controller.toggleFavorite(jobId);
+                          }
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
       bottomNavigationBar: SafeArea(
         child: const CommonBottomNavBar(currentIndex: 1),
       ),
     );
+  }
+
+  String _getMonthName(int month) {
+    const months = [
+      '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return month >= 1 && month <= 12 ? months[month] : 'Jan';
   }
 }

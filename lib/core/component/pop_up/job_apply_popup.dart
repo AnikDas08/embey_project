@@ -2,13 +2,18 @@ import 'package:embeyi/core/component/button/common_button.dart';
 import 'package:embeyi/core/component/image/common_image.dart';
 import 'package:embeyi/core/component/text/common_text.dart';
 import 'package:embeyi/core/component/text_field/common_text_field.dart';
+import 'package:embeyi/core/services/api/api_service.dart';
 import 'package:embeyi/core/utils/constants/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../../utils/constants/app_colors.dart';
 import '../../utils/extensions/extension.dart';
 
 class JobApplyPopup extends StatefulWidget {
+  final String postId;
   final String jobTitle;
   final String companyName;
   final String companyLogo;
@@ -29,6 +34,7 @@ class JobApplyPopup extends StatefulWidget {
     this.isRemote = false,
     this.companyDescription,
     this.onApply,
+    required this.postId,
   });
 
   @override
@@ -38,8 +44,12 @@ class JobApplyPopup extends StatefulWidget {
 class _JobApplyPopupState extends State<JobApplyPopup> {
   final TextEditingController _jobTitleController = TextEditingController();
   final TextEditingController _experienceController = TextEditingController();
+  final ImagePicker _imagePicker = ImagePicker();
+
   String? _resumeFileName;
+  String? _resumeFilePath;
   String? _coverLetterFileName;
+  String? _coverLetterFilePath;
 
   @override
   void initState() {
@@ -54,34 +64,243 @@ class _JobApplyPopupState extends State<JobApplyPopup> {
     super.dispose();
   }
 
-  void _pickResume() {
-    // TODO: Implement file picker for resume
-    setState(() {
-      _resumeFileName = 'Resume.Pdf';
-    });
+  Future<void> _pickResume() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx'],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        setState(() {
+          _resumeFileName = result.files.single.name;
+          _resumeFilePath = result.files.single.path;
+        });
+      }
+    } catch (e) {
+      print('Error picking resume: $e');
+    }
   }
 
-  void _pickCoverLetter() {
-    setState(() {
-      _coverLetterFileName = 'CoverLetter.Pdf';
-    });
+  Future<void> _pickCoverLetter() async {
+    // Show bottom sheet to choose between camera, gallery, and PDF
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+      ),
+      builder: (context) => Container(
+        padding: EdgeInsets.all(20.r),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CommonText(
+              text: 'Choose Option',
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: AppColors.black,
+            ),
+            20.height,
+            ListTile(
+              leading: Icon(Icons.picture_as_pdf, color: AppColors.primary),
+              title: CommonText(
+                text: 'Choose PDF',
+                fontSize: 16.sp,
+                color: AppColors.black,
+                textAlign: TextAlign.start,
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _pickCoverLetterPdf();
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.camera_alt, color: AppColors.primary),
+              title: CommonText(
+                text: 'Take Photo',
+                fontSize: 16.sp,
+                color: AppColors.black,
+                textAlign: TextAlign.start,
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImageFromCamera();
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.photo_library, color: AppColors.primary),
+              title: CommonText(
+                text: 'Choose from Gallery',
+                fontSize: 16.sp,
+                color: AppColors.black,
+                textAlign: TextAlign.start,
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImageFromGallery();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImageFromCamera() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 80,
+      );
+
+      if (image != null) {
+        setState(() {
+          _coverLetterFileName = image.name;
+          _coverLetterFilePath = image.path;
+        });
+      }
+    } catch (e) {
+      print('Error picking image from camera: $e');
+    }
+  }
+
+  Future<void> _pickImageFromGallery() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+
+      if (image != null) {
+        setState(() {
+          _coverLetterFileName = image.name;
+          _coverLetterFilePath = image.path;
+        });
+      }
+    } catch (e) {
+      print('Error picking image from gallery: $e');
+    }
+  }
+
+  Future<void> _pickCoverLetterPdf() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        setState(() {
+          _coverLetterFileName = result.files.single.name;
+          _coverLetterFilePath = result.files.single.path;
+        });
+      }
+    } catch (e) {
+      print('Error picking cover letter: $e');
+    }
+  }
+
+  void _viewResume() {
+    if (_resumeFilePath != null) {
+      // TODO: Implement PDF viewer
+      // You can use packages like flutter_pdfview or syncfusion_flutter_pdfviewer
+      print('View resume: $_resumeFilePath');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Opening: $_resumeFileName')),
+      );
+    }
+  }
+
+  void _viewCoverLetter() {
+    if (_coverLetterFilePath != null) {
+      if (_coverLetterFileName!.toLowerCase().endsWith('.pdf')) {
+        // TODO: Implement PDF viewer
+        print('View PDF: $_coverLetterFilePath');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Opening: $_coverLetterFileName')),
+        );
+      } else {
+        // Show image in dialog
+        showDialog(
+          context: context,
+          builder: (context) => Dialog(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: EdgeInsets.all(8.r),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CommonText(
+                        text: _coverLetterFileName!,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                ),
+                Image.file(
+                  File(_coverLetterFilePath!),
+                  fit: BoxFit.contain,
+                ),
+                SizedBox(height: 16.h),
+              ],
+            ),
+          ),
+        );
+      }
+    }
   }
 
   void _removeResume() {
     setState(() {
       _resumeFileName = null;
+      _resumeFilePath = null;
     });
   }
 
   void _removeCoverLetter() {
     setState(() {
       _coverLetterFileName = null;
+      _coverLetterFilePath = null;
     });
   }
 
-  void _submitApplication() {
-    Navigator.pop(context);
-    widget.onApply?.call();
+  void _submitApplication() async {
+    final response = await ApiService.post(
+      "application",
+      body: {
+        "post": widget.postId,
+        "title": widget.jobTitle,
+        "year_of_experience": _experienceController.text,
+        "resume": _resumeFilePath,
+        "doc": _coverLetterFilePath,
+      },
+    );
+    if (response.statusCode == 200) {
+      Navigator.pop(context);
+      widget.onApply?.call();
+    }
+  }
+
+  bool _isImageFile(String? fileName) {
+    if (fileName == null) return false;
+    final lowerCase = fileName.toLowerCase();
+    return lowerCase.endsWith('.jpg') ||
+        lowerCase.endsWith('.jpeg') ||
+        lowerCase.endsWith('.png') ||
+        lowerCase.endsWith('.gif');
+  }
+
+  bool _isPdfFile(String? fileName) {
+    if (fileName == null) return false;
+    return fileName.toLowerCase().endsWith('.pdf');
   }
 
   @override
@@ -146,7 +365,6 @@ class _JobApplyPopupState extends State<JobApplyPopup> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Company Logo
               Container(
                 width: 84.w,
                 height: 60.h,
@@ -161,12 +379,10 @@ class _JobApplyPopupState extends State<JobApplyPopup> {
                 ),
               ),
               12.width,
-              // Job Details
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Job Title
                     CommonText(
                       text: widget.jobTitle,
                       fontSize: 16,
@@ -176,7 +392,6 @@ class _JobApplyPopupState extends State<JobApplyPopup> {
                       textAlign: TextAlign.start,
                     ),
                     4.height,
-                    // Company Name
                     CommonText(
                       text: widget.companyName,
                       fontSize: 13,
@@ -185,7 +400,6 @@ class _JobApplyPopupState extends State<JobApplyPopup> {
                       textAlign: TextAlign.start,
                     ),
                     6.height,
-                    // Job Type Tags
                     Row(
                       children: [
                         if (widget.isFullTime) _buildJobTypeTag('Full Time'),
@@ -199,11 +413,9 @@ class _JobApplyPopupState extends State<JobApplyPopup> {
             ],
           ),
           10.height,
-          // Location and Date Row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Location
               Expanded(
                 child: Row(
                   children: [
@@ -223,7 +435,6 @@ class _JobApplyPopupState extends State<JobApplyPopup> {
                 ),
               ),
               8.width,
-              // Deadline
               Row(
                 children: [
                   CommonImage(imageSrc: AppIcons.calender, size: 16.sp),
@@ -272,7 +483,6 @@ class _JobApplyPopupState extends State<JobApplyPopup> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Job Title Field
           _buildFieldLabel('Job Title'),
           8.height,
           CommonTextField(
@@ -285,7 +495,6 @@ class _JobApplyPopupState extends State<JobApplyPopup> {
           ),
           16.height,
 
-          // Years of Experience Field
           _buildFieldLabel('Years Of Experience'),
           8.height,
           CommonTextField(
@@ -298,24 +507,29 @@ class _JobApplyPopupState extends State<JobApplyPopup> {
           ),
           16.height,
 
-          // Resume Upload
           _buildFieldLabel('Resume'),
           8.height,
           _buildFileUploadSection(
             fileName: _resumeFileName,
+            filePath: _resumeFilePath,
             onTap: _pickResume,
             onRemove: _removeResume,
+            onView: _viewResume,
+            showPdfIcon: true,
+            showViewIcon: true,
           ),
           16.height,
 
-          // Cover Letter Upload
           _buildFieldLabel('Cover Letter'),
           8.height,
           _buildFileUploadSection(
             fileName: _coverLetterFileName,
+            filePath: _coverLetterFilePath,
             onTap: _pickCoverLetter,
             onRemove: _removeCoverLetter,
-            showUploadIcon: true,
+            onView: _viewCoverLetter,
+            showPdfIcon: true,
+            showViewIcon: true,
           ),
         ],
       ),
@@ -334,10 +548,16 @@ class _JobApplyPopupState extends State<JobApplyPopup> {
 
   Widget _buildFileUploadSection({
     String? fileName,
+    String? filePath,
     required VoidCallback onTap,
     required VoidCallback onRemove,
-    bool showUploadIcon = false,
+    VoidCallback? onView,
+    bool showPdfIcon = false,
+    bool showViewIcon = false,
   }) {
+    final isImage = _isImageFile(fileName);
+    final isPdf = _isPdfFile(fileName);
+
     return GestureDetector(
       onTap: fileName == null ? onTap : null,
       child: Container(
@@ -350,15 +570,25 @@ class _JobApplyPopupState extends State<JobApplyPopup> {
         child: Row(
           children: [
             if (fileName != null) ...[
-              // PDF Icon
+              // File Icon or Image Preview
               Container(
                 width: 32.w,
                 height: 32.h,
                 decoration: BoxDecoration(
-                  color: Colors.red.shade50,
+                  color: isImage
+                      ? Colors.grey.shade200
+                      : isPdf
+                      ? Colors.red.shade50
+                      : Colors.blue.shade50,
                   borderRadius: BorderRadius.circular(6.r),
                 ),
-                child: CommonImage(imageSrc: AppIcons.pdf, size: 20.sp),
+                clipBehavior: Clip.antiAlias,
+                child: isImage && filePath != null
+                    ? Image.file(
+                  File(filePath),
+                  fit: BoxFit.cover,
+                )
+                    : CommonImage(imageSrc: AppIcons.pdf, size: 20.sp),
               ),
               12.width,
               Expanded(
@@ -368,17 +598,25 @@ class _JobApplyPopupState extends State<JobApplyPopup> {
                   fontWeight: FontWeight.w500,
                   color: AppColors.black,
                   textAlign: TextAlign.start,
+                  maxLines: 1,
                 ),
               ),
+              if (showViewIcon && onView != null) ...[
+                GestureDetector(
+                  onTap: onView,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8.w),
+                    child: Icon(
+                      Icons.visibility_outlined,
+                      size: 20.sp,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+              ],
               GestureDetector(
                 onTap: onRemove,
                 child: CommonImage(imageSrc: AppIcons.delete, size: 20.sp),
-              ),
-            ] else if (showUploadIcon) ...[
-              Expanded(
-                child: Center(
-                  child: CommonImage(imageSrc: AppIcons.upload, size: 24.sp),
-                ),
               ),
             ] else ...[
               Expanded(
@@ -390,6 +628,12 @@ class _JobApplyPopupState extends State<JobApplyPopup> {
                   textAlign: TextAlign.start,
                 ),
               ),
+              if (showPdfIcon) ...[
+                GestureDetector(
+                  onTap: onTap,
+                  child: CommonImage(imageSrc: AppIcons.pdf, size: 24.sp),
+                ),
+              ],
             ],
           ],
         ),

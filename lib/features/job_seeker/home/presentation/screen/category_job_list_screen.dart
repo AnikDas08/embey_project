@@ -40,7 +40,7 @@ class CategoryJobListScreen extends StatelessWidget {
                           // Handle close tap
                           Navigator.pop(context);
                         },
-                        isDateRange: true,
+                        //isDateRange: true,
                       ),
                     );
                   },

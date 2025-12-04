@@ -14,7 +14,8 @@ class ApiEndPoint {
   static const banner = "spotlight";
   static const notifications = "notifications";
   static const Categorys = "job-category";
-  static const job_post = "job-category";
+  static const job_post = "job-post/feed";
+  static const recomended = "job-post/recommended";
   static const privacyPolicies = "privacy-policies";
   static const termsOfServices = "terms-and-conditions";
   static const chats = "chats";

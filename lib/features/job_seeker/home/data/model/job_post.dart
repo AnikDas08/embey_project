@@ -15,19 +15,26 @@ class JobPostResponse {
 
   factory JobPostResponse.fromJson(Map<dynamic, dynamic> json) {
     return JobPostResponse(
-      success: json['success'] ?? false,
-      message: json['message'] ?? '',
-      pagination: Pagination.fromJson(json['pagination'] ?? {}),
+      // Allow success to be null if missing or not a bool
+      success: json['success'] as bool?,
+      // Allow message to be null if missing or not a string
+      message: json['message'] as String?,
+      // Allow pagination to be null if missing, or attempt parsing if present
+      pagination: json['pagination'] != null
+          ? Pagination.fromJson(json['pagination'] as Map<String, dynamic>)
+          : null,
+      // Allow data list to be null if missing, or map to JobPost list
       data: (json['data'] as List<dynamic>?)
           ?.map((item) => JobPost.fromJson(item as Map<String, dynamic>))
-          .toList() ??
-          [],
+          .toList(),
     );
   }
+
   Map<String, dynamic> toJson() {
     return {
       'success': success,
       'message': message,
+      // Use ?.toJson() for nullable nested objects
       'pagination': pagination?.toJson(),
       'data': data?.map((item) => item.toJson()).toList(),
     };
@@ -49,10 +56,11 @@ class Pagination {
 
   factory Pagination.fromJson(Map<String, dynamic> json) {
     return Pagination(
-      total: json['total'],
-      limit: json['limit'],
-      page: json['page'],
-      totalPage: json['totalPage'],
+      // Allow fields to be null if missing or not an int
+      total: json['total'] as int?,
+      limit: json['limit'] as int?,
+      page: json['page'] as int?,
+      totalPage: json['totalPage'] as int?,
     );
   }
 
@@ -67,69 +75,88 @@ class Pagination {
 }
 
 class JobPost {
-  final String id;
-  final String thumbnail;
-  final String recruiter;
-  final String title;
-  final String description;
-  final String status;
-  final String category;
-  final String jobType;
-  final String jobLevel;
-  final String experienceLevel;
-  final int minSalary;
-  final int maxSalary;
-  final String location;
-  final List<String> requiredSkills;
-  final DateTime deadline;
-  final bool isDeleted;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final String? id;
+  final String? thumbnail;
+  final String? recruiter;
+  final String? title;
+  final String? description;
+  final String? status;
+  final String? category;
+  final String? jobType;
+  final String? jobLevel;
+  final String? experienceLevel;
+  final int? minSalary;
+  final int? maxSalary;
+  final String? location;
+  final List<String>? requiredSkills;
+  final DateTime? deadline;
+  final bool? isDeleted;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   JobPost({
-    required this.id,
-    required this.thumbnail,
-    required this.recruiter,
-    required this.title,
-    required this.description,
-    required this.status,
-    required this.category,
-    required this.jobType,
-    required this.jobLevel,
-    required this.experienceLevel,
-    required this.minSalary,
-    required this.maxSalary,
-    required this.location,
-    required this.requiredSkills,
-    required this.deadline,
-    required this.isDeleted,
-    required this.createdAt,
-    required this.updatedAt,
+    this.id,
+    this.thumbnail,
+    this.recruiter,
+    this.title,
+    this.description,
+    this.status,
+    this.category,
+    this.jobType,
+    this.jobLevel,
+    this.experienceLevel,
+    this.minSalary,
+    this.maxSalary,
+    this.location,
+    this.requiredSkills,
+    this.deadline,
+    this.isDeleted,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory JobPost.fromJson(Map<String, dynamic> json) {
+    // Helper function to safely extract a potential nested 'name' string
+    String? _extractNestedName(dynamic map) {
+      if (map is Map<String, dynamic>) {
+        return map['name'] as String?;
+      }
+      return map as String?; // Fallback if it's a string directly
+    }
+
+    // Safely parse DateTime strings
+    DateTime? _parseDateTime(dynamic value) {
+      if (value is String) {
+        return DateTime.tryParse(value);
+      }
+      return null;
+    }
+
     return JobPost(
-      id: json['_id'] ?? '',
-      thumbnail: json['thumbnail'] ?? '',
-      recruiter: json['recruiter'] ?? '',
-      title: json['title'] ?? '',
-      description: json['description'] ?? '',
-      status: json['status'] ?? '',
-      category: json['category'] ?? '',
-      jobType: json['job_type'] ?? '',
-      jobLevel: json['job_level'] ?? '',
-      experienceLevel: json['experience_level'] ?? '',
-      minSalary: json['min_salary'] ?? 0,
-      maxSalary: json['max_salary'] ?? 0,
-      location: json['location'] ?? '',
+      id: json['_id'] as String?,
+      thumbnail: json['thumbnail'] as String?,
+      // Use the helper to extract the recruiter name string (handles nested object or string)
+      recruiter: _extractNestedName(json['recruiter']),
+      title: json['title'] as String?,
+      description: json['description'] as String?,
+      status: json['status'] as String?,
+      // Use the helper to extract the category name string (handles nested object or string)
+      category: _extractNestedName(json['category']),
+      jobType: json['job_type'] as String?,
+      jobLevel: json['job_level'] as String?,
+      experienceLevel: json['experience_level'] as String?,
+      minSalary: json['min_salary'] as int?,
+      maxSalary: json['max_salary'] as int?,
+      location: json['location'] as String?,
+      // List parsing: List<dynamic>? is mapped to List<String>?
       requiredSkills: (json['required_skills'] as List<dynamic>?)
           ?.map((skill) => skill.toString())
-          .toList() ??
-          [],
-      deadline: DateTime.parse(json['deadline'] ?? DateTime.now().toIso8601String()),
-      isDeleted: json['is_deleted'] ?? false,
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
-      updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
+          .toList(),
+      // Use the safe DateTime parser
+      deadline: _parseDateTime(json['deadline']),
+      isDeleted: json['is_deleted'] as bool?,
+      createdAt: _parseDateTime(json['createdAt']),
+      updatedAt: _parseDateTime(json['updatedAt']),
     );
   }
 
@@ -149,48 +176,33 @@ class JobPost {
       'max_salary': maxSalary,
       'location': location,
       'required_skills': requiredSkills,
-      'deadline': deadline.toIso8601String(),
+      // Use ?.toIso8601String() for nullable DateTime
+      'deadline': deadline?.toIso8601String(),
       'is_deleted': isDeleted,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'createdAt': createdAt?.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
     };
   }
 
   // Helper method to get salary range as string
   String getSalaryRange() {
-    return '\$$minSalary - \$$maxSalary';
+    // Use null-coalescing inside helper methods for presentation
+    return '\$${minSalary ?? 0} - \$${maxSalary ?? 0}';
   }
 
   // Helper method to check if deadline has passed
   bool isExpired() {
-    return DateTime.now().isAfter(deadline);
+    // If deadline is null, consider it not expired or handle as an error/default
+    return deadline != null && DateTime.now().isAfter(deadline!);
   }
 
   // Helper method to format job type
   String getFormattedJobType() {
-    return jobType.replaceAll('_', ' ').toLowerCase().split(' ')
-        .map((word) => word[0].toUpperCase() + word.substring(1))
+    final type = jobType ?? '';
+    if (type.isEmpty) return 'N/A';
+
+    return type.replaceAll('_', ' ').toLowerCase().split(' ')
+        .map((word) => word.isEmpty ? '' : word[0].toUpperCase() + word.substring(1))
         .join(' ');
   }
 }
-
-// Usage Example:
-//
-// import 'dart:convert';
-//
-// void main() {
-//   String jsonString = '...'; // Your JSON string
-//
-//   final Map<String, dynamic> jsonData = json.decode(jsonString);
-//   final JobPostResponse response = JobPostResponse.fromJson(jsonData);
-//
-//   print('Total jobs: ${response.pagination.total}');
-//
-//   for (var job in response.data) {
-//     print('Title: ${job.title}');
-//     print('Location: ${job.location}');
-//     print('Salary: ${job.getSalaryRange()}');
-//     print('Skills: ${job.requiredSkills.join(", ")}');
-//     print('---');
-//   }
-// }

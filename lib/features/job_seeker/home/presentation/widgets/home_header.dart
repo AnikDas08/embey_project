@@ -42,7 +42,7 @@ class HomeHeader extends StatelessWidget {
               child: ClipOval(
                 child:Obx(
                     ()=> Image.network(
-                    controller.image.value,
+                    ApiEndPoint.imageUrl+controller.image.value,
                     fit: BoxFit.cover,
                     errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
                       return Image.asset(
