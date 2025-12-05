@@ -1,22 +1,46 @@
+// screens/applied_details_screen.dart
+
 import 'package:embeyi/core/component/appbar/common_appbar.dart';
 import 'package:embeyi/core/component/text/common_text.dart';
+import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/core/utils/extensions/extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import '../../data/model/application_details_models.dart';
+import '../controller/application_details_controller.dart';
 import '../widgets/history_widgets.dart';
 
 class AppliedDetails extends StatelessWidget {
-  final bool isRejected;
-  final String status;
-  const AppliedDetails({
-    super.key,
-    this.isRejected = false,
-    required this.status,
-  });
+  AppliedDetails({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Get applicationId from arguments
+    final Map<String, dynamic> args = Get.arguments ?? {};
+    final String applicationId = args['applicationId'] ?? '';
+
+    if (applicationId.isEmpty) {
+      return Scaffold(
+        appBar: CommonAppbar(
+          title: 'Application Details',
+          centerTitle: true,
+          showBackButton: true,
+        ),
+        body: const Center(
+          child: Text('Invalid application ID'),
+        ),
+      );
+    }
+
+    // Initialize controller with applicationId
+    final controller = Get.put(
+      AppliedDetailsController(applicationId: applicationId),
+      tag: applicationId,
+    );
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: CommonAppbar(
@@ -24,164 +48,236 @@ class AppliedDetails extends StatelessWidget {
         centerTitle: true,
         showBackButton: true,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(16.r),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Application Header Card
-              ApplicationDetailsHeaderCard(
-                hiringStatus: 'We are Hiring',
-                jobTitle: 'Sr. UI/UX Designer',
-                companyName: 'Design-Hill',
-                location: 'California, United State.',
-                status: status,
-              ),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-              24.height,
+        final detail = controller.applicationDetail.value;
 
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: ShapeDecoration(
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+        if (detail == null) {
+          return const Center(
+            child: Text('No application details found'),
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: controller.fetchApplicationDetails,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: EdgeInsets.all(16.r),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Application Header Card
+                  ApplicationDetailsHeaderCard(
+                    hiringStatus: detail.hiringStatus,
+                    jobTitle: detail.post.title.isNotEmpty
+                        ? detail.post.title
+                        : detail.title,
+                    companyName: detail.user.name,
+                    location: detail.post.location,
+                    status: controller.currentStatus,
+                    companyLogo: ApiEndPoint.imageUrl+controller.getImageUrl(
+                        detail.post.thumbnail.isNotEmpty
+                            ? detail.post.thumbnail
+                            : detail.user.image
+                    ),
                   ),
-                  shadows: [
-                    BoxShadow(
-                      color: Color(0x19000000),
-                      blurRadius: 4,
-                      offset: Offset(0, 4),
-                      spreadRadius: 0,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Application Timeline Section
-                    DetailsSectionHeader(title: 'Application Timeline'),
 
-                    20.height,
+                  24.height,
 
-                    _buildTimeline(),
-                  ],
-                ),
-              ),
-              24.height,
-              // Attachment Section
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: ShapeDecoration(
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  shadows: [
-                    BoxShadow(
-                      color: Color(0x19000000),
-                      blurRadius: 4,
-                      offset: Offset(0, 4),
-                      spreadRadius: 0,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const DetailsSectionHeader(title: 'Attachment'),
-                    20.height,
-                    _buildAttachments(),
-                  ],
-                ),
-              ),
-              24.height,
-              if (isRejected)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CommonText(
-                      text: 'Rejection Reason',
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.red,
-                    ),
-                    8.height,
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: ShapeDecoration(
-                        color: const Color(0xFFFEEEEE) /* Cart-BG-6 */,
-                        shape: RoundedRectangleBorder(
-                          side: BorderSide(
-                            width: 1,
-                            color: const Color(0xFFFF5900) /* Error */,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
+                  // Application Timeline Section
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: ShapeDecoration(
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      shadows: const [
+                        BoxShadow(
+                          color: Color(0x19000000),
+                          blurRadius: 4,
+                          offset: Offset(0, 4),
+                          spreadRadius: 0,
                         ),
-                      ),
-                      child: CommonText(
-                        text:
-                            '''Thank you for applying for the UI/UX Designer position. After reviewing your CV and experience, we found that your qualifications do not fully match the specific requirements outlined for this role. The position requires proven expertise in areas such as user interface design, user experience research, wireframing, prototyping, and familiarity with industry-standard design tools (e.g., Figma, Adobe XD, Sketch).While your background demonstrates potential, we are seeking candidates with more direct experience in UI/UX design projects and a stronger portfolio showcasing relevant work. Unfortunately, based on these factors, we are unable to move forward with your application at this time.We encourage you to continue building your design experience and apply again in the future when your profile better aligns with the role’s requirements.''',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.black,
-                        maxLines: 100,
-                        textAlign: TextAlign.justify,
-                      ),
+                      ],
                     ),
-                  ],
-                ),
-            ],
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const DetailsSectionHeader(title: 'Application Timeline'),
+                        20.height,
+                        _buildTimeline(detail.history),
+                      ],
+                    ),
+                  ),
+
+                  24.height,
+
+                  // Attachment Section
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: ShapeDecoration(
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      shadows: const [
+                        BoxShadow(
+                          color: Color(0x19000000),
+                          blurRadius: 4,
+                          offset: Offset(0, 4),
+                          spreadRadius: 0,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const DetailsSectionHeader(title: 'Attachment'),
+                        20.height,
+                        _buildAttachments(
+                          controller,
+                          detail.resume,
+                          detail.otherDocuments,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  24.height,
+
+                  // Rejection Reason Section (if rejected)
+                  if (controller.isRejected && detail.rejectionReason != null)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CommonText(
+                          text: 'Rejection Reason',
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.red,
+                        ),
+                        8.height,
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: ShapeDecoration(
+                            color: const Color(0xFFFEEEEE),
+                            shape: RoundedRectangleBorder(
+                              side: const BorderSide(
+                                width: 1,
+                                color: Color(0xFFFF5900),
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: CommonText(
+                            text: detail.rejectionReason!,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.black,
+                            maxLines: 100,
+                            textAlign: TextAlign.justify,
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 
-  Widget _buildTimeline() {
+  Widget _buildTimeline(List<History> history) {
+    if (history.isEmpty) {
+      return const TimelineItem(
+        title: 'Applied',
+        subtitle: 'Pending',
+        isCompleted: false,
+        isLast: true,
+      );
+    }
+
     return Column(
-      children: [
-        const TimelineItem(
-          title: 'Applied',
-          subtitle: '01 Sep 2025',
+      children: history.asMap().entries.map((entry) {
+        final index = entry.key;
+        final item = entry.value;
+        final isLast = index == history.length - 1;
+
+        return TimelineItem(
+          title: item.title,
+          subtitle: DateFormat('dd MMM yyyy').format(item.date),
           isCompleted: true,
-        ),
-        const TimelineItem(
-          title: 'Short Listed',
-          subtitle: 'Pending',
-          isCompleted: false,
-        ),
-        const TimelineItem(
-          title: 'Interview',
-          subtitle: 'Pending',
-          isCompleted: false,
-          isLast: true,
-        ),
-      ],
+          isLast: isLast,
+        );
+      }).toList(),
     );
   }
 
-  Widget _buildAttachments() {
-    return Column(
-      children: [
+  Widget _buildAttachments(
+      AppliedDetailsController controller,
+      String resume,
+      List<String> otherDocuments,
+      ) {
+    List<Widget> attachments = [];
+
+    // Add resume
+    if (resume.isNotEmpty) {
+      attachments.add(
         AttachmentCard(
-          fileName: 'Resume made axpersy 20_89_4',
+          fileName: controller.getFileName(resume),
           fileType: 'PDF Document',
-          fileSize: '103kb',
+          fileSize: '---',
+          fileUrl: controller.getDocumentUrl(resume),
           onTap: () {
-            // Handle file open
+            // Handle file open - you can implement file viewer here
+            Get.snackbar(
+              'Info',
+              'Opening ${controller.getFileName(resume)}',
+              snackPosition: SnackPosition.BOTTOM,
+            );
           },
         ),
-        AttachmentCard(
-          fileName: 'Experience Certificate',
-          fileType: 'PDF Document',
-          fileSize: '103kb',
-          onTap: () {
-            // Handle file open
-          },
+      );
+    }
+
+    // Add other documents
+    for (var doc in otherDocuments) {
+      if (doc.isNotEmpty) {
+        attachments.add(
+          AttachmentCard(
+            fileName: controller.getFileName(doc),
+            fileType: 'PDF Document',
+            fileSize: '---',
+            fileUrl: controller.getDocumentUrl(doc),
+            onTap: () {
+              // Handle file open
+              Get.snackbar(
+                'Info',
+                'Opening ${controller.getFileName(doc)}',
+                snackPosition: SnackPosition.BOTTOM,
+              );
+            },
+          ),
+        );
+      }
+    }
+
+    if (attachments.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text('No attachments available'),
         ),
-      ],
-    );
+      );
+    }
+
+    return Column(children: attachments);
   }
 }

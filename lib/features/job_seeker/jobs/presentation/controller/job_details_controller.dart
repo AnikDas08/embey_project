@@ -35,6 +35,7 @@ class JobDetailsController extends GetxController {
   }
 
   String getJobTitle() => jobData.value?.title ?? 'Job Title';
+  String getRecuirterId() => jobData.value?.recruiter.id ?? '';
 
   String getLocation() => jobData.value?.location ?? 'Location';
 

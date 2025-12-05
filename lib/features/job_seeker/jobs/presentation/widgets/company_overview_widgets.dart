@@ -5,8 +5,10 @@ import 'package:embeyi/core/config/route/job_seeker_routes.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/core/utils/constants/app_images.dart';
 import 'package:embeyi/core/utils/extensions/extension.dart';
+import 'package:embeyi/features/job_seeker/jobs/data/model/company_jobitem_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 
 // Company Hero Header - Image with logo overlay
 class CompanyHeroHeader extends StatelessWidget {
@@ -318,10 +320,17 @@ class CompanyAboutContent extends StatelessWidget {
 }
 
 // Jobs List Widget (for Jobs tab)
-class CompanyJobsList extends StatelessWidget {
-  final List<CompanyJobItem> jobs;
+// Replace your CompanyJobsList class with this:
 
-  const CompanyJobsList({super.key, required this.jobs});
+class CompanyJobsList extends StatelessWidget {
+  final List<CompanyJobItemdata> jobs;
+  final String? companyName; // Add this parameter
+
+  const CompanyJobsList({
+    super.key,
+    required this.jobs,
+    this.companyName, // Add this
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -330,23 +339,33 @@ class CompanyJobsList extends StatelessWidget {
       child: ListView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        itemCount: 8,
+        itemCount: jobs.length, // ✅ Changed from 8 to jobs.length
         itemBuilder: (context, index) {
+          final job = jobs[index]; // ✅ Get the actual job data
+
           return Padding(
             padding: EdgeInsets.only(bottom: 16.h),
             child: JobCard(
-              companyName: 'UX-Pilot',
-              location: 'California, United State.',
-              jobTitle: 'Sr. UI/UX Designer',
-              salaryRange: '\$7k - \$15k/month',
-              timePosted: '01 Dec 25',
-              isFullTime: true,
-              companyLogo: AppImages.jobPost,
+              companyName: companyName ?? 'Company', // ✅ Use passed company name
+              location: job.location, // ✅ From API
+              jobTitle: job.title, // ✅ From API
+              salaryRange: job.salary, // ✅ From API (already formatted)
+              timePosted: job.formattedDeadline.isNotEmpty
+                  ? job.formattedDeadline
+                  : 'No deadline', // ✅ From API with fallback
+              isFullTime: job.isFullTime, // ✅ From API
+              companyLogo: job.thumbnail?.isNotEmpty == true && job.thumbnail!.startsWith('http')
+                  ? job.thumbnail!
+                  : AppImages.jobPost, // ✅ From API or default image
               onTap: () {
-                JobSeekerRoutes.goToJobDetails();
+                // You can pass job ID here if needed
+                Get.toNamed(JobSeekerRoutes.jobDetails, arguments: job.id);
+                // Or with arguments:
+                // JobSeekerRoutes.goToJobDetails(arguments: job.id);
               },
               onFavoriteTap: () {
-                // Handle favorite tap
+                // Handle favorite tap with job ID
+                print('Favorite tapped for job: ${job.id}');
               },
             ),
           );

@@ -133,7 +133,7 @@ class JobDetailsScreen extends StatelessWidget {
                                   ? controller.getCompanyLogo()
                                   : AppImages.companyLogo,
                               onTap: () {
-                                Get.toNamed(JobSeekerRoutes.companyOverview);
+                                Get.toNamed(JobSeekerRoutes.companyOverview,arguments: controller.getRecuirterId());
                               },
                             ),
 

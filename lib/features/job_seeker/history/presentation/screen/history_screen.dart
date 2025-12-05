@@ -1,5 +1,8 @@
+// screens/history_screen.dart
+
 import 'package:embeyi/core/component/appbar/common_appbar.dart';
 import 'package:embeyi/core/component/bottom_nav_bar/common_bottom_bar.dart';
+import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:embeyi/core/config/route/job_seeker_routes.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/core/utils/extensions/extension.dart';
@@ -12,6 +15,13 @@ import '../widgets/history_widgets.dart';
 class HistoryScreen extends StatelessWidget {
   HistoryScreen({super.key});
   final HistoryController controller = Get.put(HistoryController());
+
+  // Helper method to construct full image URL
+  String _getImageUrl(String imagePath) {
+    if (imagePath.isEmpty) return '';
+    if (imagePath.startsWith('http')) return imagePath;
+    return ApiEndPoint.imageUrl + imagePath;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +67,7 @@ class HistoryScreen extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Obx(
-        () => TabBar(
+            () => TabBar(
           controller: controller.tabController,
           isScrollable: true,
           indicatorColor: Colors.transparent,
@@ -93,74 +103,107 @@ class HistoryScreen extends StatelessWidget {
     return TabBarView(
       controller: controller.tabController,
       children: [
-        _buildApplicationList(
-          controller.getAllApplications(),
-          isInterview: false,
-        ),
-        _buildApplicationList(
-          controller.getRejectedApplications(),
-          isInterview: false,
-        ),
-        Obx(
-          () => _buildApplicationList(
-            controller.getInterviewApplications(),
-            isInterview: true,
-          ),
-        ),
+        _buildApplicationListView(isInterview: false),
+        _buildApplicationListView(isInterview: false),
+        _buildApplicationListView(isInterview: true),
       ],
     );
   }
 
-  Widget _buildApplicationList(
-    List<Map<String, dynamic>> applications, {
-    required bool isInterview,
-  }) {
-    if (applications.isEmpty) {
-      return const EmptyHistoryState();
-    }
+  Widget _buildApplicationListView({required bool isInterview}) {
+    return Obx(() {
+      if (controller.isLoading.value && controller.currentPage.value == 1) {
+        return const Center(child: CircularProgressIndicator());
+      }
 
-    return ListView.builder(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-      itemCount: applications.length,
-      itemBuilder: (context, index) {
-        final application = applications[index];
+      final applications = controller.getCurrentList();
 
-        if (isInterview) {
-          return InterviewJobCard(
-            jobTitle: application['jobTitle'] ?? '',
-            companyName: application['companyName'] ?? '',
-            location: application['location'] ?? '',
-            companyLogo: application['companyLogo'] ?? '',
-            interviewDate: application['interviewDate'] ?? '',
-            onTap: () {
-              Get.toNamed(
-                JobSeekerRoutes.appliedDetails,
-                arguments: {
-                  'isRejected': application['status'] == 'Rejected',
-                  'status': application['status'] ?? 'Applied',
+      if (applications.isEmpty) {
+        return RefreshIndicator(
+          onRefresh: controller.refreshCurrentTab,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: SizedBox(
+              height: Get.height * 0.6,
+              child: const EmptyHistoryState(),
+            ),
+          ),
+        );
+      }
+
+      return RefreshIndicator(
+        onRefresh: controller.refreshCurrentTab,
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (ScrollNotification scrollInfo) {
+            if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
+              controller.loadMoreForCurrentTab();
+            }
+            return false;
+          },
+          child: ListView.builder(
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+            itemCount: applications.length + (controller.isLoadingMore.value ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index == applications.length) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+
+              final application = applications[index];
+
+              if (isInterview) {
+                return InterviewJobCard(
+                  jobTitle: application.post?.title ?? application.title,
+                  companyName: application.user?.name ?? 'Unknown Company',
+                  location: application.post?.location ?? 'Unknown Location',
+                  companyLogo: _getImageUrl(
+                      application.post?.thumbnail ?? application.user?.image ?? ''
+                  ),
+                  interviewDate: application.interviewDateLabel,
+                  onTap: () {
+                    Get.toNamed(
+                      JobSeekerRoutes.appliedDetails,
+                      arguments: {
+                        'applicationId': application.id,
+                        'isRejected': application.status == 'REJECTED',
+                        'status': application.displayStatus,
+                      },
+                    );
+                  },
+                );
+              }
+
+              return ApplicationHistoryCard(
+                jobTitle: application.post?.title ?? application.title,
+                companyName: application.user?.name ?? 'Unknown Company',
+                location: application.post?.location ?? 'Unknown Location',
+                companyLogo: _getImageUrl(
+                    application.post?.thumbnail ?? application.user?.image ?? ''
+                ),
+                status: application.history.isNotEmpty
+                    ? application.history.last.title
+                    : application.displayStatus,
+                onTap: () {
+                  Get.toNamed(
+                    JobSeekerRoutes.appliedDetails,
+                    arguments: {
+                      'applicationId': application.id,
+                      'isRejected': application.status == 'REJECTED',
+                      'status': application.history.isNotEmpty
+                          ? application.history.last.title
+                          : application.displayStatus,
+                    },
+                  );
                 },
               );
             },
-          );
-        }
-
-        return ApplicationHistoryCard(
-          jobTitle: application['jobTitle'] ?? '',
-          companyName: application['companyName'] ?? '',
-          location: application['location'] ?? '',
-          companyLogo: application['companyLogo'] ?? '',
-          status: application['status'] ?? '',
-          onTap: () {
-            Get.toNamed(
-              JobSeekerRoutes.appliedDetails,
-              arguments: {
-                'isRejected': application['status'] == 'Rejected',
-                'status': application['status'] ?? 'Applied',
-              },
-            );
-          },
-        );
-      },
-    );
+          ),
+        ),
+      );
+    });
   }
 }

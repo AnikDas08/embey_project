@@ -95,8 +95,6 @@ class JobSeekerRoutes {
       page: () {
         final arguments = Get.arguments as Map<String, dynamic>?;
         return AppliedDetails(
-          isRejected: arguments?['isRejected'] ?? false,
-          status: arguments?['status'] ?? 'Applied',
         );
       },
     ),

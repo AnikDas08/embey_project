@@ -1,3 +1,5 @@
+// widgets/history_widgets.dart
+
 import 'package:embeyi/core/component/image/common_image.dart';
 import 'package:embeyi/core/component/text/common_text.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
@@ -14,6 +16,7 @@ class ApplicationHistoryCard extends StatelessWidget {
   final String location;
   final String companyLogo;
   final String status;
+  final String? dateTime;
   final VoidCallback? onTap;
 
   const ApplicationHistoryCard({
@@ -23,6 +26,7 @@ class ApplicationHistoryCard extends StatelessWidget {
     required this.location,
     required this.companyLogo,
     required this.status,
+    this.dateTime,
     this.onTap,
   });
 
@@ -44,15 +48,34 @@ class ApplicationHistoryCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          mainAxisAlignment: MainAxisAlignment.end,
+        child: Column(
           children: [
-            _buildCompanyLogo(),
-            12.width,
-            Expanded(child: _buildJobDetails()),
-            8.width,
-            StatusBadge(status: status),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                _buildCompanyLogo(),
+                12.width,
+                Expanded(child: _buildJobDetails()),
+                8.width,
+                StatusBadge(status: status),
+              ],
+            ),
+            if (dateTime != null) ...[
+              8.height,
+              Row(
+                children: [
+                  Icon(Icons.access_time, size: 14.sp, color: AppColors.secondaryText),
+                  4.width,
+                  CommonText(
+                    text: dateTime!,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.secondaryText,
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
@@ -68,7 +91,9 @@ class ApplicationHistoryCard extends StatelessWidget {
         color: AppColors.blueLight,
       ),
       clipBehavior: Clip.antiAlias,
-      child: CommonImage(imageSrc: companyLogo, fill: BoxFit.cover),
+      child: companyLogo.isNotEmpty
+          ? CommonImage(imageSrc: companyLogo, fill: BoxFit.cover)
+          : CommonImage(imageSrc: AppImages.jobPost, fill: BoxFit.cover),
     );
   }
 
@@ -77,7 +102,7 @@ class ApplicationHistoryCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         CommonText(
-          text: jobTitle,
+          text: jobTitle.isNotEmpty ? jobTitle : 'No Title',
           fontSize: 14.sp,
           fontWeight: FontWeight.w600,
           color: AppColors.primaryText,
@@ -86,7 +111,7 @@ class ApplicationHistoryCard extends StatelessWidget {
         ),
         4.height,
         CommonText(
-          text: companyName,
+          text: companyName.isNotEmpty ? companyName : 'Unknown Company',
           fontSize: 12.sp,
           fontWeight: FontWeight.w400,
           color: AppColors.secondaryButton,
@@ -99,7 +124,7 @@ class ApplicationHistoryCard extends StatelessWidget {
             4.width,
             Expanded(
               child: CommonText(
-                text: location,
+                text: location.isNotEmpty ? location : 'Unknown Location',
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w400,
                 color: AppColors.primaryText,
@@ -123,11 +148,14 @@ class StatusBadge extends StatelessWidget {
   Color _getStatusColor() {
     switch (status.toLowerCase()) {
       case 'applied':
+      case 'pending':
         return AppColors.primary;
       case 'interview':
         return AppColors.success;
       case 'rejected':
         return AppColors.red;
+      case 'accepted':
+        return Colors.green;
       default:
         return AppColors.secondaryText;
     }
@@ -137,7 +165,6 @@ class StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-
       child: CommonText(
         text: status,
         fontSize: 12,
@@ -213,289 +240,6 @@ class EmptyHistoryState extends StatelessWidget {
   }
 }
 
-// Application Details Header Card
-class ApplicationDetailsHeaderCard extends StatelessWidget {
-  final String hiringStatus;
-  final String jobTitle;
-  final String companyName;
-  final String location;
-  final String status;
-  final String? companyLogo;
-
-  const ApplicationDetailsHeaderCard({
-    super.key,
-    required this.hiringStatus,
-    required this.jobTitle,
-    required this.companyName,
-    required this.location,
-    required this.status,
-    this.companyLogo,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16.r),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          _buildCompanyLogo(),
-          12.width,
-          Expanded(child: _buildCompanyInfo()),
-          8.width,
-          StatusBadge(status: status),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCompanyLogo() {
-    return Container(
-      width: 80.w,
-      height: 60.h,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8.r),
-        color: AppColors.red.withOpacity(0.1),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: companyLogo != null
-          ? CommonImage(imageSrc: companyLogo!, fill: BoxFit.cover)
-          : CommonImage(imageSrc: AppImages.jobPost, fill: BoxFit.cover),
-    );
-  }
-
-  Widget _buildCompanyInfo() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CommonText(
-          text: jobTitle,
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: AppColors.primaryText,
-          textAlign: TextAlign.start,
-          maxLines: 2,
-        ),
-        4.height,
-        CommonText(
-          text: companyName,
-          fontSize: 13,
-          fontWeight: FontWeight.w500,
-          color: AppColors.secondaryButton,
-          textAlign: TextAlign.start,
-        ),
-        6.height,
-        Row(
-          children: [
-            CommonImage(imageSrc: AppIcons.location, size: 14.sp),
-            4.width,
-            Expanded(
-              child: CommonText(
-                text: location,
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-                color: AppColors.primaryText,
-                textAlign: TextAlign.start,
-                maxLines: 1,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-// Timeline Item Widget
-class TimelineItem extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final bool isCompleted;
-  final bool isLast;
-
-  const TimelineItem({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.isCompleted,
-    this.isLast = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        //  _buildTimelineIndicator(),
-        16.width,
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(bottom: isLast ? 0 : 20.h),
-            child: _buildTimelineContent(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ignore: unused_element
-  Widget _buildTimelineIndicator() {
-    return Column(
-      children: [
-        Container(
-          width: 24.w,
-          height: 24.h,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: isCompleted ? AppColors.success : AppColors.white,
-            border: Border.all(
-              color: isCompleted ? AppColors.success : AppColors.borderColor,
-              width: 2,
-            ),
-          ),
-          child: isCompleted
-              ? Icon(Icons.check, size: 14.sp, color: AppColors.white)
-              : null,
-        ),
-        if (!isLast)
-          Container(
-            width: 2,
-            height: 40.h,
-            color: AppColors.borderColor.withOpacity(0.5),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildTimelineContent() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CommonText(
-          text: title,
-          fontSize: 16.sp,
-          fontWeight: FontWeight.w500,
-          color: AppColors.black,
-          textAlign: TextAlign.start,
-        ),
-        4.height,
-        CommonText(
-          text: subtitle,
-          fontSize: 12.sp,
-          fontWeight: FontWeight.w400,
-          color: AppColors.secondaryText,
-          textAlign: TextAlign.start,
-        ),
-      ],
-    );
-  }
-}
-
-// Attachment Card Widget
-class AttachmentCard extends StatelessWidget {
-  final String fileName;
-  final String fileType;
-  final String fileSize;
-  final VoidCallback? onTap;
-
-  const AttachmentCard({
-    super.key,
-    required this.fileName,
-    required this.fileType,
-    required this.fileSize,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: EdgeInsets.only(bottom: 12.h),
-        padding: EdgeInsets.all(12.r),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: AppColors.borderColor.withOpacity(0.5)),
-        ),
-        child: Row(
-          children: [
-            _buildFileIcon(),
-            12.width,
-            Expanded(child: _buildFileInfo()),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFileIcon() {
-    return Container(
-      width: 48.w,
-      height: 48.h,
-      decoration: BoxDecoration(
-        color: AppColors.red.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8.r),
-      ),
-      child: Icon(Icons.picture_as_pdf, size: 28.sp, color: AppColors.red),
-    );
-  }
-
-  Widget _buildFileInfo() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CommonText(
-          text: fileName,
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: AppColors.primaryText,
-          textAlign: TextAlign.start,
-          maxLines: 1,
-        ),
-        4.height,
-        CommonText(
-          text: '$fileType $fileSize',
-          fontSize: 12,
-          fontWeight: FontWeight.w400,
-          color: AppColors.secondaryText,
-          textAlign: TextAlign.start,
-        ),
-      ],
-    );
-  }
-}
-
-// Section Header Widget for Details Page
-class DetailsSectionHeader extends StatelessWidget {
-  final String title;
-
-  const DetailsSectionHeader({super.key, required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return CommonText(
-      text: title,
-      fontSize: 16,
-      fontWeight: FontWeight.w600,
-      color: AppColors.primaryText,
-      textAlign: TextAlign.start,
-    );
-  }
-}
-
 // Interview Card Widget with Date
 class InterviewJobCard extends StatelessWidget {
   final String jobTitle;
@@ -555,7 +299,9 @@ class InterviewJobCard extends StatelessWidget {
         color: AppColors.blueLight,
       ),
       clipBehavior: Clip.antiAlias,
-      child: CommonImage(imageSrc: companyLogo, fill: BoxFit.cover),
+      child: companyLogo.isNotEmpty
+          ? CommonImage(imageSrc: companyLogo, fill: BoxFit.cover)
+          : CommonImage(imageSrc: AppImages.jobPost, fill: BoxFit.cover),
     );
   }
 
@@ -564,7 +310,7 @@ class InterviewJobCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         CommonText(
-          text: jobTitle,
+          text: jobTitle.isNotEmpty ? jobTitle : 'No Title',
           fontSize: 14.sp,
           fontWeight: FontWeight.w600,
           color: AppColors.primaryText,
@@ -573,7 +319,7 @@ class InterviewJobCard extends StatelessWidget {
         ),
         4.height,
         CommonText(
-          text: companyName,
+          text: companyName.isNotEmpty ? companyName : 'Unknown Company',
           fontSize: 12.sp,
           fontWeight: FontWeight.w500,
           color: AppColors.secondaryButton,
@@ -586,7 +332,7 @@ class InterviewJobCard extends StatelessWidget {
             4.width,
             Expanded(
               child: CommonText(
-                text: location,
+                text: location.isNotEmpty ? location : 'Unknown Location',
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w400,
                 color: AppColors.primaryText,
@@ -602,16 +348,17 @@ class InterviewJobCard extends StatelessWidget {
 
   Widget _buildDateBadge() {
     Color dateColor = AppColors.secondaryPrimary;
-    if (interviewDate == 'Today') {
+
+    if (interviewDate.toLowerCase() == 'today') {
       dateColor = AppColors.secondaryPrimary;
-    } else if (interviewDate == 'Tomorrow') {
+    } else if (interviewDate.toLowerCase() == 'tomorrow') {
       dateColor = Colors.orange;
     } else {
       dateColor = Colors.orange;
     }
 
     return CommonText(
-      text: interviewDate,
+      text: interviewDate.isNotEmpty ? interviewDate : 'TBD',
       fontSize: 12.sp,
       fontWeight: FontWeight.w600,
       color: dateColor,
@@ -652,16 +399,16 @@ class InterviewFilterButtons extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 12.h),
         decoration: ShapeDecoration(
           gradient: isSelected
-              ? LinearGradient(
-                  begin: Alignment(0.00, 0.50),
-                  end: Alignment(1.00, 0.50),
-                  colors: [const Color(0xFF123499), const Color(0xFF2956DD)],
-                )
+              ? const LinearGradient(
+            begin: Alignment(0.00, 0.50),
+            end: Alignment(1.00, 0.50),
+            colors: [Color(0xFF123499), Color(0xFF2956DD)],
+          )
               : null,
           shape: RoundedRectangleBorder(
-            side: BorderSide(
+            side: const BorderSide(
               width: 1,
-              color: const Color(0xFFC8C8C8) /* Disable */,
+              color: Color(0xFFC8C8C8),
             ),
             borderRadius: BorderRadius.circular(100),
           ),
@@ -673,6 +420,328 @@ class InterviewFilterButtons extends StatelessWidget {
             fontWeight: FontWeight.w400,
             color: isSelected ? AppColors.white : AppColors.primaryText,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class ApplicationDetailsHeaderCard extends StatelessWidget {
+  final String hiringStatus;
+  final String jobTitle;
+  final String companyName;
+  final String location;
+  final String status;
+  final String companyLogo;
+
+  const ApplicationDetailsHeaderCard({
+    super.key,
+    required this.hiringStatus,
+    required this.jobTitle,
+    required this.companyName,
+    required this.location,
+    required this.status,
+    this.companyLogo = '',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(16.r),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(12.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Hiring Status Badge
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(4.r),
+            ),
+            child: CommonText(
+              text: hiringStatus.toUpperCase(),
+              fontSize: 10.sp,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primary,
+            ),
+          ),
+
+          16.height,
+
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Company Logo
+              Container(
+                width: 60.w,
+                height: 60.h,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8.r),
+                  color: AppColors.blueLight,
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: companyLogo.isNotEmpty
+                    ? CommonImage(imageSrc: companyLogo, fill: BoxFit.cover)
+                    : CommonImage(imageSrc: AppImages.jobPost, fill: BoxFit.cover),
+              ),
+
+              12.width,
+
+              // Job Details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CommonText(
+                      text: jobTitle,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primaryText,
+                      maxLines: 2,
+                    ),
+                    4.height,
+                    CommonText(
+                      text: companyName,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.secondaryButton,
+                    ),
+                    6.height,
+                    Row(
+                      children: [
+                        CommonImage(imageSrc: AppIcons.location, size: 14.sp),
+                        4.width,
+                        Expanded(
+                          child: CommonText(
+                            text: location,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.primaryText,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          16.height,
+
+          // Status
+          Row(
+            children: [
+              CommonText(
+                text: 'Status: ',
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+                color: AppColors.secondaryText,
+              ),
+              StatusBadge(status: status),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+class DetailsSectionHeader extends StatelessWidget {
+  final String title;
+
+  const DetailsSectionHeader({super.key, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return CommonText(
+      text: title,
+      fontSize: 16.sp,
+      fontWeight: FontWeight.w600,
+      color: AppColors.primaryText,
+    );
+  }
+}
+
+// Timeline Item Widget
+class TimelineItem extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final bool isCompleted;
+  final bool isLast;
+
+  const TimelineItem({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.isCompleted,
+    this.isLast = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Timeline indicator column
+          Column(
+            children: [
+              // Circle indicator
+              Container(
+                width: 20.w,
+                height: 20.h,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isCompleted ? AppColors.primary : AppColors.borderColor,
+                  border: Border.all(
+                    color: isCompleted ? AppColors.primary : AppColors.borderColor,
+                    width: 2,
+                  ),
+                ),
+                child: isCompleted
+                    ? Icon(
+                  Icons.check,
+                  size: 12.sp,
+                  color: AppColors.white,
+                )
+                    : null,
+              ),
+
+              // Vertical line (if not last)
+              if (!isLast)
+                Expanded(
+                  child: Container(
+                    width: 2,
+                    margin: EdgeInsets.symmetric(vertical: 4.h),
+                    color: isCompleted ? AppColors.primary : AppColors.borderColor,
+                  ),
+                ),
+            ],
+          ),
+
+          12.width,
+
+          // Content
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: isLast ? 0 : 20.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CommonText(
+                    text: title,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primaryText,
+                  ),
+                  4.height,
+                  CommonText(
+                    text: subtitle,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.secondaryText,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+class AttachmentCard extends StatelessWidget {
+  final String fileName;
+  final String fileType;
+  final String fileSize;
+  final String? fileUrl;
+  final VoidCallback? onTap;
+
+  const AttachmentCard({
+    super.key,
+    required this.fileName,
+    required this.fileType,
+    required this.fileSize,
+    this.fileUrl,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(12.r),
+        decoration: BoxDecoration(
+          color: AppColors.blueLight.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(
+            color: AppColors.borderColor,
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            // File icon
+            Container(
+              width: 40.w,
+              height: 40.h,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Icon(
+                Icons.picture_as_pdf,
+                color: AppColors.primary,
+                size: 24.sp,
+              ),
+            ),
+
+            12.width,
+
+            // File details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CommonText(
+                    text: fileName,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.primaryText,
+                    maxLines: 1,
+                  ),
+                  4.height,
+                  CommonText(
+                    text: '$fileType • $fileSize',
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.secondaryText,
+                  ),
+                ],
+              ),
+            ),
+
+            // Download/Open icon
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16.sp,
+              color: AppColors.secondaryText,
+            ),
+          ],
         ),
       ),
     );
