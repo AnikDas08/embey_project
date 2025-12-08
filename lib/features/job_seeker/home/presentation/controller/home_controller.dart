@@ -30,6 +30,7 @@ class HomeController extends GetxController {
   RxList<String> selectedJobTypes = <String>[].obs; // FULL_TIME, PART_TIME
   RxList<String> selectedJobLevels = <String>[].obs; // ENTRY_LEVEL, MID_LEVEL
   RxString selectedExperienceLevel = ''.obs; // 0-1yrs, 1-3yrs
+  String categoryId="";
 
   @override
   void onInit() {
@@ -112,6 +113,7 @@ class HomeController extends GetxController {
         categories.value = data.map((item) {
           categoryImage.value = item['image'] ?? "assets/images/noImage.png";
           categoryName.value = item['name'] ?? "";
+          categoryId = item['_id'] ?? "";
           return {
             "id": item['_id'] ?? "",
             "name": item['name'] ?? "",
@@ -310,17 +312,55 @@ class HomeController extends GetxController {
   }
 
   // Method to toggle favorite
-  void toggleFavorite(String jobId) {
+  Future<void> toggleFavorite(String jobId) async {
     if (jobId.isEmpty) return;
 
-    Get.snackbar(
-      "Favorite",
-      "Job marked as favorite",
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-      duration: Duration(seconds: 2),
-    );
+    // 1. Find the index and get a reference to the job object
+    final index = jobPost?.indexWhere((job) => job.id == jobId);
+    if (index == null || index == -1) {
+      print("Error: Job ID not found in the list.");
+      return;
+    }
+
+    final job = jobPost![index];
+    final isCurrentlySaved = job.isFavourite ?? false;
+
+    // 2. Optimistic Update: Change the state immediately and update the UI
+    job.isFavourite = !isCurrentlySaved;
+    update();
+
+    try {
+      // 3. Perform the asynchronous API call
+      final response = await ApiService.post(
+          ApiEndPoint.favourite,
+          body: {
+            "post": jobId,
+          },
+          header: {"Authorization": "Bearer ${LocalStorage.token}"}
+      );
+
+      if (response.statusCode == 200) {
+        // Success: Optimistic state holds. Show success snackbar.
+        Get.snackbar(
+          "Success",
+          isCurrentlySaved ? "Job removed from favorites" : "Job marked as favorite",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 2),
+        );
+      } else {
+        // 4. API Failure: Revert the local state and update the UI
+        job.isFavourite = isCurrentlySaved;
+        update();
+        Utils.errorSnackBar(response.statusCode, response.message);
+      }
+    } catch (e) {
+      // 5. Exception: Revert the local state and update the UI
+      job.isFavourite = isCurrentlySaved;
+      update();
+      Utils.errorSnackBar(0, "Failed to toggle favorite: ${e.toString()}");
+    }
   }
 
   // Method to refresh jobs

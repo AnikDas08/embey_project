@@ -7,6 +7,7 @@ import 'package:embeyi/core/utils/constants/app_icons.dart';
 import 'package:embeyi/core/utils/constants/app_images.dart';
 import 'package:embeyi/core/utils/extensions/extension.dart';
 import 'package:embeyi/features/job_seeker/home/data/model/job_post.dart';
+import 'package:embeyi/features/job_seeker/home/presentation/screen/category_details.dart';
 import 'package:embeyi/features/job_seeker/home/presentation/widgets/auto_apply.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -131,17 +132,13 @@ class JobSeekerHomeScreen extends StatelessWidget {
                           crossAxisSpacing: 10.w,
                           childAspectRatio: 1,
                           children: categoriesList.map((category) {
+                            final categoryId = category["id"];
                             return JobCategoryCard(
                               imageSrc: category['image'] ?? "",
                               title: category['name'],
                               onTap: () {
-                                Get.toNamed(
-                                    '/jobs-by-category',
-                                    arguments: {
-                                      'categoryId': category['id'],
-                                      'title': category['name']
-                                    }
-                                );
+                                print("category id 😂😂$categoryId");
+                                Get.toNamed(JobSeekerRoutes.categoryDetails,arguments: categoryId);
                               },
                               isJobCountVisible: false,
                             );
@@ -242,6 +239,7 @@ class JobSeekerHomeScreen extends StatelessWidget {
 
                               // Get location safely
                               final location = jobPost.location ?? 'Location not specified';
+                              final favourite=jobPost.isFavourite;
 
                               // Get job and recruiter titles safely
                               final jobTitle = jobPost.title ?? 'No Title Specified';
@@ -262,6 +260,7 @@ class JobSeekerHomeScreen extends StatelessWidget {
                               // Determine job properties safely
                               final jobType = jobPost.jobType?.toUpperCase();
                               final isFullTime = jobType == 'FULL_TIME';
+                              final isFavoutie = jobPost.isFavourite;
                               final isRemote = jobType == 'REMOTE'; // Note: You might need separate logic for REMOTE vs FULL_TIME/PART_TIME.
 
                               // Get company logo with base URL
@@ -285,6 +284,7 @@ class JobSeekerHomeScreen extends StatelessWidget {
                                   showFavoriteButton: true,
                                   isSaved: false, // Must be determined by API data, using false as default
                                   isRemote: isRemote,       // Safely passed (bool)
+                                  isFavorite: isFavoutie,
                                   onTap: () {
                                     // Check if ID is available before navigating
                                     if (jobPost.id != null && jobPost.id!.isNotEmpty) {

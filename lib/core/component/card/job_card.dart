@@ -19,6 +19,7 @@ class JobCard extends StatelessWidget {
   final bool isSaved;
   final bool showFavoriteButton;
   final bool isRemote;
+  final bool? isFavorite;
   final VoidCallback onTap;
   final VoidCallback? onFavoriteTap;
 
@@ -38,6 +39,7 @@ class JobCard extends StatelessWidget {
     this.isRemote = false,
     required this.onTap,
     this.onFavoriteTap,
+    this.isFavorite,
   });
 
   @override
@@ -133,11 +135,10 @@ class JobCard extends StatelessWidget {
   Widget _buildFavoriteButton() {
     return GestureDetector(
       onTap: onFavoriteTap,
-      child: CommonImage(
-        imageSrc: isSaved ? AppIcons.love : AppIcons.love,
-        size: 24.sp,
-        imageColor: isSaved ? AppColors.red : AppColors.black,
-      ),
+      child: Icon(
+        isFavorite == true ? Icons.favorite : Icons.favorite_border,
+        size: 24,
+      )
     );
   }
 

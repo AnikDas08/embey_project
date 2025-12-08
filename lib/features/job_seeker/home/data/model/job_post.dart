@@ -88,6 +88,8 @@ class JobPost {
   final int? minSalary;
   final int? maxSalary;
   final String? location;
+  bool? isFavourite;
+  bool? isApplied;
   final List<String>? requiredSkills;
   final DateTime? deadline;
   final bool? isDeleted;
@@ -113,6 +115,8 @@ class JobPost {
     this.isDeleted,
     this.createdAt,
     this.updatedAt,
+    this.isFavourite,
+    this.isApplied,
   });
 
   factory JobPost.fromJson(Map<String, dynamic> json) {
@@ -157,6 +161,8 @@ class JobPost {
       isDeleted: json['is_deleted'] as bool?,
       createdAt: _parseDateTime(json['createdAt']),
       updatedAt: _parseDateTime(json['updatedAt']),
+      isFavourite: json['is_favorite'] as bool?,
+      isApplied: json['is_applied'] as bool?,
     );
   }
 
@@ -181,6 +187,8 @@ class JobPost {
       'is_deleted': isDeleted,
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
+      'is_favorite': isFavourite,
+      'is_applied': isApplied,
     };
   }
 

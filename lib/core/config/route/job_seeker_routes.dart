@@ -2,6 +2,7 @@ import 'package:embeyi/features/job_seeker/history/presentation/screen/history_s
 import 'package:embeyi/features/job_seeker/history/presentation/screen/applied_details.dart';
 import 'package:embeyi/features/job_seeker/home/presentation/screen/all_job_category_screen.dart';
 import 'package:embeyi/features/job_seeker/home/presentation/screen/all_recommended_job_screen.dart';
+import 'package:embeyi/features/job_seeker/home/presentation/screen/category_details.dart';
 import 'package:embeyi/features/job_seeker/home/presentation/screen/category_job_list_screen.dart';
 import 'package:embeyi/features/job_seeker/home/presentation/screen/job_seeker_home_screen.dart';
 import 'package:embeyi/features/job_seeker/jobs/presentation/screen/jobs_screen.dart';
@@ -62,6 +63,7 @@ class JobSeekerRoutes {
   static const String allRecommendedJob = "/all_recommended_job_screen.dart";
   static const String allJobCategory = "/all_job_category_screen.dart";
   static const String categoryJobList = "/category_job_list_screen.dart";
+  static const String categoryDetails = "/categoryDetails.dart";
   // Job Seeker Routes List
   static List<GetPage> routes = [
     GetPage(name: home, page: () => JobSeekerHomeScreen()),
@@ -119,6 +121,7 @@ class JobSeekerRoutes {
       page: () => const AllRecommendedJobScreen(),
     ),
     GetPage(name: allJobCategory, page: () => const AllJobCategoryScreen()),
+    GetPage(name: categoryDetails, page: () => CategoryDetails()),
     GetPage(
       name: categoryJobList,
       page: () => CategoryJobListScreen(category: Get.arguments),
