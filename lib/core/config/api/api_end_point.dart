@@ -18,6 +18,7 @@ class ApiEndPoint {
   static const recomended = "job-post/recommended";
   static const privacyPolicies = "privacy-policies";
   static const termsOfServices = "terms-and-conditions";
+  static const favourite = "favourite";
   static const chats = "chats";
   static const messages = "messages";
 }

@@ -3,21 +3,21 @@ import 'package:embeyi/core/component/bottom_shit/filder_bottom_shit.dart';
 import 'package:embeyi/core/component/card/job_card.dart';
 import 'package:embeyi/core/config/route/job_seeker_routes.dart';
 import 'package:embeyi/core/utils/constants/app_images.dart';
+import 'package:embeyi/features/job_seeker/home/presentation/controller/category_detailcontroller.dart';
 import 'package:embeyi/features/job_seeker/home/presentation/widgets/auto_apply.dart';
 import 'package:embeyi/features/job_seeker/home/presentation/widgets/home_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import '../controller/jobs_controller.dart';
 
-class JobsScreen extends StatelessWidget {
-  JobsScreen({super.key});
-  final JobController controller = Get.put(JobController());
+class CategoryDetails extends StatelessWidget {
+  CategoryDetails({super.key});
+  final controller = Get.put(CategoryDetailController());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Jobs')),
+      appBar: AppBar(title: const Text('Design')),
       body: Obx(() {
         // Show loading indicator
         if (controller.isLoadingJobs.value) {
@@ -43,8 +43,8 @@ class JobsScreen extends StatelessWidget {
 
         // Show job list
         return SingleChildScrollView(
-          child: GetBuilder<JobController>(
-            init: JobController(),
+          child: GetBuilder<CategoryDetailController>(
+            init: CategoryDetailController(),
             builder: (controller) => Column(
               children: [
                 Padding(
@@ -66,12 +66,11 @@ class JobsScreen extends StatelessWidget {
                     },
                     onChanged: (value) {
                       // Handle search
-                      controller.searchJobs(value);
+                      //controller.searchJobs(value);
                     },
                   ),
                 ),
-                AutoApply(),
-                // Single ListView.builder for job posts
+                SizedBox(height: 20.h,),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20.w),
                   child: ListView.builder(
@@ -129,6 +128,7 @@ class JobsScreen extends StatelessWidget {
                           isSaved: false,
                           isRemote: isRemote,
                           isFavorite: jobPost.isFavourite,
+                          isApplied: jobPost.isApplied!,
                           onTap: () {
                             if (jobPost.id != null && jobPost.id!.isNotEmpty) {
                               print("Job tapped: ${jobPost.id}");
@@ -137,9 +137,7 @@ class JobsScreen extends StatelessWidget {
                           },
                           onFavoriteTap: () {
                             final jobId = jobPost.id;
-                            if (jobId != null && jobId.isNotEmpty) {
-                              controller.toggleFavorite(jobId);
-                            }
+                            controller.toggleFavorite(jobId!);
                           },
                         ),
                       );
@@ -151,9 +149,6 @@ class JobsScreen extends StatelessWidget {
           ),
         );
       }),
-      bottomNavigationBar: SafeArea(
-        child: const CommonBottomNavBar(currentIndex: 1),
-      ),
     );
   }
 

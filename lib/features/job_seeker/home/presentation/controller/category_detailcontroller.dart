@@ -8,7 +8,7 @@ import '../../../../../core/utils/app_utils.dart';
 import '../../../home/data/model/home_model.dart';
 import '../../../home/data/model/job_post.dart';
 
-class JobController extends GetxController {
+class CategoryDetailController extends GetxController {
   RxString name = "".obs;
   RxString image = "".obs;
   RxString designation = "".obs;
@@ -24,17 +24,27 @@ class JobController extends GetxController {
 
   // Filter parameters
   RxString searchTerm = ''.obs;
+  // This holds the categoryId passed from the previous screen
   RxString selectedCategory = ''.obs;
   RxInt minSalary = 0.obs;
   RxInt maxSalary = 100000.obs;
   RxList<String> selectedJobTypes = <String>[].obs; // FULL_TIME, PART_TIME
   RxList<String> selectedJobLevels = <String>[].obs; // ENTRY_LEVEL, MID_LEVEL
   RxString selectedExperienceLevel = ''.obs; // 0-1yrs, 1-3yrs
+  String categoryId = "";
 
   @override
   void onInit() {
     super.onInit();
-    getPost();
+    if (Get.arguments != null) {
+      // 1. Store the ID from arguments
+      categoryId = Get.arguments as String;
+      // 2. Set the observable filter parameter
+      selectedCategory.value = categoryId;
+    }
+    print("Initial Category ID: $categoryId");
+    // 3. Call getPost to fetch jobs using the stored filter state.
+    getPost(useFilter: true);
   }
 
   @override
@@ -42,9 +52,7 @@ class JobController extends GetxController {
     super.onClose();
   }
 
-  // --- Profile, Banner, and Category Methods (No Change) ---
-
-  // --- Filter Helper (No Change) ---
+  // --- Filter Helper ---
 
   // Build query parameters for filter
   String _buildQueryParams() {
@@ -63,7 +71,7 @@ class JobController extends GetxController {
       params.add('maxPrice=${maxSalary.value}');
     }
 
-    // Category
+    // Category (Uses selectedCategory which was set in onInit)
     if (selectedCategory.value.isNotEmpty) {
       params.add('category=${selectedCategory.value}');
     }
@@ -86,29 +94,30 @@ class JobController extends GetxController {
     return params.isEmpty ? '' : '?${params.join('&')}';
   }
 
-  // --- Core getPost Method (Corrected) ---
+  // --- Core getPost Method (Refined to use filter parameters) ---
 
-  Future<void> getPost({bool useFilter = false}) async {
+  Future<void> getPost({bool useFilter = false}) async { // Removed String categoryId argument
     isLoadingJobs.value = true;
     update();
 
     try {
       String endpoint;
 
-      // ✅ FIX: Construct the endpoint by appending the query parameters
-      // directly to the base API path to avoid the 404.
-      if (useFilter) {
-        endpoint = '${ApiEndPoint.job_post}${_buildQueryParams()}';
+      // Build the full query string (includes initial category filter from onInit)
+      String queryParams = _buildQueryParams();
+
+      if (useFilter && queryParams.isNotEmpty) {
+        endpoint = '${ApiEndPoint.job_post}$queryParams';
       } else {
+        // Fallback endpoint if no filters are applied
         endpoint = ApiEndPoint.job_post;
       }
 
       print("============ JOB POST REQUEST ============");
       print("Endpoint: $endpoint");
-      print("Using Filter: $useFilter");
 
       final response = await ApiService.get(
-          endpoint,
+          endpoint, // Use the dynamically built endpoint
           header: {"Authorization": "Bearer ${LocalStorage.token}"}
       );
 
@@ -116,26 +125,11 @@ class JobController extends GetxController {
       print("Response Data: ${response.data}");
 
       if (response.statusCode == 200) {
-        // Parse the response
         final jobPostResponse = JobPostResponse.fromJson(response.data);
 
-        print("Parsed Success: ${jobPostResponse.success}");
-        print("Parsed Message: ${jobPostResponse.message}");
-        print("Data is null? ${jobPostResponse.data == null}");
-        print("Data length: ${jobPostResponse.data?.length ?? 0}");
-
-        // Safely assign data
         if (jobPostResponse.data != null && jobPostResponse.data!.isNotEmpty) {
           jobPost = jobPostResponse.data;
           print("✅ Job posts assigned: ${jobPost?.length} items");
-
-          // Print first job details for debugging
-          if (jobPost!.isNotEmpty) {
-            final firstJob = jobPost![0];
-            print("First Job Title: ${firstJob.title}");
-            print("First Job Location: ${firstJob.location}");
-            print("First Job Salary: ${firstJob.minSalary} - ${firstJob.maxSalary}");
-          }
         } else {
           jobPost = [];
           print("⚠️ No jobs found in response");
@@ -164,58 +158,8 @@ class JobController extends GetxController {
     }
   }
 
-  // --- Filter and Action Methods (No Change) ---
+  // --- Toggle Favorite Method (The final, correct logic) ---
 
-  // Apply filters from bottom sheet
-  void applyFilters({
-    String? search,
-    String? category,
-    int? minPrice,
-    int? maxPrice,
-    List<String>? jobTypes,
-    List<String>? jobLevels,
-    String? experienceLevel,
-  }) {
-    // Update filter values
-    if (search != null) searchTerm.value = search;
-    if (category != null) selectedCategory.value = category;
-    if (minPrice != null) minSalary.value = minPrice;
-    if (maxPrice != null) maxSalary.value = maxPrice;
-    if (jobTypes != null) selectedJobTypes.value = jobTypes;
-    if (jobLevels != null) selectedJobLevels.value = jobLevels;
-    if (experienceLevel != null) selectedExperienceLevel.value = experienceLevel;
-
-    // Fetch jobs with filters
-    getPost(useFilter: true);
-  }
-
-  // Clear all filters
-  void clearFilters() {
-    searchTerm.value = '';
-    selectedCategory.value = '';
-    minSalary.value = 0;
-    maxSalary.value = 100000;
-    selectedJobTypes.clear();
-    selectedJobLevels.clear();
-    selectedExperienceLevel.value = '';
-
-    // Fetch jobs without filters
-    getPost(useFilter: false);
-  }
-
-  // Search jobs by term
-  void searchJobs(String term) {
-    searchTerm.value = term;
-    if (term.isNotEmpty) {
-      getPost(useFilter: true);
-    } else {
-      getPost(useFilter: false);
-    }
-  }
-
-
-
-  // Method to toggle favorite
   Future<void> toggleFavorite(String jobId) async {
     if (jobId.isEmpty) return;
 
@@ -231,7 +175,7 @@ class JobController extends GetxController {
 
     // 2. Optimistic Update: Change the state immediately and update the UI
     job.isFavourite = !isCurrentlySaved;
-    update();
+    update(); // Triggers the GetBuilder/GetX widget to refresh
 
     try {
       // 3. Perform the asynchronous API call
@@ -244,7 +188,7 @@ class JobController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        // Success: Optimistic state holds. Show success snackbar.
+        // Success: Optimistic state holds.
         Get.snackbar(
           "Success",
           isCurrentlySaved ? "Job removed from favorites" : "Job marked as favorite",
@@ -265,10 +209,5 @@ class JobController extends GetxController {
       update();
       Utils.errorSnackBar(0, "Failed to toggle favorite: ${e.toString()}");
     }
-  }
-
-  // Method to refresh jobs
-  Future<void> refreshJobs() async {
-    await getPost(useFilter: false);
   }
 }
