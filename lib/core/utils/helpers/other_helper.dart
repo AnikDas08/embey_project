@@ -33,8 +33,6 @@ class OtherHelper {
       return AppString.thisFieldIsRequired;
     } else if (value.length < 8) {
       return AppString.passwordMustBeeEightCharacters;
-    } else if (!passRegExp.hasMatch(value)) {
-      return AppString.passwordMustBeeEightCharacters;
     }
     return null;
   }

@@ -3,8 +3,10 @@ import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/core/utils/constants/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import '../../../../../../core/component/text/common_text.dart';
 import '../../../../../../core/component/button/common_button.dart';
+import '../../controller/education_controller.dart';
 import 'add_education_screen.dart';
 import 'edit_education_screen.dart';
 
@@ -13,6 +15,8 @@ class EducationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(EducationController());
+
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -31,77 +35,101 @@ class EducationScreen extends StatelessWidget {
         ),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: ListView(
-                  children: [
-                    SizedBox(height: 20.h),
-                    _buildEducationCard(
-                      degree: 'Web in Design',
-                      institute: 'Oxford University',
-                      session: '2020-2024',
-                      passingYear: '2024',
-                      gpa: '5.00',
-                      onEdit: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const EditEducationScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    SizedBox(height: 16.h),
-                    _buildEducationCard(
-                      degree: 'Computer Science',
-                      institute: 'Oxford University',
-                      session: '2020-2024',
-                      passingYear: '2026',
-                      gpa: '5.00',
-                      onEdit: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const EditEducationScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
+        child: GetBuilder<EducationController>(
+          builder: (controller) {
+            if (controller.isLoading) {
+              return Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.success,
                 ),
+              );
+            }
+
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Obx(() {
+                      if (controller.educationList.isEmpty) {
+                        return Padding(
+                          padding: EdgeInsets.only(top: 100.h),
+                          child: Center(
+                            child: CommonText(
+                              text: 'No education added yet',
+                              fontSize: 16.sp,
+                              color: AppColors.secondaryText,
+                            ),
+                          ),
+                        );
+                      }
+
+                      return ListView.separated(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        padding: EdgeInsets.only(top: 20.h),
+                        itemCount: controller.educationList.length,
+                        separatorBuilder: (context, index) => SizedBox(height: 16.h),
+                        itemBuilder: (context, index) {
+                          final education = controller.educationList[index];
+                          return _buildEducationCard(
+                            context: context,
+                            degree: education.degree ?? 'N/A',
+                            institute: education.institute ?? 'N/A',
+                            session: education.session ?? 'N/A',
+                            passingYear: education.passingYear?.toString() ?? 'N/A',
+                            gpa: education.grade ?? 'N/A',
+                            educationId: education.id ?? '',
+                            onEdit: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EditEducationScreen(
+                                    education: education,
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    }),
+                  ),
+                ],
               ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(20.w),
-              child: CommonButton(
-                titleText: 'Add New',
-                buttonHeight: 50.h,
-                titleSize: 16.sp,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const AddEducationScreen(),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
+            );
+          },
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: CommonButton(
+            titleText: 'Add New',
+            buttonHeight: 50.h,
+            titleSize: 16.sp,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AddEducationScreen(),
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
   }
 
   Widget _buildEducationCard({
+    required BuildContext context,
     required String degree,
     required String institute,
     required String session,
     required String passingYear,
     required String gpa,
+    required String educationId,
     required VoidCallback onEdit,
   }) {
     return Container(
@@ -124,12 +152,18 @@ class EducationScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              CommonText(
-                text: degree,
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-                color: AppColors.black,
+              Expanded(
+                child: CommonText(
+                  text: degree,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.black,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.start,
+                ),
               ),
+              SizedBox(width: 16.w),
               GestureDetector(
                 onTap: onEdit,
                 child: CommonImage(

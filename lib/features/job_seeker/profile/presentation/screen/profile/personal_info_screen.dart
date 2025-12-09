@@ -1,11 +1,14 @@
 import 'package:embeyi/core/config/route/job_seeker_routes.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
+import 'package:embeyi/features/job_seeker/profile/presentation/controller/profile_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import '../../../../../../core/component/text/common_text.dart';
 import '../../../../../../core/component/button/common_button.dart';
-import '../../widgets/info_card.dart';
-import '../../widgets/profile_section.dart';
+import '../../../../../../core/config/api/api_end_point.dart';
+import '../../../widgets/info_card.dart';
+import '../../../widgets/profile_section.dart';
 
 class PersonalInfoScreen extends StatelessWidget {
   const PersonalInfoScreen({super.key});
@@ -32,63 +35,109 @@ class PersonalInfoScreen extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            children: [
-              SizedBox(height: 24.h),
-              _buildProfileSection(),
-              SizedBox(height: 32.h),
-              _buildPersonalDetailsCard(),
-              SizedBox(height: 16.h),
-              _buildContactDetailsCard(),
-              SizedBox(height: 16.h),
-              _buildSummaryCard(),
-              SizedBox(height: 40.h),
-              _buildEditProfileButton(context),
-              SizedBox(height: 24.h),
-            ],
+          child: GetBuilder<ProfileController>(
+            builder: (controller) {
+              return Column(
+                children: [
+                  SizedBox(height: 24.h),
+                  _buildProfileSection(controller),
+                  SizedBox(height: 32.h),
+                  _buildPersonalDetailsCard(controller),
+                  SizedBox(height: 16.h),
+                  _buildContactDetailsCard(controller),
+                  SizedBox(height: 16.h),
+                  _buildSummaryCard(controller),
+                  SizedBox(height: 40.h),
+                  _buildEditProfileButton(context),
+                  SizedBox(height: 24.h),
+                ],
+              );
+            }
           ),
         ),
       ),
     );
   }
 
-  Widget _buildProfileSection() {
-    return ProfileSection(
-      name: 'Shakir Ahmed',
-      designation: 'UI/UX Designer',
-      imagePath: 'assets/images/profile.png',
+  Widget _buildProfileSection(ProfileController controller) {
+    return Obx(
+      ()=> ProfileSection(
+        name: controller.name.value,
+        designation: controller.designation.value,
+        imagePath: ApiEndPoint.imageUrl+controller.profileImage.value,
+      ),
     );
   }
 
-  Widget _buildPersonalDetailsCard() {
+  Widget _buildPersonalDetailsCard(ProfileController controller) {
     return InfoCard(
       children: [
-        InfoRow(label: 'Gender', value: 'Male'),
+        Obx(
+        ()=>InfoRow(
+              label: 'Gender',
+              value: controller.gender.value,
+          ),
+        ),
         const InfoDivider(),
-        InfoRow(label: 'Date Of Birth', value: '01 January 2000'),
+        Obx(
+        ()=> InfoRow(
+              label: 'Date Of Birth',
+              value: controller.dateOfBirth.value,
+          ),
+        ),
         const InfoDivider(),
-        InfoRow(label: 'Nationality', value: 'American'),
+        Obx(
+    ()=> InfoRow(
+              label: 'Nationality',
+              value: controller.nationality.value,
+          ),
+        ),
         const InfoDivider(),
-        InfoRow(label: 'Language', value: 'English'),
+        Obx(
+    ()=> InfoRow(
+              label: 'Language',
+              value: controller.language.value,
+          ),
+        ),
         const InfoDivider(),
-        InfoRow(label: 'Address', value: 'Derby Ave, Strubens Valley, Gauteng'),
+        Obx(
+    ()=> InfoRow(
+              label: 'Address',
+              value: controller.address.value,
+    ),
+        ),
       ],
     );
   }
 
-  Widget _buildContactDetailsCard() {
+  Widget _buildContactDetailsCard(ProfileController controller) {
     return InfoCard(
       children: [
-        InfoRow(label: 'Mobile', value: '+99123456789'),
+        Obx(
+          ()=> InfoRow(
+              label: 'Mobile',
+              value: controller.mobile.value
+          ),
+        ),
         const InfoDivider(),
-        InfoRow(label: 'Email', value: 'User@Gmail.Com'),
+        Obx(
+        ()=>InfoRow(
+              label: 'Email',
+              value: controller.email.value
+          ),
+        ),
         const InfoDivider(),
-        InfoRow(label: 'LinkedIn', value: 'Linkedin.Com/Profile'),
+        Obx(
+    ()=> InfoRow(
+              label: 'LinkedIn',
+              value: controller.linkedin.value
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildSummaryCard() {
+  Widget _buildSummaryCard(ProfileController controller) {
     return InfoCard(
       children: [
         CommonText(
@@ -99,14 +148,16 @@ class PersonalInfoScreen extends StatelessWidget {
           textAlign: TextAlign.left,
         ),
         SizedBox(height: 12.h),
-        CommonText(
-          text:
-              'Creative And Detail-Oriented UI/UX Designer With Expertise in Crafting Intuitive Mobile And Web Experiences. Skilled in Wireframing, Prototyping, And Design Systems',
-          fontWeight: FontWeight.w400,
-          fontSize: 14.sp,
-          color: AppColors.black,
-          textAlign: TextAlign.left,
-          maxLines: 4,
+        Obx(
+          ()=> CommonText(
+            text:
+                controller.summary.value,
+            fontWeight: FontWeight.w400,
+            fontSize: 14.sp,
+            color: AppColors.black,
+            textAlign: TextAlign.left,
+            maxLines: 4,
+          ),
         ),
       ],
     );

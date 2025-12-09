@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:embeyi/features/job_seeker/profile/widgets/edit_profile_all_filed.dart';
 import 'package:flutter/material.dart';
 import '../../../../../../core/utils/extensions/extension.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -9,7 +10,6 @@ import '../../../../../../core/component/text/common_text.dart';
 import '../../controller/profile_controller.dart';
 import '../../../../../../core/utils/constants/app_images.dart';
 import '../../../../../../core/utils/constants/app_string.dart';
-import '../../widgets/edit_profile_all_filed.dart';
 
 class JobSeekerEditProfile extends StatelessWidget {
   const JobSeekerEditProfile({super.key});

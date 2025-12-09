@@ -1,51 +1,20 @@
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import '../../../../../../core/component/text/common_text.dart';
 import '../../../../../../core/component/text_field/common_text_field.dart';
 import '../../../../../../core/component/button/common_button.dart';
+import '../../controller/skills_controllerr.dart';
 
-class SkillsScreen extends StatefulWidget {
+class SkillsScreen extends StatelessWidget {
   const SkillsScreen({super.key});
 
   @override
-  State<SkillsScreen> createState() => _SkillsScreenState();
-}
-
-class _SkillsScreenState extends State<SkillsScreen> {
-  final TextEditingController _skillController = TextEditingController();
-  final List<String> _skills = [
-    'Figma',
-    'UX Design',
-    'Website Design',
-    'Prototyping',
-    'Wireframing',
-    'App Design',
-  ];
-
-  void _addSkill() {
-    if (_skillController.text.trim().isNotEmpty) {
-      setState(() {
-        _skills.add(_skillController.text.trim());
-        _skillController.clear();
-      });
-    }
-  }
-
-  void _removeSkill(int index) {
-    setState(() {
-      _skills.removeAt(index);
-    });
-  }
-
-  @override
-  void dispose() {
-    _skillController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    // Initialize controller once
+    final controller = Get.put(SkillsController());
+
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -53,7 +22,7 @@ class _SkillsScreenState extends State<SkillsScreen> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, color: AppColors.black, size: 20.sp),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Get.back(),
         ),
         centerTitle: true,
         title: CommonText(
@@ -63,98 +32,165 @@ class _SkillsScreenState extends State<SkillsScreen> {
           color: AppColors.black,
         ),
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 20.h),
-              // Add Skills Title
-              CommonText(
-                text: 'Add Skills',
-                fontWeight: FontWeight.w600,
-                fontSize: 16.sp,
-                color: AppColors.black,
-                textAlign: TextAlign.start,
-              ),
-              SizedBox(height: 16.h),
-              // Skills Label
-              CommonText(
-                text: 'Skills',
-                fontWeight: FontWeight.w400,
-                fontSize: 14.sp,
-                color: AppColors.black,
-                textAlign: TextAlign.start,
-              ),
-              SizedBox(height: 8.h),
-              // Skills Input Field
-              CommonTextField(
-                controller: _skillController,
-                hintText: 'Prototyping',
-                fillColor: AppColors.white,
-                borderColor: AppColors.borderColor,
-                borderRadius: 8,
-                paddingHorizontal: 16,
-                paddingVertical: 14,
-                textInputAction: TextInputAction.done,
-                onSubmitted: (value) => _addSkill(),
-              ),
-              SizedBox(height: 16.h),
-              // Add Button
-              Center(
-                child: SizedBox(
-                  width: 140.w,
-                  height: 40.h,
-                  child: CommonButton(
-                    titleText: 'Add',
-                    buttonColor: AppColors.secondaryPrimary,
-                    titleColor: AppColors.white,
-                    buttonRadius: 8,
-                    buttonHeight: 40.h,
-                    buttonWidth: 140.w,
-                    titleSize: 16,
-                    titleWeight: FontWeight.w600,
-                    isGradient: false,
-                    borderColor: AppColors.secondaryPrimary,
-                    onTap: _addSkill,
+      // Use Obx for the entire body - single reactive wrapper
+      body: Obx(() {
+        // Show loading indicator
+        if (controller.isLoading.value) {
+          return Center(
+            child: CircularProgressIndicator(
+              color: AppColors.primary,
+            ),
+          );
+        }
+
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 20.h),
+
+                // Add Skills Title
+                CommonText(
+                  text: 'Add Skills',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16.sp,
+                  color: AppColors.black,
+                  textAlign: TextAlign.start,
+                ),
+                SizedBox(height: 16.h),
+
+                // Skills Label
+                CommonText(
+                  text: 'Skills',
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14.sp,
+                  color: AppColors.black,
+                  textAlign: TextAlign.start,
+                ),
+                SizedBox(height: 8.h),
+
+                // Skills Input Field
+                CommonTextField(
+                  controller: controller.skillController,
+                  hintText: 'Enter skill (e.g., Figma, UX Design)',
+                  fillColor: AppColors.white,
+                  borderColor: AppColors.borderColor,
+                  borderRadius: 8,
+                  paddingHorizontal: 16,
+                  paddingVertical: 14,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (value) => controller.addSkill(),
+                ),
+                SizedBox(height: 16.h),
+
+                // Add Button
+                Center(
+                  child: SizedBox(
+                    width: 140.w,
+                    height: 40.h,
+                    child: CommonButton(
+                      titleText: 'Add',
+                      buttonColor: AppColors.secondaryPrimary,
+                      titleColor: AppColors.white,
+                      buttonRadius: 8,
+                      buttonHeight: 40.h,
+                      buttonWidth: 140.w,
+                      titleSize: 16,
+                      titleWeight: FontWeight.w600,
+                      isGradient: false,
+                      borderColor: AppColors.secondaryPrimary,
+                      onTap: () => controller.addSkill(),
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(height: 24.h),
-              // Skills Chips
-              Wrap(
-                spacing: 12.w,
-                runSpacing: 12.h,
-                children: List.generate(
-                  _skills.length,
-                  (index) => _buildSkillChip(_skills[index], index),
+                SizedBox(height: 24.h),
+
+                // Skills Count
+                CommonText(
+                  text: 'Your Skills (${controller.skillsList.length})',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14.sp,
+                  color: AppColors.black,
+                  textAlign: TextAlign.start,
                 ),
-              ),
-              Spacer(),
-              // Update Button
-              CommonButton(
-                titleText: 'Update',
-                buttonColor: AppColors.primaryColor,
-                titleColor: AppColors.white,
-                buttonRadius: 8,
-                buttonHeight: 48.h,
-                titleSize: 16,
-                titleWeight: FontWeight.w600,
-                onTap: () {
-                  // Handle update
-                  Navigator.pop(context);
-                },
-              ),
-              SizedBox(height: 20.h),
-            ],
+                SizedBox(height: 12.h),
+
+                // Skills Chips
+                Expanded(
+                  child: controller.skillsList.isEmpty
+                      ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.stars_outlined,
+                          size: 60.sp,
+                          color: AppColors.grey,
+                        ),
+                        SizedBox(height: 16.h),
+                        CommonText(
+                          text: 'No skills added yet',
+                          fontSize: 16.sp,
+                          color: AppColors.grey,
+                        ),
+                        SizedBox(height: 8.h),
+                        CommonText(
+                          text: 'Add your skills to showcase your expertise',
+                          fontSize: 14.sp,
+                          color: AppColors.secondaryText,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  )
+                      : SingleChildScrollView(
+                    child: Wrap(
+                      spacing: 12.w,
+                      runSpacing: 12.h,
+                      children: List.generate(
+                        controller.skillsList.length,
+                            (index) => _buildSkillChip(
+                          controller.skillsList[index],
+                          index,
+                          controller,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Update Button
+                controller.isUpdating.value
+                    ? Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 10.h),
+                    child: CircularProgressIndicator(
+                      color: AppColors.primary,
+                    ),
+                  ),
+                )
+                    : CommonButton(
+                  titleText: 'Update',
+                  buttonColor: AppColors.primaryColor,
+                  titleColor: AppColors.white,
+                  buttonRadius: 8,
+                  buttonHeight: 48.h,
+                  titleSize: 16,
+                  titleWeight: FontWeight.w600,
+                  onTap: () => controller.updateSkills(),
+                ),
+                SizedBox(height: 20.h),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 
-  Widget _buildSkillChip(String skill, int index) {
+  Widget _buildSkillChip(String skill, int index, SkillsController controller) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       decoration: BoxDecoration(
@@ -172,7 +208,7 @@ class _SkillsScreenState extends State<SkillsScreen> {
           ),
           SizedBox(width: 8.w),
           GestureDetector(
-            onTap: () => _removeSkill(index),
+            onTap: () => controller.removeSkill(index),
             child: Icon(Icons.close, size: 16.sp, color: AppColors.black),
           ),
         ],

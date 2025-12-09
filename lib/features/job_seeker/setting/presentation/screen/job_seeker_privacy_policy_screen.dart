@@ -14,7 +14,7 @@ class JobSeekerPrivacyPolicyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      /// App Bar Section stats here
+      /// App Bar
       appBar: AppBar(
         centerTitle: true,
         title: const CommonText(
@@ -24,22 +24,29 @@ class JobSeekerPrivacyPolicyScreen extends StatelessWidget {
         ),
       ),
 
-      /// Body Section stats here
+      /// Body
       body: GetBuilder<PrivacyPolicyController>(
-        builder: (controller) => switch (controller.status) {
-          /// Loading bar here
-          Status.loading => const CommonLoader(),
+        builder: (controller) {
+          switch (controller.status) {
+            case Status.loading:
+              return const CommonLoader();
 
-          /// Error Handle here
-          Status.error => ErrorScreen(
-            onTap: PrivacyPolicyController.instance.getPrivacyPolicyRepo(),
-          ),
+            case Status.error:
+              return ErrorScreen(
+                onTap: () =>
+                    PrivacyPolicyController.instance.getPrivacyPolicyRepo(),
+              );
 
-          /// Show main data here
-          Status.completed => SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-            child: Html(data: controller.data.content),
-          ),
+            case Status.completed:
+              if (controller.html == null) {
+                return const Center(child: Text("No data found"));
+              }
+              return SingleChildScrollView(
+                padding:
+                const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+                child: Html(data: controller.html!.data.content),
+              );
+          }
         },
       ),
     );

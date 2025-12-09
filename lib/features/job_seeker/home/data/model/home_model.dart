@@ -106,3 +106,90 @@ class UserData {
     );
   }
 }
+class Education {
+  final String? degree;
+  final String? institute;
+  final String? session;
+  final dynamic passingYear; // Can be int or String
+  final String? grade;
+  final String? id;
+
+  Education({
+    this.degree,
+    this.institute,
+    this.session,
+    this.passingYear,
+    this.grade,
+    this.id,
+  });
+
+  factory Education.fromJson(Map<String, dynamic> json) {
+    return Education(
+      degree: json['degree'],
+      institute: json['institute'],
+      session: json['session'],
+      passingYear: json['passingYear'],
+      grade: json['grade'],
+      id: json['_id'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'degree': degree,
+      'institute': institute,
+      'session': session,
+      'passingYear': passingYear,
+      'grade': grade,
+      '_id': id,
+    };
+  }
+}
+
+class WorkExperience {
+  final String? id;
+  final String? title;
+  final String? company;
+  final String? startDate;
+  final String? endDate;
+  final String? description;
+  final String? location;
+  final bool? isCurrentJob;
+
+  WorkExperience({
+    this.id,
+    this.title,
+    this.company,
+    this.startDate,
+    this.endDate,
+    this.description,
+    this.location,
+    this.isCurrentJob,
+  });
+
+  factory WorkExperience.fromJson(Map<String, dynamic> json) {
+    return WorkExperience(
+      id: json['_id'],
+      title: json['title'],
+      company: json['company'],
+      startDate: json['startDate'],
+      endDate: json['endDate'],
+      description: json['description'],
+      location: json['location'],
+      isCurrentJob: json['isCurrentJob'] ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'title': title,
+      'company': company,
+      'startDate': startDate,
+      'endDate': endDate,
+      'description': description,
+      'location': location,
+      'isCurrentJob': isCurrentJob,
+    };
+  }
+}

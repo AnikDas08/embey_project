@@ -108,7 +108,7 @@ class JobSeekerRoutes {
     GetPage(name: editEducation, page: () => const EditEducationScreen()),
     GetPage(
       name: editWorkExperience,
-      page: () => const EditWorkExperienceScreen(),
+      page: () => EditWorkExperienceScreen(),
     ),
     GetPage(name: editSkills, page: () => const EditSkillsScreen()),
     GetPage(name: addEducation, page: () => const AddEducationScreen()),

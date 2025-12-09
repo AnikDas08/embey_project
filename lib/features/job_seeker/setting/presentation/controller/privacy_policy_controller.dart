@@ -6,27 +6,26 @@ import '../../../../../core/utils/app_utils.dart';
 import '../../../../../core/utils/enum/enum.dart';
 
 class PrivacyPolicyController extends GetxController {
-  /// Api status check here
+  /// API status
   Status status = Status.completed;
 
-  ///  HTML model initialize here
-  HtmlModel data = HtmlModel.fromJson({});
+  /// Html model
+  HtmlModel? html;
 
-  /// Privacy Policy Controller instance create here
+  /// Single instance (GetX)
   static PrivacyPolicyController get instance =>
       Get.put(PrivacyPolicyController());
 
-  /// Privacy Policy Api call here
-  getPrivacyPolicyRepo() async {
-    return;
+  /// Fetch Privacy Policy
+  Future<void> getPrivacyPolicyRepo() async {
     status = Status.loading;
     update();
 
-    var response = await ApiService.get(ApiEndPoint.privacyPolicies);
+    final response =
+    await ApiService.get("${ApiEndPoint.privacyPolicies}?type=privacy");
 
     if (response.statusCode == 200) {
-      data = HtmlModel.fromJson(response.data['data']['attributes']);
-
+      html = HtmlModel.fromJson(response.data);
       status = Status.completed;
       update();
     } else {
@@ -36,7 +35,6 @@ class PrivacyPolicyController extends GetxController {
     }
   }
 
-  /// Controller on Init here
   @override
   void onInit() {
     getPrivacyPolicyRepo();

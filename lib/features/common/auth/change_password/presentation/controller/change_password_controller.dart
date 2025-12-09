@@ -15,22 +15,23 @@ class ChangePasswordController extends GetxController {
   ///  change password function
 
   Future<void> changePasswordRepo() async {
-    Get.back();
-    return;
     isLoading = true;
     update();
 
     Map<String, String> body = {
-      "oldPassword": currentPasswordController.text,
+      "currentPassword": currentPasswordController.text,
+      "confirmPassword": confirmPasswordController.text,
       "newPassword": newPasswordController.text,
     };
-    var response = await ApiService.patch(
+    var response = await ApiService.post(
       ApiEndPoint.changePassword,
       body: body,
     );
 
     if (response.statusCode == 200) {
-      Utils.successSnackBar(response.statusCode.toString(), response.message);
+      Get.back();
+      Get.snackbar("Success", "Password changed successfully");
+      //Utils.successSnackBar(response.statusCode.toString(), response.message);
 
       currentPasswordController.clear();
       newPasswordController.clear();

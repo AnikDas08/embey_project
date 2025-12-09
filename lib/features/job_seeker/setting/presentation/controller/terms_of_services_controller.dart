@@ -6,27 +6,26 @@ import '../../../../../core/utils/app_utils.dart';
 import '../../../../../core/utils/enum/enum.dart';
 
 class TermsOfServicesController extends GetxController {
-  /// Api status check here
+  /// API status
   Status status = Status.completed;
 
-  ///  HTML model initialize here
-  HtmlModel data = HtmlModel.fromJson({});
+  /// Html model
+  HtmlModel? html;
 
-  /// Terms of services Controller instance create here
+  /// Single instance (GetX)
   static TermsOfServicesController get instance =>
       Get.put(TermsOfServicesController());
 
-  ///  Terms of services Api call here
-  geTermsOfServicesRepo() async {
-    return;
+  /// Fetch Privacy Policy
+  Future<void> getTermsOfServicesRepo() async {
     status = Status.loading;
     update();
 
-    var response = await ApiService.get(ApiEndPoint.termsOfServices);
+    final response =
+    await ApiService.get("${ApiEndPoint.privacyPolicies}?type=terms");
 
     if (response.statusCode == 200) {
-      data = HtmlModel.fromJson(response.data['data']['attributes']);
-
+      html = HtmlModel.fromJson(response.data);
       status = Status.completed;
       update();
     } else {
@@ -36,10 +35,9 @@ class TermsOfServicesController extends GetxController {
     }
   }
 
-  /// Controller on Init here
   @override
   void onInit() {
-    geTermsOfServicesRepo();
+    getTermsOfServicesRepo();
     super.onInit();
   }
 }
