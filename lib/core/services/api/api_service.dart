@@ -45,7 +45,7 @@ class ApiService {
     String url, {
     Map<String, String> header = const {},
     Map<String, String> body = const {},
-    String method = "POST",
+    String method = "PATCH",
     String imageName = 'image',
     String? imagePath,
   }) async {

@@ -9,6 +9,7 @@ class ApiEndPoint {
   static const forgotPassword = "users/forget-password";
   static const verifyOtp = "users/verify-otp";
   static const resetPassword = "users/reset-password";
+  static const subscriptionPlan = "subscription/subscribe";
   static const changePassword = "users/change-password";
   static const user = "user/profile";
   static const banner = "spotlight";

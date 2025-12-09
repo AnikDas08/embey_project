@@ -13,6 +13,7 @@ import '../../../../../core/component/bottom_nav_bar/common_bottom_bar.dart';
 import '../../../../../core/component/image/common_image.dart';
 import '../../../../../core/component/other_widgets/item.dart';
 import '../../../../../core/component/text/common_text.dart';
+import '../../../../../core/config/api/api_end_point.dart';
 import '../controller/profile_controller.dart';
 import '../../../../../core/utils/constants/app_images.dart';
 import '../../../../../core/utils/constants/app_string.dart';
@@ -51,32 +52,50 @@ class JobSeekerProfileScreen extends StatelessWidget {
                   children: [
                     /// User Profile Image here
                     Center(
-                      child: CircleAvatar(
-                        radius: 50.sp,
-                        backgroundColor: Colors.transparent,
-                        child: const ClipOval(
-                          child: CommonImage(
-                            imageSrc: AppImages.profile,
-                            size: 100,
-                            defaultImage: AppImages.profile,
+                      child: Container(
+                        width: 100.w,
+                        height: 100.h,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.borderColor.withOpacity(0.3),
+                            width: 1.w,
+                          ),
+                        ),
+                        child: ClipOval(
+                          child: Obx(
+                                () => Image.network(
+                                ApiEndPoint.imageUrl+controller.profileImage.value,
+                                fit: BoxFit.cover,
+                                errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+                                  return Image.asset(
+                                    AppIcons.profile,
+                                    fit: BoxFit.cover,
+                                  );
+                                }
+                            ),
                           ),
                         ),
                       ),
                     ),
 
                     /// User Name here
-                    const CommonText(
-                      text: LocalStorageKeys.myName,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      top: 16,
-                      bottom: 4,
+                    Obx(
+                      () => CommonText(
+                        text: controller.name.value,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        top: 16,
+                        bottom: 4,
+                      ),
                     ),
-                    CommonText(
-                      text: "UI/UX Designer",
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.secondaryText,
+                    Obx(
+                      () => CommonText(
+                        text: controller.designation.value,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.secondaryText,
+                      ),
                     ),
                     Row(
                       mainAxisSize: MainAxisSize.min,
@@ -88,12 +107,16 @@ class JobSeekerProfileScreen extends StatelessWidget {
                           height: 20,
                         ),
                         8.width,
-                        CommonText(
-                          text: 'Premium Plan',
-                          textAlign: TextAlign.center,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.secondaryPrimary,
+                        Obx(
+                              (){
+                            return CommonText(
+                              text: controller.subscriptionPlan.value,
+                              textAlign: TextAlign.center,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.secondaryPrimary,
+                            );
+                          },
                         ),
                       ],
                     ),

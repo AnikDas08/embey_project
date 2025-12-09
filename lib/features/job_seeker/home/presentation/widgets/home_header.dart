@@ -36,24 +36,22 @@ class HomeHeader extends StatelessWidget {
       children: [
         GestureDetector(
           onTap: onProfileTap,
-          child: CircleAvatar(
-              radius: 24.r,
-              backgroundColor: AppColors.blueLight,
-              child: ClipOval(
-                child:Obx(
-                    ()=> Image.network(
-                    ApiEndPoint.imageUrl+controller.image.value,
-                    fit: BoxFit.cover,
-                    errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
-                      return Image.asset(
-                        AppIcons.profile,
-                        fit: BoxFit.cover,
-                      );
-                    }
-                  ),
-                )
-                ),
+          child: ClipOval(
+            child: Obx(
+                  () => Image.network(
+                  ApiEndPoint.imageUrl+controller.image.value,
+                  fit: BoxFit.cover,
+                  errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+                    return Image.asset(
+                      AppIcons.profile,
+                      fit: BoxFit.cover,
+                    );
+                  },
+                    height: 48.h,
+                    width: 48.w,
               ),
+            ),
+          ),
             ),
         12.width,
         Expanded(

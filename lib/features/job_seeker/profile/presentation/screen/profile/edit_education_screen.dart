@@ -1,39 +1,28 @@
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import '../../../../../../core/component/text/common_text.dart';
 import '../../../../../../core/component/text_field/common_text_field.dart';
 import '../../../../../../core/component/button/common_button.dart';
+import '../../../../home/data/model/home_model.dart';
+import '../../controller/education_controller.dart';
 
-class EditEducationScreen extends StatefulWidget {
-  const EditEducationScreen({super.key});
+class EditEducationScreen extends StatelessWidget {
+  final Education? education;
 
-  @override
-  State<EditEducationScreen> createState() => _EditEducationScreenState();
-}
-
-class _EditEducationScreenState extends State<EditEducationScreen> {
-  final TextEditingController degreeController = TextEditingController(
-    text: 'Computer Science',
-  );
-  final TextEditingController instituteController = TextEditingController(
-    text: 'Oxford University',
-  );
-  final TextEditingController startDateController = TextEditingController(
-    text: '01 Jan 2020',
-  );
-  final TextEditingController endDateController = TextEditingController(
-    text: '01 Jan 2020',
-  );
-  final TextEditingController passingYearController = TextEditingController(
-    text: '2026',
-  );
-  final TextEditingController gpaController = TextEditingController(
-    text: '5.00',
-  );
+  const EditEducationScreen({
+    super.key,
+    this.education,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<EducationController>();
+
+    // Set education data when screen loads
+    controller.setEducationForEdit(education!);
+
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -41,7 +30,10 @@ class _EditEducationScreenState extends State<EditEducationScreen> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, color: AppColors.black, size: 20.sp),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            controller.clearEducationForm();
+            Navigator.pop(context);
+          },
         ),
         centerTitle: true,
         title: CommonText(
@@ -66,7 +58,7 @@ class _EditEducationScreenState extends State<EditEducationScreen> {
                     _buildLabel('Degree'),
                     SizedBox(height: 8.h),
                     CommonTextField(
-                      controller: degreeController,
+                      controller: controller.degreeController,
                       hintText: 'Enter degree',
                     ),
                     SizedBox(height: 16.h),
@@ -75,7 +67,7 @@ class _EditEducationScreenState extends State<EditEducationScreen> {
                     _buildLabel('Institute'),
                     SizedBox(height: 8.h),
                     CommonTextField(
-                      controller: instituteController,
+                      controller: controller.instituteController,
                       hintText: 'Enter institute name',
                     ),
                     SizedBox(height: 16.h),
@@ -84,7 +76,7 @@ class _EditEducationScreenState extends State<EditEducationScreen> {
                     _buildLabel('Start Date'),
                     SizedBox(height: 8.h),
                     CommonTextField(
-                      controller: startDateController,
+                      controller: controller.startDateController,
                       hintText: 'Select start date',
                       readOnly: true,
                       suffixIcon: Icon(
@@ -100,8 +92,8 @@ class _EditEducationScreenState extends State<EditEducationScreen> {
                           lastDate: DateTime.now(),
                         );
                         if (date != null) {
-                          startDateController.text =
-                              '${date.day.toString().padLeft(2, '0')} ${_getMonthName(date.month)} ${date.year}';
+                          controller.startDateController.text =
+                          '${date.day.toString().padLeft(2, '0')} ${controller.getMonthName(date.month)} ${date.year}';
                         }
                       },
                     ),
@@ -111,7 +103,7 @@ class _EditEducationScreenState extends State<EditEducationScreen> {
                     _buildLabel('End Date'),
                     SizedBox(height: 8.h),
                     CommonTextField(
-                      controller: endDateController,
+                      controller: controller.endDateController,
                       hintText: 'Select end date',
                       readOnly: true,
                       suffixIcon: Icon(
@@ -127,8 +119,8 @@ class _EditEducationScreenState extends State<EditEducationScreen> {
                           lastDate: DateTime.now(),
                         );
                         if (date != null) {
-                          endDateController.text =
-                              '${date.day.toString().padLeft(2, '0')} ${_getMonthName(date.month)} ${date.year}';
+                          controller.endDateController.text =
+                          '${date.day.toString().padLeft(2, '0')} ${controller.getMonthName(date.month)} ${date.year}';
                         }
                       },
                     ),
@@ -138,7 +130,7 @@ class _EditEducationScreenState extends State<EditEducationScreen> {
                     _buildLabel('Passing Year'),
                     SizedBox(height: 8.h),
                     CommonTextField(
-                      controller: passingYearController,
+                      controller: controller.passingYearController,
                       hintText: 'Enter passing year',
                       keyboardType: TextInputType.number,
                     ),
@@ -148,7 +140,7 @@ class _EditEducationScreenState extends State<EditEducationScreen> {
                     _buildLabel('Grade Point'),
                     SizedBox(height: 8.h),
                     CommonTextField(
-                      controller: gpaController,
+                      controller: controller.gpaController,
                       hintText: 'Enter GPA',
                       keyboardType: TextInputType.numberWithOptions(
                         decimal: true,
@@ -161,16 +153,25 @@ class _EditEducationScreenState extends State<EditEducationScreen> {
             ),
 
             // Update Button
-            Padding(
-              padding: EdgeInsets.all(20.w),
-              child: CommonButton(
-                titleText: 'Update',
-                buttonHeight: 50.h,
-                titleSize: 16.sp,
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
+            GetBuilder<EducationController>(
+              builder: (controller) {
+                return Padding(
+                  padding: EdgeInsets.all(20.w),
+                  child: CommonButton(
+                    titleText: 'Update',
+                    buttonHeight: 50.h,
+                    titleSize: 16.sp,
+                    isLoading: controller.isLoading,
+                    onTap: () async {
+                      await controller.updateEducation();
+                      if (!controller.isLoading) {
+                        controller.clearEducationForm();
+                        Navigator.pop(context);
+                      }
+                    },
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -185,34 +186,5 @@ class _EditEducationScreenState extends State<EditEducationScreen> {
       fontWeight: FontWeight.w500,
       color: AppColors.black,
     );
-  }
-
-  String _getMonthName(int month) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return months[month - 1];
-  }
-
-  @override
-  void dispose() {
-    degreeController.dispose();
-    instituteController.dispose();
-    startDateController.dispose();
-    endDateController.dispose();
-    passingYearController.dispose();
-    gpaController.dispose();
-    super.dispose();
   }
 }

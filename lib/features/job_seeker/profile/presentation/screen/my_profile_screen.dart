@@ -2,10 +2,12 @@ import 'package:embeyi/core/component/image/common_image.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/core/utils/constants/app_icons.dart';
 import 'package:embeyi/core/utils/constants/app_images.dart';
+import 'package:embeyi/features/job_seeker/profile/presentation/controller/profile_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../../../core/component/text/common_text.dart';
+import '../../../../../core/config/api/api_end_point.dart';
 import '../../../../../core/utils/extensions/extension.dart';
 import '../../../../../core/config/route/job_seeker_routes.dart';
 
@@ -34,65 +36,69 @@ class MyProfileScreen extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            children: [
-              16.height,
+          child: GetBuilder<ProfileController>(
+            builder: (controller) {
+              return Column(
+                children: [
+                  16.height,
 
-              /// Profile Header Section
-              _buildProfileHeader(),
+                  /// Profile Header Section
+                  _buildProfileHeader(controller),
 
-              48.height,
+                  48.height,
 
-              /// Menu Items
-              _buildMenuItem(
-                color: AppColors.secondaryPrimary.withOpacity(0.1),
-                imageSrc: AppIcons.personal,
-                title: 'Personal Info',
-                subtitle: 'Complete',
-                onTap: () {
-                  Get.toNamed(JobSeekerRoutes.personalInfo);
-                },
-              ),
-              16.height,
+                  /// Menu Items
+                  _buildMenuItem(
+                    color: AppColors.secondaryPrimary.withOpacity(0.1),
+                    imageSrc: AppIcons.personal,
+                    title: 'Personal Info',
+                    subtitle: 'Complete',
+                    onTap: () {
+                      Get.toNamed(JobSeekerRoutes.personalInfo);
+                    },
+                  ),
+                  16.height,
 
-              _buildMenuItem(
-                color: AppColors.primary.withOpacity(0.1),
-                imageSrc: AppIcons.education2,
-                title: 'Education',
-                subtitle: 'Complete',
-                onTap: () {
-                  Get.toNamed(JobSeekerRoutes.education);
-                },
-              ),
-              16.height,
-              _buildMenuItem(
-                color: AppColors.success.withOpacity(0.1),
-                imageSrc: AppIcons.workEdit,
-                title: 'Work Experience',
-                subtitle: 'Complete',
-                onTap: () {
-                  Get.toNamed(JobSeekerRoutes.workExperience);
-                },
-              ),
-              16.height,
-              _buildMenuItem(
-                color: AppColors.buttomNavBarColor.withOpacity(0.1),
-                imageSrc: AppIcons.star,
-                title: 'Skills',
-                subtitle: 'Complete',
-                onTap: () {
-                  Get.toNamed(JobSeekerRoutes.skills);
-                },
-                isLast: true,
-              ),
-            ],
+                  _buildMenuItem(
+                    color: AppColors.primary.withOpacity(0.1),
+                    imageSrc: AppIcons.education2,
+                    title: 'Education',
+                    subtitle: 'Complete',
+                    onTap: () {
+                      Get.toNamed(JobSeekerRoutes.education);
+                    },
+                  ),
+                  16.height,
+                  _buildMenuItem(
+                    color: AppColors.success.withOpacity(0.1),
+                    imageSrc: AppIcons.workEdit,
+                    title: 'Work Experience',
+                    subtitle: 'Complete',
+                    onTap: () {
+                      Get.toNamed(JobSeekerRoutes.workExperience);
+                    },
+                  ),
+                  16.height,
+                  _buildMenuItem(
+                    color: AppColors.buttomNavBarColor.withOpacity(0.1),
+                    imageSrc: AppIcons.star,
+                    title: 'Skills',
+                    subtitle: 'Complete',
+                    onTap: () {
+                      Get.toNamed(JobSeekerRoutes.skills);
+                    },
+                    isLast: true,
+                  ),
+                ],
+              );
+            }
           ),
         ),
       ),
     );
   }
 
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader(ProfileController controller) {
     return Column(
       children: [
         /// Profile Image
@@ -107,10 +113,17 @@ class MyProfileScreen extends StatelessWidget {
             ),
           ),
           child: ClipOval(
-            child: CommonImage(
-              imageSrc: AppImages.profile,
-              width: 100.w,
-              height: 100.h,
+            child: Obx(
+                  () => Image.network(
+                  ApiEndPoint.imageUrl+controller.profileImage.value,
+                  fit: BoxFit.cover,
+                  errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+                    return Image.asset(
+                      AppIcons.profile,
+                      fit: BoxFit.cover,
+                    );
+                  }
+              ),
             ),
           ),
         ),
@@ -118,21 +131,25 @@ class MyProfileScreen extends StatelessWidget {
         16.height,
 
         /// Name
-        CommonText(
-          text: 'Shoaib Ahmad',
-          fontSize: 20.sp,
-          fontWeight: FontWeight.w600,
-          color: AppColors.black,
+        Obx(
+        ()=> CommonText(
+            text: controller.name.value,
+            fontSize: 20.sp,
+            fontWeight: FontWeight.w600,
+            color: AppColors.black,
+          ),
         ),
 
         4.height,
 
         /// Designation
-        CommonText(
-          text: 'UX Designer',
-          fontSize: 14.sp,
-          fontWeight: FontWeight.w400,
-          color: AppColors.secondaryText,
+        Obx(
+              ()=> CommonText(
+            text: controller.designation.value,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w400,
+            color: AppColors.secondaryText,
+          ),
         ),
       ],
     );

@@ -106,3 +106,42 @@ class UserData {
     );
   }
 }
+class Education {
+  final String? degree;
+  final String? institute;
+  final String? session;
+  final dynamic passingYear; // Can be int or String
+  final String? grade;
+  final String? id;
+
+  Education({
+    this.degree,
+    this.institute,
+    this.session,
+    this.passingYear,
+    this.grade,
+    this.id,
+  });
+
+  factory Education.fromJson(Map<String, dynamic> json) {
+    return Education(
+      degree: json['degree'],
+      institute: json['institute'],
+      session: json['session'],
+      passingYear: json['passingYear'],
+      grade: json['grade'],
+      id: json['_id'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'degree': degree,
+      'institute': institute,
+      'session': session,
+      'passingYear': passingYear,
+      'grade': grade,
+      '_id': id,
+    };
+  }
+}
