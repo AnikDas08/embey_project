@@ -5,12 +5,18 @@ import 'package:embeyi/core/utils/extensions/extension.dart';
 import 'package:embeyi/features/job_seeker/home/presentation/widgets/home_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+
+import '../controller/all_jobcategory_controller.dart';
 
 class AllJobCategoryScreen extends StatelessWidget {
   const AllJobCategoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(AllJobCategoryController());
+    final searchController = TextEditingController();
+
     return Scaffold(
       appBar: AppBar(title: const Text('All Category')),
       body: Column(
@@ -19,49 +25,45 @@ class AllJobCategoryScreen extends StatelessWidget {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: CommonTextField(
-              controller: TextEditingController(),
+              controller: searchController,
               hintText: 'Search by category',
               //prefixIcon: CommonImage(imageSrc: AppIcons.edit, size: 16.sp),
             ),
           ),
           20.height,
           Expanded(
-            child: GridView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                crossAxisSpacing: 10.w,
-                mainAxisSpacing: 10.h,
-                childAspectRatio: 1,
-              ),
-              itemCount: 8,
-              itemBuilder: (context, index) {
-                return JobCategoryCard(
-                  imageSrc: index % 2 == 0
-                      ? AppIcons.education
-                      : index % 3 == 0
-                      ? AppIcons.marketing
-                      : AppIcons.restaurant,
-                  title: index % 2 == 0
-                      ? 'Education'
-                      : index % 3 == 0
-                      ? 'Marketing'
-                      : 'Restaurant',
-                  onTap: () {
-                    // Handle category tap
-                    JobSeekerRoutes.goToCategoryJobList(
-                      index % 2 == 0
-                          ? 'Education'
-                          : index % 3 == 0
-                          ? 'Marketing'
-                          : 'Restaurant',
-                    );
-                  },
-                  jobCount: index * 10 + 5,
-                  isJobCountVisible: true,
-                );
-              },
-            ),
+            child: Obx(() {
+              // Show loading indicator while fetching
+              if (controller.categories.isEmpty) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              return GridView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
+                  crossAxisSpacing: 10.w,
+                  mainAxisSpacing: 10.h,
+                  childAspectRatio: 1,
+                ),
+                itemCount: controller.categories.length,
+                itemBuilder: (context, index) {
+                  final category = controller.categories[index];
+
+                  return JobCategoryCard(
+                    imageSrc: category['image'] ?? AppIcons.education,
+                    title: category['name'] ?? 'Unknown',
+                    onTap: () {
+                      JobSeekerRoutes.goToCategoryJobList(
+                        category['name'] ?? 'Unknown',
+                      );
+                    },
+                    jobCount: category["jobs"], // You can update this with real job count from API
+                    isJobCountVisible: true,
+                  );
+                },
+              );
+            }),
           ),
         ],
       ),
