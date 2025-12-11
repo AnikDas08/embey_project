@@ -126,6 +126,84 @@ class ProfileController extends GetxController {
     }
   }
 
+  Future<void> passwordVarifyHere()async{
+    try {
+      final response = await ApiService.post(
+          "subscription/transactions",
+          body: {
+            "password": passwordController.text,
+          },
+          header: {"Authorization": "Bearer ${LocalStorage.token}"}
+      );
+      if (response.statusCode == 200) {
+        Navigator.pop(Get.context!);
+        _showOtpPopUp();
+      } else {
+        Utils.errorSnackBar(response.statusCode, response.message);
+      }
+    } catch (e) {
+      Utils.errorSnackBar(0, e.toString());
+    }
+  }
+
+  /// Verify OTP and get transactions
+  Future<void> verifyOtpAndGetTransactions(String otp) async {
+    try {
+      // Show loading
+      Get.dialog(
+        const Center(
+          child: CircularProgressIndicator(),
+        ),
+        barrierDismissible: false,
+      );
+
+      final response = await ApiService.get(
+          "subscription/transactions-by-otp?otp=$otp",
+          header: {"Authorization": "Bearer ${LocalStorage.token}"}
+      );
+
+      // Close loading
+      Get.back();
+
+      if (response.statusCode == 200) {
+        // Close OTP dialog
+        Get.back();
+
+        // Navigate to Payment History Screen
+        Get.to(() => const PaymentHistoryScreen());
+
+        Utils.successSnackBar("Success", "OTP verified successfully");
+      } else {
+        Utils.errorSnackBar(response.statusCode, response.message);
+      }
+    } catch (e) {
+      // Close loading if open
+      if (Get.isDialogOpen ?? false) Get.back();
+      Utils.errorSnackBar(0, e.toString());
+    }
+  }
+
+  /// Resend OTP
+  Future<void> resendOtp() async {
+    try {
+      final response = await ApiService.post(
+          "subscription/transactions",
+          body: {
+            "password": passwordController.text,
+          },
+          header: {"Authorization": "Bearer ${LocalStorage.token}"}
+      );
+
+      if (response.statusCode == 200) {
+        Utils.successSnackBar("Success", "OTP sent successfully");
+      } else {
+        Utils.errorSnackBar(response.statusCode, response.message);
+      }
+    } catch (e) {
+      Utils.errorSnackBar(0, e.toString());
+    }
+  }
+
   /// update profile function here
   Future<void> editProfileRepo() async {
     if (!formKey.currentState!.validate()) return;
@@ -169,24 +247,18 @@ class ProfileController extends GetxController {
     update();
   }
 
-  static void showPaymentHistoryPopUp() {
+  void showPaymentHistoryPopUp() {
     _showPasswordPopUp();
   }
 
-  static void _showPasswordPopUp() {
-    TextEditingController passwordController = TextEditingController();
+  void _showPasswordPopUp() {
     showDialog(
       context: Get.context!,
       barrierDismissible: false,
       builder: (context) => PasswordPopUp(
         passwordController: passwordController,
         onContinue: () {
-          // Handle password submission
-          String password = passwordController.text;
-          print('Password entered: $password');
-          Navigator.pop(context);
-          _showOtpPopUp();
-          // Navigate to next screen or perform action
+          passwordVarifyHere();
         },
       ),
     );
@@ -210,9 +282,9 @@ class ProfileController extends GetxController {
     }
   }
 
-  static void _showOtpPopUp() {
+  void _showOtpPopUp() {
     List<TextEditingController> otpControllers = [];
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 6; i++) {
       otpControllers.add(TextEditingController());
     }
     showDialog(
@@ -221,21 +293,27 @@ class ProfileController extends GetxController {
       builder: (context) => OtpPopUp(
         controllers: otpControllers,
         onVerify: () {
-          // Handle OTP verification
+          // Get OTP string
           String otp = otpControllers
               .map((controller) => controller.text)
               .join();
-          // ignore: avoid_print
-          print('OTP entered: $otp');
-          Navigator.pop(context);
-          Get.to(() => const PaymentHistoryScreen());
+
+          // Validate OTP
+          if (otp.length != 6) {
+            Utils.errorSnackBar(0, "Please enter a valid 6-digit OTP");
+            return;
+          }
+
+          // Call API to verify OTP and get transactions
+          verifyOtpAndGetTransactions(otp);
         },
         onResend: () {
-          // Handle resend OTP
+          // Clear all OTP fields
           for (var controller in otpControllers) {
             controller.clear();
           }
           // Call API to resend OTP
+          resendOtp();
         },
       ),
     );
@@ -244,6 +322,8 @@ class ProfileController extends GetxController {
   @override
   void dispose() {
     passwordController.dispose();
+    nameController.dispose();
+    numberController.dispose();
     for (var controller in otpControllers) {
       controller.dispose();
     }

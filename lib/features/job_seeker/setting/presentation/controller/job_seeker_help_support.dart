@@ -16,20 +16,20 @@ class JobSeekerHelpSupportController extends GetxController {
     //Get.toNamed(AppRoutes.complete_profile_screen);
     //return;
 
-    /*isLoading = true;
-    update();*/
+    isLoading = true;
+    update();
 
-    /*Map<String, String> body = {
+    Map<String, String> body = {
       "sub":subjectController.text,
       "msg":messageController.text
-    };*/
+    };
 
     /*var response = await ApiService.post(
       ApiEndPoint.contracSupport,
       body: body,
-    );*/
+    );
 
-    /*if (response.statusCode == 200) {
+    if (response.statusCode == 200) {
       //var data = response.data;
       Get.back();
       Get.snackbar("Successful", "Succefully send the message to Admin");
