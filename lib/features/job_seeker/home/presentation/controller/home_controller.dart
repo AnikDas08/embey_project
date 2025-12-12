@@ -60,7 +60,8 @@ class HomeController extends GetxController {
         profileData = profileModel.data;
         name.value = response.data["data"]["name"] ?? "";
         image.value = response.data["data"]["image"] ?? "";
-        designation.value = response.data["data"]["designation"] ?? "";
+        designation.value = response.data["data"]["designation"] ?? "No Designation Selected";
+        print("imageurl 😂😂😂😂: ${image.value}");
       } else {
         Utils.errorSnackBar(response.statusCode, response.message);
       }

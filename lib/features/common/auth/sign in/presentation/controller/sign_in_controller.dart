@@ -53,16 +53,16 @@ class SignInController extends GetxController {
 
       LocalStorage.token = data['data']["createToken"];
       Get.offAllNamed(JobSeekerRoutes.home);
-      //LocalStorage.userId = data['data']["attributes"]["_id"];
-      //LocalStorage.myImage = data['data']["attributes"]["image"];
-      //LocalStorage.myName = data['data']["attributes"]["fullName"];
+      LocalStorage.userId = data['data']["userId"];
 
       //LocalStorage.myEmail = data['data']["attributes"]["email"];
       LocalStorage.isLogIn = true;
 
       LocalStorage.setBool(LocalStorageKeys.isLogIn, LocalStorage.isLogIn);
+      LocalStorage.setString(LocalStorageKeys.userId, LocalStorage.userId);
       LocalStorage.setString(LocalStorageKeys.token, LocalStorage.token);
       LocalStorage.setString(LocalStorageKeys.userRole, UserRole.employer.toString());
+
 
       // if (LocalStorage.myRole == 'consultant') {
       //   Get.offAllNamed(AppRoutes.doctorHome);

@@ -1,6 +1,7 @@
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import '../../../../../../core/component/text/common_text.dart';
 import '../../../../../../core/utils/extensions/extension.dart';
 import 'personal_info_screen.dart';
@@ -89,12 +90,8 @@ class AddResumeScreen extends StatelessWidget {
                   title: 'Personal Info',
                   subtitle: 'Complete',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PersonalInfoScreen(),
-                      ),
-                    );
+
+                    Get.to(()=>PersonalInfoScreen(resumeId: ""));
                   },
                 ),
                 16.height,
@@ -107,12 +104,12 @@ class AddResumeScreen extends StatelessWidget {
                   title: 'Core Skills',
                   subtitle: 'Complete',
                   onTap: () {
-                    Navigator.push(
+                    /*Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const CoreSkillsScreen(),
                       ),
-                    );
+                    );*/
                   },
                 ),
                 12.height,

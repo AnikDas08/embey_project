@@ -1,11 +1,34 @@
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import '../../../../../core/component/text/common_text.dart';
 import '../../../../../core/utils/extensions/extension.dart';
+import '../controller/profile_controller.dart';
 
-class PaymentHistoryScreen extends StatelessWidget {
-  const PaymentHistoryScreen({super.key});
+class JobSeekerPaymentHistory extends StatefulWidget {
+  final List<dynamic> transactions;
+
+  const JobSeekerPaymentHistory({
+    super.key,
+    required this.transactions,
+  });
+
+  @override
+  State<JobSeekerPaymentHistory> createState() => _PaymentHistoryScreenState();
+}
+
+class _PaymentHistoryScreenState extends State<JobSeekerPaymentHistory> {
+  late ProfileController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.find<ProfileController>();
+    print("🔍 initState - Controller found");
+    print("🔍 Controller hashCode: ${controller.hashCode}");
+    print("🔍 Passed transactions length: ${widget.transactions.length}");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,15 +40,26 @@ class PaymentHistoryScreen extends StatelessWidget {
             // Header
             _buildHeader(context),
 
-            // Payment List
-            Expanded(
+            // Payment List - Use passed transactions directly
+            widget.transactions.isEmpty
+                ? Expanded(
+              child: Center(
+                child: CommonText(
+                  text: 'No payment history found',
+                  fontSize: 14,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            )
+                : Expanded(
               child: ListView.separated(
                 padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
                 physics: const BouncingScrollPhysics(),
-                itemCount: 3,
+                itemCount: widget.transactions.length,
                 separatorBuilder: (context, index) => 16.height,
                 itemBuilder: (context, index) {
-                  return _buildPaymentItem(context);
+                  final transaction = widget.transactions[index];
+                  return _buildPaymentItem(context, transaction, controller);
                 },
               ),
             ),
@@ -64,13 +98,23 @@ class PaymentHistoryScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPaymentItem(BuildContext context) {
+  Widget _buildPaymentItem(BuildContext context, dynamic transaction, ProfileController controller) {
+    final String name = transaction['name'] ?? 'N/A';
+    final double price = (transaction['price'] ?? 0).toDouble();
+    final String status = transaction['status'] ?? 'N/A';
+    final String createdAt = transaction['createdAt'] ?? '';
+    final String transactionId = transaction['_id'] ?? '';
+
     return GestureDetector(
       onTap: () {
-        Navigator.push(
+        /*Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const PaymentDetailScreen()),
-        );
+          MaterialPageRoute(
+            builder: (context) => PaymentDetailScreen(
+              transaction: transaction,
+            ),
+          ),
+        );*/
       },
       child: Container(
         padding: EdgeInsets.all(16.w),
@@ -103,15 +147,15 @@ class PaymentHistoryScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const CommonText(
-                    text: 'Premium Plan',
+                  CommonText(
+                    text: name,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
                   6.height,
                   CommonText(
-                    text: '01 Dec 2025 At 10:30pm',
+                    text: controller.formatDateTime(createdAt),
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
                     color: Colors.grey.shade600,
@@ -124,18 +168,20 @@ class PaymentHistoryScreen extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                const CommonText(
-                  text: '\$19.99',
+                CommonText(
+                  text: '\$${price.toStringAsFixed(2)}',
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: Colors.black87,
                 ),
                 6.height,
-                const CommonText(
-                  text: 'Successful',
+                CommonText(
+                  text: status.capitalize ?? status,
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF10B981),
+                  color: status.toLowerCase() == 'active'
+                      ? const Color(0xFF10B981)
+                      : Colors.orange,
                 ),
               ],
             ),
@@ -146,11 +192,60 @@ class PaymentHistoryScreen extends StatelessWidget {
   }
 }
 
-class PaymentDetailScreen extends StatelessWidget {
-  const PaymentDetailScreen({super.key});
+/*
+class PaymentDetailScreen extends StatefulWidget {
+  final Map<String, dynamic> transaction;
+
+  const PaymentDetailScreen({
+    super.key,
+    required this.transaction,
+  });
+
+  @override
+  State<PaymentDetailScreen> createState() => _PaymentDetailScreenState();
+}
+
+class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
+  late ProfileController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.find<ProfileController>();
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (widget.transaction.isEmpty) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(context),
+              const Expanded(
+                child: Center(
+                  child: CommonText(
+                    text: 'Transaction not found',
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final String name = widget.transaction['name'] ?? 'N/A';
+    final double price = (widget.transaction['price'] ?? 0).toDouble();
+    final String status = widget.transaction['status'] ?? 'N/A';
+    final String startDate = widget.transaction['startDate'] ?? '';
+    final String endDate = widget.transaction['endDate'] ?? '';
+    final String createdAt = widget.transaction['createdAt'] ?? '';
+    final String txId = widget.transaction['txId'] ?? 'N/A';
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -183,22 +278,22 @@ class PaymentDetailScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const CommonText(
-                              text: '\$19.99',
+                            CommonText(
+                              text: '\$${price.toStringAsFixed(2)}',
                               fontSize: 28,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFFFF9800),
+                              color: const Color(0xFFFF9800),
                             ),
                             // Service Information
                             _buildSectionHeader(
                               'Service Information',
-                              'Complete',
+                              status.capitalize ?? status,
                             ),
 
                             8.height,
 
-                            const CommonText(
-                              text: 'Premium Plan',
+                            CommonText(
+                              text: name,
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
                               color: Colors.black87,
@@ -226,16 +321,18 @@ class PaymentDetailScreen extends StatelessWidget {
 
                             16.height,
 
-                            _buildInfoRow('Name', 'Shakir Ahmed'),
-                            Divider(),
+                            _buildInfoRow('Name', controller.name.value),
+                            const Divider(),
                             12.height,
                             _buildInfoRow(
                               'Location',
-                              '2471 Derley Ave, Struthers Valley',
+                              controller.address.value.isNotEmpty
+                                  ? controller.address.value
+                                  : 'N/A',
                             ),
-                            Divider(),
+                            const Divider(),
                             12.height,
-                            _buildInfoRow('E-Mail', 'User@Gmail.Com'),
+                            _buildInfoRow('E-Mail', controller.email.value),
                           ],
                         ),
                       ),
@@ -253,24 +350,38 @@ class PaymentDetailScreen extends StatelessWidget {
                             width: 1,
                           ),
                         ),
-
                         child: Column(
                           children: [
                             _buildSectionHeader('Payment Details', null),
                             16.height,
-                            _buildPaymentDetailRow('Service Fee', '\$19.99'),
-                            Divider(),
+                            _buildPaymentDetailRow(
+                              'Service Fee',
+                              '\$${price.toStringAsFixed(2)}',
+                            ),
+                            const Divider(),
                             12.height,
-                            _buildPaymentDetailRow('Tax ID', '1234567890'),
-                            Divider(),
+                            _buildPaymentDetailRow('Transaction ID', txId),
+                            const Divider(),
                             12.height,
                             _buildPaymentDetailRow(
                               'Date & Time',
-                              '01 Jan 25, 10:30 Am',
+                              controller.formatDateTime(createdAt),
                             ),
-                            Divider(),
+                            const Divider(),
                             12.height,
-                            _buildPaymentDetailRow('Tax', '0.0¢'),
+                            _buildPaymentDetailRow(
+                              'Start Date',
+                              controller.formatDateTime(startDate),
+                            ),
+                            const Divider(),
+                            12.height,
+                            _buildPaymentDetailRow(
+                              'End Date',
+                              controller.formatDateTime(endDate),
+                            ),
+                            const Divider(),
+                            12.height,
+                            _buildPaymentDetailRow('Tax', '\$0.00'),
                           ],
                         ),
                       ),
@@ -292,13 +403,13 @@ class PaymentDetailScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             const CommonText(
-                              text: 'Total:',
+                              text: 'Total: ',
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Colors.black87,
                             ),
-                            const CommonText(
-                              text: '\$19.99',
+                            CommonText(
+                              text: '\$${price.toStringAsFixed(2)}',
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                               color: Colors.black87,
@@ -367,14 +478,18 @@ class PaymentDetailScreen extends StatelessWidget {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
             decoration: BoxDecoration(
-              color: AppColors.success.withOpacity(0.1),
+              color: badge.toLowerCase() == 'active'
+                  ? AppColors.success.withOpacity(0.1)
+                  : Colors.orange.withOpacity(0.1),
               borderRadius: BorderRadius.circular(30.r),
             ),
             child: CommonText(
               text: badge,
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: AppColors.success,
+              color: badge.toLowerCase() == 'active'
+                  ? AppColors.success
+                  : Colors.orange,
             ),
           ),
       ],
@@ -396,12 +511,14 @@ class PaymentDetailScreen extends StatelessWidget {
             textAlign: TextAlign.left,
           ),
         ),
-        CommonText(
-          text: value,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: Colors.black87,
-          textAlign: TextAlign.right,
+        Expanded(
+          child: CommonText(
+            text: value,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.black87,
+            textAlign: TextAlign.right,
+          ),
         ),
       ],
     );
@@ -418,11 +535,14 @@ class PaymentDetailScreen extends StatelessWidget {
           fontWeight: FontWeight.w500,
           color: Colors.grey.shade600,
         ),
-        CommonText(
-          text: value,
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: Colors.black87,
+        Flexible(
+          child: CommonText(
+            text: value,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+            textAlign: TextAlign.right,
+          ),
         ),
       ],
     );
@@ -452,4 +572,4 @@ class PaymentDetailScreen extends StatelessWidget {
       ),
     );
   }
-}
+}*/

@@ -8,6 +8,7 @@ import 'package:embeyi/features/job_seeker/home/presentation/screen/job_seeker_h
 import 'package:embeyi/features/job_seeker/jobs/presentation/screen/jobs_screen.dart';
 import 'package:embeyi/features/job_seeker/jobs/presentation/screen/job_details_screen.dart';
 import 'package:embeyi/features/job_seeker/jobs/presentation/screen/company_overview_screen.dart';
+import 'package:embeyi/features/job_seeker/profile/presentation/screen/payment_history_screen.dart';
 import 'package:embeyi/features/job_seeker/profile/presentation/screen/profile/add_education_screen.dart';
 import 'package:embeyi/features/job_seeker/profile/presentation/screen/profile/add_work_experience_screen.dart';
 import 'package:get/get.dart';
@@ -54,7 +55,7 @@ class JobSeekerRoutes {
   static const String education = "/education_screen.dart";
   static const String workExperience = "/work_experience_screen.dart";
   static const String skills = "/skills_screen.dart";
-  static const String editPersonalInfo = "/edit_personal_info_screen.dart";
+  static const String editPersonalInfo = "/editPersonalInfo";
   static const String editEducation = "/edit_education_screen.dart";
   static const String editWorkExperience = "/edit_work_experience_screen.dart";
   static const String editSkills = "/edit_skills_screen.dart";
@@ -64,6 +65,7 @@ class JobSeekerRoutes {
   static const String allJobCategory = "/all_job_category_screen.dart";
   static const String categoryJobList = "/category_job_list_screen.dart";
   static const String categoryDetails = "/categoryDetails.dart";
+  static const String paymentHistoryScreenHere = "/paymentHistoryScreenHere";
   // Job Seeker Routes List
   static List<GetPage> routes = [
     GetPage(name: home, page: () => JobSeekerHomeScreen()),
@@ -100,11 +102,11 @@ class JobSeekerRoutes {
         );
       },
     ),
-    GetPage(name: personalInfo, page: () => const PersonalInfoScreen()),
+    //GetPage(name: personalInfo, page: () => const PersonalInfoScreen()),
     GetPage(name: education, page: () => const EducationScreen()),
     GetPage(name: workExperience, page: () => const WorkExperienceScreen()),
     GetPage(name: skills, page: () => const SkillsScreen()),
-    GetPage(name: editPersonalInfo, page: () => const EditPersonalInfoScreen()),
+    //GetPage(name: editPersonalInfo, page: () => const EditPersonalInfoScreen()),
     GetPage(name: editEducation, page: () => const EditEducationScreen()),
     GetPage(
       name: editWorkExperience,
@@ -126,6 +128,7 @@ class JobSeekerRoutes {
       name: categoryJobList,
       page: () => CategoryJobListScreen(category: Get.arguments),
     ),
+    //GetPage(name: paymentHistoryScreenHere, page: () => const JobSeekerPaymentHistory(transactions: transactions)),
   ];
 
   // Job Seeker Navigation Helper Methods

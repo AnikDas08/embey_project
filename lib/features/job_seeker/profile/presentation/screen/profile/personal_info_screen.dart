@@ -61,11 +61,20 @@ class PersonalInfoScreen extends StatelessWidget {
 
   Widget _buildProfileSection(ProfileController controller) {
     return Obx(
-      ()=> ProfileSection(
-        name: controller.name.value,
-        designation: controller.designation.value,
-        imagePath: ApiEndPoint.imageUrl+controller.profileImage.value,
-      ),
+      () {
+        final imagePath = controller.profileImage.value;
+        print("image path here 😊😊😊😊😊😊R: ${controller.profileImage
+            .value}");
+
+        final imageUrl = imagePath.startsWith('http')
+            ? imagePath
+            : ApiEndPoint.imageUrl + imagePath;
+        return  ProfileSection(
+            name: controller.name.value,
+            designation: controller.designation.value,
+            imagePath: imageUrl,
+          );
+        }
     );
   }
 

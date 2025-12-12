@@ -1,9 +1,12 @@
+import 'package:embeyi/core/config/route/app_routes.dart';
+import 'package:embeyi/core/config/route/job_seeker_routes.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
+import 'package:embeyi/features/job_seeker/profile/presentation/screen/profile/edit_personal_info_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import '../../../../../../core/component/text/common_text.dart';
 import '../../../../../../core/utils/extensions/extension.dart';
-import 'personal_info_screen.dart';
 import 'core_skills_screen.dart';
 import 'work_experience_screen.dart';
 import 'project_screen.dart';
@@ -11,7 +14,9 @@ import 'education_screen.dart';
 import 'certification_screen.dart';
 
 class EditResumeScreen extends StatelessWidget {
-  const EditResumeScreen({super.key});
+  final String resumeId;
+
+  EditResumeScreen({super.key, required this.resumeId});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +27,7 @@ class EditResumeScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Get.back(),
         ),
         title: const CommonText(
           text: 'Edit Resume',
@@ -51,7 +56,7 @@ class EditResumeScreen extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       side: BorderSide(
                         width: 1,
-                        color: const Color(0xFF123499) /* Primary-Color */,
+                        color: const Color(0xFF123499),
                       ),
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -92,13 +97,19 @@ class EditResumeScreen extends StatelessWidget {
                   iconBgColor: Colors.orange.shade50,
                   title: 'Personal Info',
                   subtitle: 'Complete',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PersonalInfoScreen(),
-                      ),
+                  onTap: () async {
+                    print("Navigating to Personal Info with Resume ID: $resumeId");
+                    // Navigate to Personal Info screen and pass resumeId
+                    /*final result = await Get.toNamed(
+                      JobSeekerRoutes.editPersonalInfo,
+                      arguments: resumeId,
                     );
+
+                    // If Personal Info was updated successfully, pass result back
+                    if (result == true) {
+                      Get.back(result: true);
+                    }*/
+                    Get.to(() => PersonalInfoScreen(), arguments: resumeId);
                   },
                 ),
                 16.height,
@@ -108,36 +119,13 @@ class EditResumeScreen extends StatelessWidget {
                   icon: Icons.workspace_premium,
                   iconColor: Colors.blue,
                   iconBgColor: Colors.blue.shade50,
-                  title: 'Core Skills',
+                  title: 'Core Skills & Experience',
                   subtitle: 'Complete',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CoreSkillsScreen(),
-                      ),
-                    );
+                    Get.to(() => CoreSkillsScreen(), arguments: resumeId);
                   },
                 ),
                 12.height,
-
-                _buildSectionItem(
-                  context,
-                  icon: Icons.work_history,
-                  iconColor: Colors.purple,
-                  iconBgColor: Colors.purple.shade50,
-                  title: 'Work Experience',
-                  subtitle: 'Complete',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const WorkExperienceScreen(),
-                      ),
-                    );
-                  },
-                ),
-                16.height,
 
                 _buildSectionItem(
                   context,
@@ -147,12 +135,7 @@ class EditResumeScreen extends StatelessWidget {
                   title: 'Project',
                   subtitle: 'Complete',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ProjectScreen(),
-                      ),
-                    );
+                    Get.to(() => ProjectScreen(), arguments: resumeId);
                   },
                 ),
                 16.height,
@@ -165,12 +148,7 @@ class EditResumeScreen extends StatelessWidget {
                   title: 'Education',
                   subtitle: 'Complete',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const EducationScreen(),
-                      ),
-                    );
+                    Get.to(() => EducationScreen(), arguments: resumeId);
                   },
                 ),
                 16.height,
@@ -200,14 +178,14 @@ class EditResumeScreen extends StatelessWidget {
   }
 
   Widget _buildSectionItem(
-    BuildContext context, {
-    required IconData icon,
-    required Color iconColor,
-    required Color iconBgColor,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
+      BuildContext context, {
+        required IconData icon,
+        required Color iconColor,
+        required Color iconBgColor,
+        required String title,
+        required String subtitle,
+        required VoidCallback onTap,
+      }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8.r),

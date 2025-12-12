@@ -1,232 +1,286 @@
-import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../../../../core/component/text/common_text.dart';
-import '../../../../../../core/component/button/common_button.dart';
-import '../../../widgets/form_field_with_label.dart';
-import '../../controller/edit_personalinformation_controller.dart';
+import '../../../../../../core/component/text_field/common_text_field.dart';
+import '../../../../../../core/utils/extensions/extension.dart';
+import '../../../../resume/presentation/controller/edit_resume_controller.dart';
 
-class EditPersonalInfoScreen extends StatelessWidget {
-  const EditPersonalInfoScreen({super.key});
+class PersonalInfoScreen extends StatelessWidget {
+  const PersonalInfoScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Initialize controller
-    final controller = Get.put(EditPersonalController());
+    // Initialize the controller - it will automatically fetch data in onInit
+    final controller = Get.put(PersonalInfoController());
 
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: AppColors.white,
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: AppColors.black, size: 20.sp),
-          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Get.back(),
         ),
-        centerTitle: true,
-        title: CommonText(
+        title: const CommonText(
           text: 'Personal Information',
           fontWeight: FontWeight.w600,
-          fontSize: 18.sp,
-          color: AppColors.black,
+          fontSize: 20,
+          color: Colors.black,
         ),
       ),
-      body: GetBuilder<EditPersonalController>(
-        builder: (controller) {
-          if (controller.isLoading.value) {
-            return Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primary,
-              ),
-            );
-          }
-
-          return SafeArea(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Column(
-                children: [
-                  SizedBox(height: 24.h),
-                  _buildProfileSection(controller),
-                  SizedBox(height: 32.h),
-                  _buildFormFields(controller, context),
-                  SizedBox(height: 40.h),
-                  _buildUpdateButton(controller),
-                  SizedBox(height: 24.h),
-                ],
-              ),
+      body: Obx(() {
+        // Show loading indicator while fetching data
+        if (controller.isLoading.value) {
+          return const Center(
+            child: CircularProgressIndicator(
+              color: AppColors.primary,
             ),
           );
-        },
-      ),
-    );
-  }
+        }
 
-  Widget _buildProfileSection(EditPersonalController controller) {
-    return Obx(() {
-      // Safe null checking
-      final hasSelectedImage = controller.selectedImage.value != null;
-      final hasProfileImage = controller.profileImage.value.isNotEmpty;
+        // Show the form once data is loaded
+        return SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 16.h,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildLabel('Resume Name'),
+                        8.height,
+                        CommonTextField(
+                          controller: controller.resumeNameController,
+                          hintText: 'Enter your resume name',
+                          keyboardType: TextInputType.name,
+                        ),
+                        16.height,
 
-      return Stack(
-        alignment: Alignment.center,
-        children: [
-          CircleAvatar(
-            radius: 60.r,
-            backgroundColor: AppColors.grey.withOpacity(0.3),
-            backgroundImage: hasSelectedImage
-                ? FileImage(controller.selectedImage.value!) as ImageProvider
-                : hasProfileImage
-                ? NetworkImage(ApiEndPoint.imageUrl+controller.profileImage.value) as ImageProvider
-                : const AssetImage('assets/images/profile.png') as ImageProvider,
-          ),
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: GestureDetector(
-              onTap: () => controller.pickImage(),
-              child: Container(
-                padding: EdgeInsets.all(8.sp),
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.white, width: 2),
-                ),
-                child: Icon(
-                  Icons.camera_alt,
-                  color: AppColors.white,
-                  size: 20.sp,
+                        _buildLabel('Full Name'),
+                        8.height,
+                        CommonTextField(
+                          controller: controller.fullNameController,
+                          hintText: 'Enter your full name',
+                          keyboardType: TextInputType.name,
+                        ),
+                        16.height,
+
+                        _buildLabel('Email'),
+                        8.height,
+                        CommonTextField(
+                          controller: controller.emailController,
+                          hintText: 'Enter your email',
+                          keyboardType: TextInputType.emailAddress,
+                        ),
+                        16.height,
+
+                        _buildLabel('Mobile Number'),
+                        8.height,
+                        CommonTextField(
+                          controller: controller.phoneController,
+                          hintText: 'Enter your phone number',
+                          keyboardType: TextInputType.phone,
+                        ),
+                        16.height,
+
+                        _buildLabel('Address'),
+                        8.height,
+                        CommonTextField(
+                          controller: controller.addressController,
+                          hintText: 'Enter your address',
+                          maxLines: 3,
+                        ),
+                        16.height,
+
+                        _buildLabel('Social Media Link'),
+                        8.height,
+                        CommonTextField(
+                          controller: controller.socialMediaController,
+                          hintText: 'Enter your social media link',
+                          keyboardType: TextInputType.url,
+                        ),
+                        16.height,
+
+                        _buildLabel('Github Link'),
+                        8.height,
+                        CommonTextField(
+                          controller: controller.githubController,
+                          hintText: 'Enter your Github URL',
+                          keyboardType: TextInputType.url,
+                        ),
+                        16.height,
+
+                        _buildLabel('Work Authorization'),
+                        8.height,
+                        CommonTextField(
+                          controller: controller.workAuthorizationController,
+                          hintText: 'Enter your work authorization',
+                        ),
+                        16.height,
+
+                        _buildLabel('Clearances'),
+                        8.height,
+                        CommonTextField(
+                          controller: controller.clearancesController,
+                          hintText: 'Enter your clearances',
+                        ),
+                        16.height,
+
+                        _buildLabel('Open to Work'),
+                        8.height,
+                        CommonTextField(
+                          controller: controller.openToWorkStatusController,
+                          hintText: 'Select open to work',
+                          readOnly: true,
+                          suffixIcon: Icon(
+                            Icons.arrow_drop_down,
+                            size: 24.sp,
+                            color: AppColors.primary,
+                          ),
+                          onTap: () {
+                            _showOpenToWorkBottomSheet(context, controller);
+                          },
+                        ),
+                        16.height,
+
+                        _buildLabel('Summary'),
+                        8.height,
+                        CommonTextField(
+                          controller: controller.summaryController,
+                          hintText: 'Enter your summary',
+                          maxLines: 4,
+                        ),
+                        16.height,
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-        ],
-      );
-    });
-  }
 
-  Widget _buildFormFields(EditPersonalController controller, BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        FormFieldWithLabel(
-          label: 'Full Name',
-          controller: controller.fullNameController,
-          /*validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter your full name';
-            }
-            return null;
-          },*/
-        ),
-        SizedBox(height: 20.h),
-        FormFieldWithLabel(
-          label: 'Designation',
-          controller: controller.designationController,
-         /* validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter your designation';
-            }
-            return null;
-          },*/
-        ),
-        SizedBox(height: 20.h),
-        FormFieldWithLabel(
-          label: 'Date Of Birth',
-          controller: controller.dateOfBirthController,
-          suffixIcon: Icons.calendar_today,
-          readOnly: true,
-          onTap: () => controller.selectDateOfBirth(context),
-          /*validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please select your date of birth';
-            }
-            return null;
-          },*/
-        ),
-        SizedBox(height: 20.h),
-        FormFieldWithLabel(
-          label: 'Gender',
-          controller: controller.genderController,
-          suffixIcon: Icons.keyboard_arrow_down,
-          readOnly: true,
-          onTap: () => controller.selectGender(context),
-          /*validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please select your gender';
-            }
-            return null;
-          },*/
-        ),
-        SizedBox(height: 20.h),
-        FormFieldWithLabel(
-          label: 'Nationality',
-          controller: controller.nationalityController,
-          /*validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter your nationality';
-            }
-            return null;
-          },*/
-        ),
-        SizedBox(height: 20.h),
-        FormFieldWithLabel(
-          label: 'Address',
-          controller: controller.addressController,
-          /*validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter your address';
-            }
-            return null;
-          },*/
-        ),
-        SizedBox(height: 20.h),
-        FormFieldWithLabel(
-          label: 'Phone',
-          controller: controller.phoneController,
-          keyboardType: TextInputType.phone,
-          /*validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter your phone number';
-            }
-            return null;
-          },*/
-        ),
-        SizedBox(height: 20.h),
-        FormFieldWithLabel(
-          label: 'Social Media Link',
-          controller: controller.socialMediaController,
-          keyboardType: TextInputType.url,
-        ),
-        SizedBox(height: 20.h),
-        FormFieldWithLabel(
-          label: 'Summary',
-          controller: controller.summaryController,
-          maxLines: 4,
-          textInputAction: TextInputAction.newline,
-        ),
-      ],
+              /// Update Button
+              Padding(
+                padding: EdgeInsets.all(16.w),
+                child: Obx(() {
+                  return SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: controller.isUpdating.value
+                          ? null
+                          : () => controller.updatePersonalInfo(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
+                      ),
+                      child: controller.isUpdating.value
+                          ? SizedBox(
+                        height: 20.h,
+                        width: 20.w,
+                        child: const CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                          : const CommonText(
+                        text: 'Update',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ],
+          ),
+        );
+      }),
     );
   }
 
-  Widget _buildUpdateButton(EditPersonalController controller) {
-    return Obx(() {
-      return controller.isUpdating.value
-          ? Center(
-        child: CircularProgressIndicator(
-          color: AppColors.primary,
-        ),
-      )
-          : CommonButton(
-        titleText: 'Update',
-        titleSize: 16.sp,
-        titleWeight: FontWeight.w600,
-        buttonHeight: 52.h,
-        buttonRadius: 8.r,
-        onTap: () => controller.editPersonalInformation(),
-      );
-    });
+  Widget _buildLabel(String text) {
+    return CommonText(
+      text: text,
+      fontSize: 14,
+      fontWeight: FontWeight.w400,
+      color: Colors.black,
+    );
+  }
+
+  void _showOpenToWorkBottomSheet(
+      BuildContext context,
+      PersonalInfoController controller,
+      ) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: EdgeInsets.all(16.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40.w,
+                height: 4.h,
+                margin: EdgeInsets.only(bottom: 16.h),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              const CommonText(
+                text: 'Select Work Preference',
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+              16.height,
+              ListTile(
+                leading: const Icon(Icons.home_work, color: AppColors.primary),
+                title: const CommonText(text: 'Remote', fontSize: 16),
+                onTap: () {
+                  controller.setOpenToWorkStatus('Remote');
+                  Navigator.pop(context);
+                },
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.business, color: AppColors.primary),
+                title: const CommonText(text: 'Onsite', fontSize: 16),
+                onTap: () {
+                  controller.setOpenToWorkStatus('Onsite');
+                  Navigator.pop(context);
+                },
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.compare_arrows, color: AppColors.primary),
+                title: const CommonText(text: 'Hybrid', fontSize: 16),
+                onTap: () {
+                  controller.setOpenToWorkStatus('Hybrid');
+                  Navigator.pop(context);
+                },
+              ),
+              16.height,
+            ],
+          ),
+        );
+      },
+    );
   }
 }

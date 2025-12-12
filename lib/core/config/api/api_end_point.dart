@@ -12,6 +12,7 @@ class ApiEndPoint {
   static const contracAndSupport = "users/reset-password";
   static const subscriptionPlan = "subscription/subscribe";
   static const changePassword = "auth/change-password";
+  static const resumeData = "resume";
   static const user = "user/profile";
   static const banner = "spotlight";
   static const notifications = "notifications";

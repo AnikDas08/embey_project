@@ -1,5 +1,6 @@
 import 'package:embeyi/core/component/pop_up/otp_pop_up.dart';
 import 'package:embeyi/core/component/pop_up/password_pop_up.dart';
+import 'package:embeyi/features/job_seeker/profile/presentation/screen/payment_history_screen.dart';
 import 'package:embeyi/features/recruiter/profile/presentation/screen/payment_history_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -44,6 +45,10 @@ class ProfileController extends GetxController {
   RxString linkedin = "".obs;
   RxString summary = "".obs;
 
+  // Payment history data
+  RxList<dynamic> transactionsList = [].obs;
+  RxInt totalTransactions = 0.obs;
+
   /// all controller here
   TextEditingController nameController = TextEditingController();
   TextEditingController numberController = TextEditingController();
@@ -54,7 +59,6 @@ class ProfileController extends GetxController {
   void onInit() {
     super.onInit();
     getProfileRepo();
-    getSubscriptionPlan();
   }
 
   /// select image function here
@@ -98,6 +102,8 @@ class ProfileController extends GetxController {
         email.value = response.data["data"]["email"] ?? "";
         linkedin.value = response.data["data"]["linkedin"] ?? "";
         summary.value=response.data["data"]["bio"]??'';
+        subscriptionPlan.value=response.data["data"]["subscription"]??'';
+        print("imageurl.value😊😊😊😊: ${profileImage.value}");
       } else {
         Utils.errorSnackBar(response.statusCode, response.message);
       }
@@ -107,22 +113,6 @@ class ProfileController extends GetxController {
     finally{
       isLoading = false;
       update();
-    }
-  }
-
-  Future<void> getSubscriptionPlan()async{
-    try {
-      final response = await ApiService.get(
-          ApiEndPoint.subscriptionPlan,
-          header: {"Authorization": "Bearer ${LocalStorage.token}"}
-      );
-      if (response.statusCode == 200) {
-        subscriptionPlan.value=response.data["data"]["name"];
-      } else {
-        Utils.errorSnackBar(response.statusCode, response.message);
-      }
-    } catch (e) {
-      Utils.errorSnackBar(0, e.toString());
     }
   }
 
@@ -166,11 +156,26 @@ class ProfileController extends GetxController {
       Get.back();
 
       if (response.statusCode == 200) {
+        // Store transactions data
+        transactionsList.value = response.data["data"] ?? [];
+        totalTransactions.value = response.data["pagination"]["total"] ?? 0;
+
+        // Debug prints
+        print("✅ Controller hashCode: ${this.hashCode}");
+        print("✅ Transactions stored: ${transactionsList.length}");
+        print("✅ Transaction data: ${transactionsList}");
+        print("✅ Total transactions: ${totalTransactions.value}");
+
         // Close OTP dialog
         Get.back();
 
-        // Navigate to Payment History Screen
-        Get.to(() => const PaymentHistoryScreen());
+        // Wait a moment for the dialog to close, then navigate
+        await Future.delayed(const Duration(milliseconds: 300));
+
+        // Navigate to Payment History Screen with data
+        Get.to(() => JobSeekerPaymentHistory(
+          transactions: transactionsList.toList(),
+        ));
 
         Utils.successSnackBar("Success", "OTP verified successfully");
       } else {
@@ -279,6 +284,17 @@ class ProfileController extends GetxController {
     } catch (e) {
       print("Error formatting date: $e");
       return utcDateString; // Return original if formatting fails
+    }
+  }
+
+  String formatDateTime(String utcDateString) {
+    try {
+      DateTime utcDate = DateTime.parse(utcDateString);
+      DateTime localDate = utcDate.toLocal();
+      return DateFormat('dd MMM yyyy, hh:mm a').format(localDate);
+    } catch (e) {
+      print("Error formatting date: $e");
+      return utcDateString;
     }
   }
 

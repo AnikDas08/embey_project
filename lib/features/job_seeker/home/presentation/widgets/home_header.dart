@@ -36,20 +36,32 @@ class HomeHeader extends StatelessWidget {
       children: [
         GestureDetector(
           onTap: onProfileTap,
-          child: ClipOval(
-            child: Obx(
-                  () => Image.network(
-                  ApiEndPoint.imageUrl+controller.image.value,
-                  fit: BoxFit.cover,
-                  errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
-                    return Image.asset(
-                      AppIcons.profile,
-                      fit: BoxFit.cover,
-                    );
-                  },
-                    height: 48.h,
-                    width: 48.w,
+          child: SizedBox(
+            height: 48.h,
+            width: 48.w,
+            child: ClipOval(
+              child: Obx(
+                    () {
+                  final imagePath = controller.image.value;
+
+                  final imageUrl = imagePath.startsWith('http')
+                      ? imagePath
+                      : ApiEndPoint.imageUrl + imagePath;
+
+                  return Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(
+                          Icons.person,
+                          size: 24.sp,
+                          color: AppColors.primaryColor,
+                      );
+                    },
+                  );
+                },
               ),
+
             ),
           ),
             ),
@@ -70,7 +82,7 @@ class HomeHeader extends StatelessWidget {
                 2.height,
                 Obx(
                   ()=> CommonText(
-                      text: controller.designation.value,
+                      text: controller.designation.value??"Not Available",
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
                       color: AppColors.secondaryText,

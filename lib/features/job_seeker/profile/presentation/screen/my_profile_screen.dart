@@ -114,16 +114,26 @@ class MyProfileScreen extends StatelessWidget {
           ),
           child: ClipOval(
             child: Obx(
-                  () => Image.network(
-                  ApiEndPoint.imageUrl+controller.profileImage.value,
-                  fit: BoxFit.cover,
-                  errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
-                    return Image.asset(
-                      AppIcons.profile,
-                      fit: BoxFit.cover,
+                  () {
+                    final imagePath = controller.profileImage.value;
+                    print("image path here 😊😊😊😊😊😊R: ${controller.profileImage
+                        .value}");
+
+                    final imageUrl = imagePath.startsWith('http')
+                        ? imagePath
+                        : ApiEndPoint.imageUrl + imagePath;
+                    return Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (BuildContext context, Object exception,
+                            StackTrace? stackTrace) {
+                          return Image.asset(
+                            AppIcons.profile,
+                            fit: BoxFit.cover,
+                          );
+                        }
                     );
                   }
-              ),
             ),
           ),
         ),
