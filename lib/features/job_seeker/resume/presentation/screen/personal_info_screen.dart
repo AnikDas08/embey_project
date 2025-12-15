@@ -1,21 +1,20 @@
-import 'package:embeyi/core/component/button/common_button.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
+import 'package:embeyi/features/job_seeker/resume/presentation/controller/personal_info_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../../../../core/component/text/common_text.dart';
 import '../../../../../../core/component/text_field/common_text_field.dart';
 import '../../../../../../core/utils/extensions/extension.dart';
-import '../controller/resume_controller.dart';
 
-class PersonalInfoScreen extends StatelessWidget {
+class PersonalInfoScreenResume extends StatelessWidget {
   String resumeId;
-  PersonalInfoScreen({super.key,required this.resumeId});
+  PersonalInfoScreenResume({super.key,required this.resumeId});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<ResumeController>();
-
+    // Initialize the controller - it will automatically fetch data in onInit
+    final controller = Get.put(PersonalInfoController());
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -24,7 +23,7 @@ class PersonalInfoScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Get.back(),
         ),
         title: const CommonText(
           text: 'Personal Information',
@@ -34,6 +33,7 @@ class PersonalInfoScreen extends StatelessWidget {
         ),
       ),
       body: Obx(() {
+        // Show loading indicator while fetching data
         if (controller.isLoading.value) {
           return const Center(
             child: CircularProgressIndicator(
@@ -42,6 +42,7 @@ class PersonalInfoScreen extends StatelessWidget {
           );
         }
 
+        // Show the form once data is loaded
         return SafeArea(
           child: Column(
             children: [
@@ -170,12 +171,37 @@ class PersonalInfoScreen extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.all(16.w),
                 child: Obx(() {
-                  return CommonButton(
-                      titleText: resumeId==""?"Create":"Update",
-                      onTap: controller.isUpdating.value
+                  return SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: controller.isUpdating.value
                           ? null
-                          : () => resumeId==""?controller.createPersonalInfo():controller.updatePersonalInfo(resumeId),
-                      isLoading: controller.isUpdating.value,
+                          : () => resumeId==""?controller.createPersonalInfo():controller.updatePersonalInfo(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
+                      ),
+                      child: controller.isUpdating.value
+                          ? SizedBox(
+                        height: 20.h,
+                        width: 20.w,
+                        child: const CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                          : CommonText(
+                        text: resumeId==""?'Create':'Update',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
                   );
                 }),
               ),
@@ -197,7 +223,7 @@ class PersonalInfoScreen extends StatelessWidget {
 
   void _showOpenToWorkBottomSheet(
       BuildContext context,
-      ResumeController controller,
+      PersonalInfoController controller,
       ) {
     showModalBottomSheet(
       context: context,

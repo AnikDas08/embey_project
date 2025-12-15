@@ -159,7 +159,7 @@ class ResumeScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const AddResumeScreen(),
+                        builder: (context) => AddResumeScreen(resumeId: ""),
                       ),
                     );
                   },

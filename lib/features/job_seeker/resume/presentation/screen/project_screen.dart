@@ -33,7 +33,7 @@ class ProjectScreen extends StatelessWidget {
         ),
       ),
       body: Obx(() {
-        // Show loading indicator while fetching data
+        // Show loading indicator while fetching data (only in edit mode)
         if (controller.isLoading.value) {
           return const Center(
             child: CircularProgressIndicator(
@@ -42,7 +42,7 @@ class ProjectScreen extends StatelessWidget {
           );
         }
 
-        // Show the form once data is loaded
+        // Show the form once data is loaded or in create mode
         return SafeArea(
           child: Column(
             children: [
@@ -63,10 +63,26 @@ class ProjectScreen extends StatelessWidget {
                             return Center(
                               child: Padding(
                                 padding: EdgeInsets.symmetric(vertical: 40.h),
-                                child: const CommonText(
-                                  text: 'No projects added yet',
-                                  fontSize: 14,
-                                  color: Colors.grey,
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.work_outline,
+                                      size: 64.sp,
+                                      color: Colors.grey.shade400,
+                                    ),
+                                    16.height,
+                                    const CommonText(
+                                      text: 'No projects added yet',
+                                      fontSize: 14,
+                                      color: Colors.grey,
+                                    ),
+                                    8.height,
+                                    const CommonText(
+                                      text: 'Add your first project to get started',
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ],
                                 ),
                               ),
                             );
@@ -122,16 +138,20 @@ class ProjectScreen extends StatelessWidget {
                 ),
               ),
 
-              /// Update Button
+              /// Create/Update Button
               Padding(
                 padding: EdgeInsets.all(16.w),
                 child: Obx(() {
+                  final isLoading = controller.isCreateMode
+                      ? controller.isCreating.value
+                      : controller.isSaving.value;
+
                   return SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: controller.isSaving.value
+                      onPressed: isLoading
                           ? null
-                          : () => controller.saveProjects(),
+                          : () => controller.resumeId==""?controller.createResumeWithProjects():controller.updateProjects(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
@@ -142,7 +162,7 @@ class ProjectScreen extends StatelessWidget {
                         disabledBackgroundColor:
                         AppColors.primary.withOpacity(0.6),
                       ),
-                      child: controller.isSaving.value
+                      child: isLoading
                           ? SizedBox(
                         height: 20.h,
                         width: 20.w,
@@ -151,8 +171,8 @@ class ProjectScreen extends StatelessWidget {
                           strokeWidth: 2,
                         ),
                       )
-                          : const CommonText(
-                        text: 'Update',
+                          : CommonText(
+                        text: controller.resumeId=="" ? 'Create' : 'Update',
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
@@ -167,6 +187,22 @@ class ProjectScreen extends StatelessWidget {
       }),
     );
   }
+
+  void _handleSubmit(ProjectController controller) {
+    if (controller.isCreateMode) {
+      // In create mode, we need to build complete resume data
+      _showCreateResumeDialog(controller);
+    } else {
+      // In update mode, just update projects
+      controller.updateProjects();
+    }
+  }
+
+  void _showCreateResumeDialog(ProjectController controller) {
+    // Show dialog to get remaining resume data or navigate to summary screen
+    // For now, we'll show a simple dialog explaining what's needed
+  }
+
 
   Widget _buildProjectCard(
       BuildContext context,
@@ -184,7 +220,7 @@ class ProjectScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title Row with Add button
+          // Title Row with Edit/Delete button
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -208,7 +244,7 @@ class ProjectScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              // Add button (shown as edit/delete for existing items)
+              // Edit/Delete button
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(

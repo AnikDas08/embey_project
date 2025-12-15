@@ -141,7 +141,7 @@ class CertificationScreen extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: controller.isSaving.value
                           ? null
-                          : () => controller.saveCertifications(),
+                          : () => controller.resumeId==""?controller.createResumeWithCertifications():controller.saveCertifications(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
@@ -161,8 +161,8 @@ class CertificationScreen extends StatelessWidget {
                           strokeWidth: 2,
                         ),
                       )
-                          : const CommonText(
-                        text: 'Update',
+                          : CommonText(
+                        text: controller.resumeId==""?'Create':'Update',
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,

@@ -12,7 +12,8 @@ import 'education_screen.dart';
 import 'certification_screen.dart';
 
 class AddResumeScreen extends StatelessWidget {
-  const AddResumeScreen({super.key});
+  final String resumeId;
+  const AddResumeScreen({super.key, required this.resumeId});
 
   @override
   Widget build(BuildContext context) {
@@ -41,33 +42,38 @@ class AddResumeScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 /// Edit Resume Button
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 28,
-                    vertical: 21,
-                  ),
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFFE6E6F2),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 1,
-                        color: const Color(0xFF123499) /* Primary-Color */,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
+                GestureDetector(
+                  onTap: () {
+                    Get.to(()=>PersonalInfoScreenResume(resumeId: ""),arguments: "");
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 28,
+                      vertical: 21,
                     ),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(Icons.add, color: AppColors.primary, size: 32.sp),
-                      8.height,
-                      const CommonText(
-                        text: 'Create New Resume',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
+                    decoration: ShapeDecoration(
+                      color: const Color(0xFFE6E6F2),
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                          width: 1,
+                          color: const Color(0xFF123499) /* Primary-Color */,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    ],
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(Icons.add, color: AppColors.primary, size: 32.sp),
+                        8.height,
+                        const CommonText(
+                          text: 'Create New Resume',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 24.height,
@@ -91,7 +97,7 @@ class AddResumeScreen extends StatelessWidget {
                   subtitle: 'Complete',
                   onTap: () {
 
-                    Get.to(()=>PersonalInfoScreen(resumeId: ""));
+                    //Get.to(()=>PersonalInfoScreenResume(resumeId: ""),arguments: "");
                   },
                 ),
                 16.height,
@@ -101,33 +107,10 @@ class AddResumeScreen extends StatelessWidget {
                   icon: Icons.workspace_premium,
                   iconColor: Colors.blue,
                   iconBgColor: Colors.blue.shade50,
-                  title: 'Core Skills',
+                  title: 'Core Skills & Experience',
                   subtitle: 'Complete',
                   onTap: () {
-                    /*Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CoreSkillsScreen(),
-                      ),
-                    );*/
-                  },
-                ),
-                12.height,
-
-                _buildSectionItem(
-                  context,
-                  icon: Icons.work_history,
-                  iconColor: Colors.purple,
-                  iconBgColor: Colors.purple.shade50,
-                  title: 'Work Experience',
-                  subtitle: 'Complete',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const WorkExperienceScreen(),
-                      ),
-                    );
+                    Get.to(()=>CoreSkillsScreen(),arguments: "");
                   },
                 ),
                 16.height,
@@ -140,12 +123,7 @@ class AddResumeScreen extends StatelessWidget {
                   title: 'Project',
                   subtitle: 'Complete',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ProjectScreen(),
-                      ),
-                    );
+                    Get.to(()=>ProjectScreen(),arguments: "");
                   },
                 ),
                 16.height,
@@ -161,7 +139,7 @@ class AddResumeScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const EducationScreen(),
+                        builder: (context) => const EducationScreenResume(),
                       ),
                     );
                   },

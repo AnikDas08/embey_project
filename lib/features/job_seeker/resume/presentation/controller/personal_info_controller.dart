@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'package:embeyi/core/services/api/api_service.dart';
+import 'package:embeyi/features/job_seeker/resume/presentation/screen/core_skills_screen.dart';
+import 'package:embeyi/features/job_seeker/resume/presentation/screen/personal_info_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../../core/services/storage/storage_services.dart';
 import '../../data/model/resume_model.dart';
 
 class PersonalInfoController extends GetxController {
@@ -102,6 +105,78 @@ class PersonalInfoController extends GetxController {
     summaryController.text = resume.personalInfo.summary;
 
     print("All fields populated successfully");
+  }
+
+  Future<void> createPersonalInfo() async {
+    if (!_validateFields()) return;
+    try {
+      isUpdating.value = true;
+
+      // Hardcoded test data - exact copy from Postman
+      /*final updateData = {
+        "resume_name": resumeNameController.text,
+        "personalInfo": {
+          "full_name": fullNameController.text,
+          "email": emailController.text,
+          "phone": phoneController.text,
+          "social_media_link": socialMediaController.text,
+          "github_link": githubController.text,
+          "work_authorization": workAuthorizationController.text,
+          "clearance": clearancesController.text,
+          "open_to_work": openToWorkStatusController.text,
+          "summury": summaryController.text,
+          "address": addressController.text
+        }
+      };*/
+
+      /*final response = await ApiService.post(
+        "resume",
+        body: updateData,
+        header: {
+          "Authorization": "Bearer ${LocalStorage.token}",
+        },
+      );*/
+      /*if(response.statusCode==200){
+        ScaffoldMessenger.of(Get.context!).showSnackBar(
+          SnackBar(
+            content: Text('Successful created'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+
+        Get.back();
+      }*/
+      final resumeName={
+        "resumeName":resumeNameController.text,
+      };
+      final updateData={
+        "personalInfo": {
+          "full_name": fullNameController.text,
+          "email": emailController.text,
+          "phone": phoneController.text,
+          "social_media_link": socialMediaController.text,
+          "github_link": githubController.text,
+          "work_authorization": workAuthorizationController.text,
+          "clearance": clearancesController.text,
+          "open_to_work": openToWorkStatusController.text,
+          "summury": summaryController.text,
+          "address": addressController.text
+        }
+      };
+      Get.to(()=>CoreSkillsScreen(),arguments: {
+        "resumeId": "".toString(),
+        "personalInformation":updateData,
+        "resumeName":resumeName.toString(),
+      });
+
+      // ... rest of the code
+    } catch (e) {
+      _showError('Failed to create resume: $e');
+    } finally {
+      isUpdating.value = false;
+    }
   }
 
   /// Update personal information via PATCH API

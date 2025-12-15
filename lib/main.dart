@@ -10,6 +10,7 @@ import 'main.dart' as GetStorage;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  GetStorage.init();
 
   /// 🔥 GetStorage initialize
   await init.tryCatch();

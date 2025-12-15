@@ -1,4 +1,5 @@
 import 'package:embeyi/core/services/api/api_service.dart';
+import 'package:embeyi/features/job_seeker/profile/presentation/screen/job_seeker_profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../data/model/resume_model.dart';
@@ -8,29 +9,41 @@ class CertificationController extends GetxController {
   var certifications = <Certification>[].obs;
   var isLoading = false.obs;
   var isSaving = false.obs;
+  var isCreating = false.obs;
 
-  // Resume ID
+  // Resume ID (empty string means create mode)
   String? resumeId;
+  Map<dynamic,dynamic>? personalInfo;
+  String? resumeName;
+  List<dynamic>? coreFeatures;
+  List<dynamic>? workExperiences;
+  List<dynamic>? projects;
+  List<dynamic>? educations;
+  bool get isCreateMode => resumeId == null || resumeId!.isEmpty;
 
   @override
   void onInit() {
     super.onInit();
     // Get resumeId from arguments
-    resumeId = Get.arguments as String?;
-    print("Received resume ID for Certifications: $resumeId");
+    final arg=Get.arguments as Map<dynamic,dynamic>;
+    resumeId=arg["resumeId"]?.toString();
+    personalInfo=arg["personalInformation"];
+    resumeName=arg["resumeName"]?.toString();
+    coreFeatures=arg["coreFeatures"];
+    workExperiences=arg["workExperiences"];
+    projects=arg["projects"];
+    educations=arg["educations"];
 
+    // Only fetch if we have a resumeId (edit mode)
     if (resumeId != null && resumeId!.isNotEmpty) {
       fetchCertifications();
+    } else {
+      // In create mode, start with empty list
+      print("Create mode - starting with empty certification list");
     }
   }
 
-  @override
-  void onClose() {
-    // Clean up if needed
-    super.onClose();
-  }
-
-  /// Fetch certifications from API (GET)
+  /// Fetch certifications from API (GET) - Only for edit mode
   Future<void> fetchCertifications() async {
     try {
       isLoading.value = true;
@@ -72,6 +85,7 @@ class CertificationController extends GetxController {
   void addCertification(Certification certification) {
     certifications.add(certification);
     print("Certification added: ${certification.title}");
+    print("Total certifications: ${certifications.length}");
   }
 
   /// Update certification at index
@@ -88,11 +102,74 @@ class CertificationController extends GetxController {
       final removed = certifications[index];
       certifications.removeAt(index);
       print("Certification removed: ${removed.title}");
-      _showSuccess('Certification removed successfully');
+      print("Remaining certifications: ${certifications.length}");
     }
   }
 
-  /// Save certifications via PATCH API
+  /// Create new resume with certifications (POST) - For create mode
+  Future<void> createResumeWithCertifications() async {
+    if (certifications.isEmpty) {
+      _showValidationError('Please add at least one certification');
+      return;
+    }
+
+    try {
+      isCreating.value = true;
+
+      // Convert certifications to JSON format (no _id for new certifications)
+      final certificationsJson = certifications.map((certification) {
+        return {
+          'title': certification.title,
+          if (certification.description != null &&
+              certification.description!.isNotEmpty)
+            'description': certification.description,
+          if (certification.link != null && certification.link!.isNotEmpty)
+            'link': certification.link,
+        };
+      }).toList();
+
+      final body = {
+        "resume_name":resumeName,
+        "personalInfo":personalInfo,
+        "core_features":coreFeatures,
+        "workExperiences":workExperiences,
+        "projects":projects,
+        "educations":educations,
+        "certifications": certificationsJson,
+      };
+      print("Creating resume with certifications: 🤣🤣🤣🤣 ");
+      print(body);
+
+
+
+      final response = await ApiService.post(
+        "resume",
+        body: body,
+      );
+
+      print("Create response status: ${response.statusCode}");
+      print("Create response data: ${response.data}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        ScaffoldMessenger.of(Get.context!).showSnackBar(
+          const SnackBar(
+            content: Text('Successfully created'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Get.offAll(()=>JobSeekerProfileScreen());
+      }
+    } catch (e) {
+      print("Error creating resume: $e");
+      _showError('Failed to create resume: $e');
+    } finally {
+      isCreating.value = false;
+    }
+  }
+
+  /// Save/Update certifications via PATCH API - Only for edit mode
   Future<void> saveCertifications() async {
     if (certifications.isEmpty) {
       _showValidationError('Please add at least one certification');
@@ -110,6 +187,8 @@ class CertificationController extends GetxController {
           if (certification.description != null &&
               certification.description!.isNotEmpty)
             'description': certification.description,
+          if (certification.link != null && certification.link!.isNotEmpty)
+            'link': certification.link,
         };
       }).toList();
 
@@ -117,7 +196,7 @@ class CertificationController extends GetxController {
         'certifications': certificationsJson,
       };
 
-      print("Saving certifications for resume ID: $resumeId");
+      print("Updating certifications for resume ID: $resumeId");
       print("Update data: $updateData");
 
       final response = await ApiService.patch(
@@ -125,23 +204,22 @@ class CertificationController extends GetxController {
         body: updateData,
       );
 
-      print("Save response status: ${response.statusCode}");
-      print("Save response: ${response.data}");
+      print("Update response status: ${response.statusCode}");
+      print("Update response: ${response.data}");
 
       if (response.statusCode == 200) {
-        _showSuccess('Certifications saved successfully');
+        _showSuccess('Certifications updated successfully');
 
-        // Wait a moment before going back
         await Future.delayed(const Duration(milliseconds: 500));
-        Get.back(result: true); // Return true to indicate successful update
+        Get.back(result: true);
       } else {
         final errorData = response.data is Map ? response.data : {};
         throw Exception(
-            errorData['message'] ?? 'Failed to save certifications');
+            errorData['message'] ?? 'Failed to update certifications');
       }
     } catch (e) {
-      print("Error saving certifications: $e");
-      _showError('Failed to save certifications: $e');
+      print("Error updating certifications: $e");
+      _showError('Failed to update certifications: $e');
     } finally {
       isSaving.value = false;
     }

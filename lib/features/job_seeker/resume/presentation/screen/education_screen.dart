@@ -8,8 +8,8 @@ import '../controller/education_controller.dart';
 import '../../data/model/resume_model.dart';
 import '../widgets/add_education_dialog.dart';
 
-class EducationScreen extends StatelessWidget {
-  const EducationScreen({super.key});
+class EducationScreenResume extends StatelessWidget {
+  const EducationScreenResume({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -131,7 +131,7 @@ class EducationScreen extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: controller.isSaving.value
                           ? null
-                          : () => controller.saveEducations(),
+                          : () => controller.resumeId==""?controller.createResumeWithEducations():controller.saveEducations(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
@@ -151,8 +151,8 @@ class EducationScreen extends StatelessWidget {
                           strokeWidth: 2,
                         ),
                       )
-                          : const CommonText(
-                        text: 'Update',
+                          : CommonText(
+                        text: controller.resumeId==""?'Create':'Update',
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
