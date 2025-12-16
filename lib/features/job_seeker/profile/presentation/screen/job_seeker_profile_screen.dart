@@ -209,7 +209,7 @@ final List<ProfileItemData> profileItems = [
     imageSrc: AppIcons.review,
     title: 'Platform Review',
     onTap: () {
-      Get.to(() => const PlatformReviewScreen());
+      Get.to(() => PlatformReviewScreen());
     },
   ),
   ProfileItemData(

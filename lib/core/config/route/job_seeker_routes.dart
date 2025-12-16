@@ -102,11 +102,11 @@ class JobSeekerRoutes {
         );
       },
     ),
-    //GetPage(name: personalInfo, page: () => const PersonalInfoScreen()),
+    GetPage(name: personalInfo, page: () => const PersonalInfoScreen()),
     GetPage(name: education, page: () => const EducationScreen()),
     GetPage(name: workExperience, page: () => const WorkExperienceScreen()),
     GetPage(name: skills, page: () => const SkillsScreen()),
-    //GetPage(name: editPersonalInfo, page: () => const EditPersonalInfoScreen()),
+    GetPage(name: editPersonalInfo, page: () => const EditPersonalInfoScreen()),
     GetPage(name: editEducation, page: () => const EditEducationScreen()),
     GetPage(
       name: editWorkExperience,

@@ -64,7 +64,7 @@ class AppIcons {
   static const String privacy = "$baseurl/privacy.svg";
   static const String pro = "$baseurl/pro.svg";
   static const String profileSetting = "$baseurl/profile_setting.svg";
-  static const String profile = "$baseurl/profile.svg";
+  static const String profile = "assets/images/img.png";
   static const String project = "$baseurl/project.svg";
   static const String resetPassword = "$baseurl/reset_password.svg";
   static const String restaurant = "$baseurl/restaurant.svg";

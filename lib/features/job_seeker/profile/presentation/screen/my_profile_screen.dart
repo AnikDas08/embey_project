@@ -3,9 +3,11 @@ import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/core/utils/constants/app_icons.dart';
 import 'package:embeyi/core/utils/constants/app_images.dart';
 import 'package:embeyi/features/job_seeker/profile/presentation/controller/profile_controller.dart';
+import 'package:embeyi/features/job_seeker/profile/presentation/screen/profile/personal_info_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../../../core/component/text/common_text.dart';
 import '../../../../../core/config/api/api_end_point.dart';
 import '../../../../../core/utils/extensions/extension.dart';
@@ -13,6 +15,8 @@ import '../../../../../core/config/route/job_seeker_routes.dart';
 
 class MyProfileScreen extends StatelessWidget {
   const MyProfileScreen({super.key});
+
+  static final CameraPosition camera=CameraPosition(target: LatLng(23.728633, 90.399452));
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +58,7 @@ class MyProfileScreen extends StatelessWidget {
                     title: 'Personal Info',
                     subtitle: 'Complete',
                     onTap: () {
-                      Get.toNamed(JobSeekerRoutes.personalInfo);
+                      Get.to(()=>PersonalInfoScreen());
                     },
                   ),
                   16.height,
@@ -131,7 +135,13 @@ class MyProfileScreen extends StatelessWidget {
                             AppIcons.profile,
                             fit: BoxFit.cover,
                           );
-                        }
+                        },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      },
                     );
                   }
             ),
@@ -210,9 +220,7 @@ class MyProfileScreen extends StatelessWidget {
                   ),
                   child: CommonImage(imageSrc: imageSrc, width: 24, height: 24),
                 ),
-
                 16.width,
-
                 /// Title and Subtitle
                 Expanded(
                   child: Column(

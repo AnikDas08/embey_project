@@ -110,7 +110,7 @@ class AddResumeScreen extends StatelessWidget {
                   title: 'Core Skills & Experience',
                   subtitle: 'Complete',
                   onTap: () {
-                    Get.to(()=>CoreSkillsScreen(),arguments: "");
+                    //Get.to(()=>CoreSkillsScreen(),arguments: "");
                   },
                 ),
                 16.height,
@@ -123,7 +123,7 @@ class AddResumeScreen extends StatelessWidget {
                   title: 'Project',
                   subtitle: 'Complete',
                   onTap: () {
-                    Get.to(()=>ProjectScreen(),arguments: "");
+                    //Get.to(()=>ProjectScreen(),arguments: "");
                   },
                 ),
                 16.height,
@@ -136,12 +136,12 @@ class AddResumeScreen extends StatelessWidget {
                   title: 'Education',
                   subtitle: 'Complete',
                   onTap: () {
-                    Navigator.push(
+                    /*Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const EducationScreenResume(),
                       ),
-                    );
+                    );*/
                   },
                 ),
                 16.height,
@@ -154,12 +154,12 @@ class AddResumeScreen extends StatelessWidget {
                   title: 'Certification',
                   subtitle: 'Complete',
                   onTap: () {
-                    Navigator.push(
+                    /*Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const CertificationScreen(),
                       ),
-                    );
+                    );*/
                   },
                 ),
               ],

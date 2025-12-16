@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:embeyi/features/job_seeker/profile/presentation/screen/job_seeker_profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -244,8 +245,15 @@ class EditPersonalController extends GetxController {
       if (response.statusCode == 200) {
         final data = response.data['data'];
 
-        Utils.successSnackBar("Success", "Profile updated successfully");
-        Get.back();
+        ScaffoldMessenger.of(Get.context!).showSnackBar(
+          const SnackBar(
+            content: Text('Successfully created'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Get.offAll(()=>JobSeekerProfileScreen());
       } else {
         Utils.errorSnackBar(response.statusCode, response.message);
       }

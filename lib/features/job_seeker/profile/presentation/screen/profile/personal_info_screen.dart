@@ -9,6 +9,7 @@ import '../../../../../../core/component/button/common_button.dart';
 import '../../../../../../core/config/api/api_end_point.dart';
 import '../../../widgets/info_card.dart';
 import '../../../widgets/profile_section.dart';
+import 'edit_personal_info_screen.dart';
 
 class PersonalInfoScreen extends StatelessWidget {
   const PersonalInfoScreen({super.key});
@@ -48,7 +49,7 @@ class PersonalInfoScreen extends StatelessWidget {
                   SizedBox(height: 16.h),
                   _buildSummaryCard(controller),
                   SizedBox(height: 40.h),
-                  _buildEditProfileButton(context),
+                  _buildEditProfileButton(context,controller),
                   SizedBox(height: 24.h),
                 ],
               );
@@ -172,7 +173,7 @@ class PersonalInfoScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEditProfileButton(BuildContext context) {
+  Widget _buildEditProfileButton(BuildContext context,ProfileController controller) {
     return CommonButton(
       titleText: 'Edit Profile',
       titleSize: 16.sp,
@@ -181,7 +182,7 @@ class PersonalInfoScreen extends StatelessWidget {
       buttonRadius: 12.r,
       onTap: () {
         // Navigate to edit personal info screen
-        JobSeekerRoutes.goToEditPersonalInfo();
+        Get.to(() => EditPersonalInfoScreen());
       },
     );
   }

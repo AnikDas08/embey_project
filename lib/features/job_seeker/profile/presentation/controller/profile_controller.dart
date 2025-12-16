@@ -44,6 +44,7 @@ class ProfileController extends GetxController {
   RxString email = "".obs;
   RxString linkedin = "".obs;
   RxString summary = "".obs;
+  String? resumeId;
 
   // Payment history data
   RxList<dynamic> transactionsList = [].obs;
@@ -89,6 +90,8 @@ class ProfileController extends GetxController {
         profileImage.value = response.data["data"]["image"] ?? "";
         designation.value = response.data["data"]["designation"] ?? "";
         gender.value = response.data["data"]["gender"] ?? "";
+        gender.value = response.data["data"]["gender"] ?? "";
+        resumeId=response.data["data"]["_id"]??"";
         String dobString = response.data["data"]["date_of_birth"] ?? "";
         if (dobString.isNotEmpty) {
           dateOfBirth.value = _formatDateToLocal(dobString);
