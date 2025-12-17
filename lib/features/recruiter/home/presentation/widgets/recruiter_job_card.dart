@@ -57,10 +57,11 @@ class RecruiterJobCard extends StatelessWidget {
                   height: 60.h,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8.r),
-                    image: DecorationImage(
-                      image: AssetImage(thumbnailImage),
-                      fit: BoxFit.cover,
-                    ),
+                    color: Colors.grey[200],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8.r),
+                    child: _buildThumbnailImage(),
                   ),
                 ),
                 12.width,
@@ -184,6 +185,70 @@ class RecruiterJobCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildThumbnailImage() {
+    // Check if it's a network image (starts with http)
+    if (thumbnailImage.startsWith('http')) {
+      return Image.network(
+        thumbnailImage,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Image.asset(
+            AppImages.jobPost,
+            fit: BoxFit.cover,
+          );
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                  loadingProgress.expectedTotalBytes!
+                  : null,
+              strokeWidth: 2,
+              color: AppColors.primaryColor,
+            ),
+          );
+        },
+      );
+    }
+
+    // Check if it's a relative path from API (starts with /)
+    if (thumbnailImage.startsWith('/')) {
+      // You need to add your base URL here
+      const String baseUrl = 'YOUR_API_BASE_URL'; // e.g., 'https://api.example.com'
+      return Image.network(
+        '$baseUrl$thumbnailImage',
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Image.asset(
+            AppImages.jobPost,
+            fit: BoxFit.cover,
+          );
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                  loadingProgress.expectedTotalBytes!
+                  : null,
+              strokeWidth: 2,
+              color: AppColors.primaryColor,
+            ),
+          );
+        },
+      );
+    }
+
+    // Fallback to asset image
+    return Image.asset(
+      thumbnailImage.isEmpty ? AppImages.jobPost : thumbnailImage,
+      fit: BoxFit.cover,
     );
   }
 

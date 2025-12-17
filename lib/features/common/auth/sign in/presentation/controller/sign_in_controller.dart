@@ -52,7 +52,6 @@ class SignInController extends GetxController {
       var data = response.data;
 
       LocalStorage.token = data['data']["createToken"];
-      Get.offAllNamed(JobSeekerRoutes.home);
       LocalStorage.userId = data['data']["userId"];
 
       //LocalStorage.myEmail = data['data']["attributes"]["email"];
@@ -69,7 +68,13 @@ class SignInController extends GetxController {
       // } else {
       //   Get.offAllNamed(AppRoutes.patientsHome);
       // }
-      Get.offAllNamed(JobSeekerRoutes.home);
+      print("User Role : 🤣🤣🤣🤣 ${LocalStorage.userRole}");
+      if(LocalStorage.userRole==UserRole.employer){
+        Get.offAllNamed(RecruiterRoutes.home);
+      }
+      else{
+        Get.offAllNamed(JobSeekerRoutes.home);
+      }
 
       emailController.clear();
       passwordController.clear();

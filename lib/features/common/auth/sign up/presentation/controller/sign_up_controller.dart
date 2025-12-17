@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:embeyi/core/component/pop_up/success_dialog.dart';
+import 'package:embeyi/core/utils/enum/enum.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -20,6 +21,7 @@ class SignUpController extends GetxController {
   bool isPopUpOpen = false;
   bool isLoading = false;
   bool isLoadingVerify = false;
+  String role="";
 
   Timer? _timer;
   int start = 0;
@@ -76,31 +78,48 @@ class SignUpController extends GetxController {
   }
 
   signUpUser() async {
-    Get.toNamed(AppRoutes.verifyUser);
 
-    return;
-    isLoading = true;
-    update();
-    Map<String, String> body = {
-      "fullName": nameController.text,
-      "email": emailController.text,
-      "phoneNumber": numberController.text,
-      "countryCode": countryCode,
-      "password": passwordController.text,
-      "role": selectRole.toLowerCase(),
-    };
-
-    var response = await ApiService.post(ApiEndPoint.signUp, body: body);
-
-    if (response.statusCode == 200) {
-      var data = response.data;
-      signUpToken = data['data']['signUpToken'];
-      Get.toNamed(AppRoutes.verifyUser);
-    } else {
-      Utils.errorSnackBar(response.statusCode.toString(), response.message);
+    if(LocalStorage.userRole==UserRole.jobSeeker){
+      role="EMPLOYEE";
     }
-    isLoading = false;
-    update();
+    else{
+      role="RECRUITER";
+    }
+
+    try{
+      isLoading = true;
+      update();
+      Map<String, String> body = {
+        "name": nameController.text,
+        "email": emailController.text,
+        "password": passwordController.text,
+        "role": role,
+      };
+      var response = await ApiService.post(ApiEndPoint.signUp, body: body);
+      if(response.statusCode==200){
+        isLoading = false;
+        update();
+        var data=response.data;
+        ScaffoldMessenger.of(Get.context!).showSnackBar(
+          SnackBar(content: Text(data['message'])),
+        );
+        Get.toNamed(AppRoutes.verifyUser);
+      }
+      else{
+        ScaffoldMessenger.of(Get.context!).showSnackBar(
+          SnackBar(content: Text(response.message)),
+        );
+        isLoading = false;
+        update();
+      }
+    }
+    catch(e){
+      ScaffoldMessenger.of(Get.context!).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+      isLoading = false;
+      update();
+    }
   }
 
   void startTimer() {
@@ -122,29 +141,38 @@ class SignUpController extends GetxController {
   }
 
   Future<void> verifyOtpRepo() async {
-    SuccessDialog.show(
+    /*SuccessDialog.show(
+      message: 'Your account has been created. Start using the app now.',
+      buttonText: 'Proceed to Login',
+      onTap: () {
+        Get.offAllNamed(AppRoutes.signIn);
+      },
+    );*/
+
+    isLoadingVerify = true;
+    update();
+    Map<String, dynamic> body = {
+      "oneTimeCode": int.tryParse(otpController.text),
+      "email": emailController.text
+    };
+
+    var response = await ApiService.post(
+      ApiEndPoint.verifyEmail,
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      var data = response.data;
+      SuccessDialog.show(
       message: 'Your account has been created. Start using the app now.',
       buttonText: 'Proceed to Login',
       onTap: () {
         Get.offAllNamed(AppRoutes.signIn);
       },
     );
-    return;
 
-    isLoadingVerify = true;
-    update();
-    Map<String, String> body = {"otp": otpController.text};
-    Map<String, String> header = {"SignUpToken": "signUpToken $signUpToken"};
-    var response = await ApiService.post(
-      ApiEndPoint.verifyEmail,
-      body: body,
-      header: header,
-    );
 
-    if (response.statusCode == 200) {
-      var data = response.data;
-
-      LocalStorage.token = data['data']["accessToken"];
+      /*LocalStorage.token = data['data']["accessToken"];
       LocalStorage.userId = data['data']["attributes"]["_id"];
       LocalStorage.myImage = data['data']["attributes"]["image"];
       LocalStorage.myName = data['data']["attributes"]["fullName"];
@@ -156,7 +184,7 @@ class SignUpController extends GetxController {
       LocalStorage.setString(LocalStorageKeys.userId, LocalStorage.userId);
       LocalStorage.setString(LocalStorageKeys.myImage, LocalStorage.myImage);
       LocalStorage.setString(LocalStorageKeys.myName, LocalStorage.myName);
-      LocalStorage.setString(LocalStorageKeys.myEmail, LocalStorage.myEmail);
+      LocalStorage.setString(LocalStorageKeys.myEmail, LocalStorage.myEmail);*/
 
       // if (LocalStorage.myRole == 'consultant') {
       //   Get.toNamed(AppRoutes.personalInformation);

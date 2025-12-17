@@ -1,3 +1,4 @@
+import 'package:embeyi/core/services/storage/storage_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:embeyi/core/utils/extensions/extension.dart';
 import '../../../core/config/route/app_routes.dart';
@@ -33,18 +34,23 @@ class _SplashScreenState extends State<SplashScreen> {
     // Navigate based on login status and role
     if (LocalStorage.isLogIn) {
       // User is logged in, navigate to appropriate home screen based on role
-      if (LocalStorage.userRole == UserRole.employer) {
+      if (LocalStorage.role=="jobSeeker") {
         // Navigate to recruiter home
-        Get.offAllNamed(RecruiterRoutes.home);
+        print("a 🤣🤣🤣🤣${LocalStorage.userRole!.name}");
+        print("User Role : 😍😍😍😍 kdfdk ${LocalStorage.role}");
+        Get.offAllNamed(JobSeekerRoutes.home);
       } else {
         // Navigate to job seeker home
-        Get.offAllNamed(JobSeekerRoutes.home);
+        print("b 🤣🤣🤣🤣${LocalStorage.userRole!.name}");
+        print("User Role : 😍😍😍😍 kdfdk ${LocalStorage.role}");
+        LocalStorage.userRole==UserRole.employer;
+        Get.offAllNamed(RecruiterRoutes.home);
       }
     } else {
       // User is not logged in, check if role is already selected
       if (LocalStorage.userRole != UserRole.jobSeeker) {
         // Role is selected, go to sign in
-        Get.offAllNamed(AppRoutes.signIn);
+        Get.offAllNamed(AppRoutes.onboarding);
       } else {
         // No role selected, go to onboarding
         Get.offAllNamed(AppRoutes.onboarding);

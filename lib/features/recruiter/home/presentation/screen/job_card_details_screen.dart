@@ -21,26 +21,34 @@ class JobCardDetailsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: _buildAppBar(),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(16.r),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildJobDetailHeader(controller, context),
-              16.height,
-              _buildFilterChips(controller),
-              16.height,
-              _buildCandidatesList(controller),
-            ],
+      appBar: _buildAppBar(controller),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        return SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.all(16.r),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildJobDetailHeader(controller, context),
+                16.height,
+                _buildFilterChips(controller),
+                16.height,
+                _buildCandidatesList(controller),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 
-  AppBar _buildAppBar() {
+  AppBar _buildAppBar(JobCardDetailsController controller) {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
@@ -48,30 +56,34 @@ class JobCardDetailsScreen extends StatelessWidget {
         icon: Icon(Icons.arrow_back, color: AppColors.black, size: 24.sp),
         onPressed: () => Get.back(),
       ),
-      title: Text(
-        'Sr. UI/UX Designer',
+      title: Obx(() => Text(
+        controller.jobTitle.value.isNotEmpty
+            ? controller.jobTitle.value
+            : 'Job Details',
         style: TextStyle(
           fontSize: 20.sp,
           fontWeight: FontWeight.w600,
           color: AppColors.black,
         ),
-      ),
+      )),
       centerTitle: true,
     );
   }
 
   Widget _buildJobDetailHeader(
-    JobCardDetailsController controller,
-    BuildContext context,
-  ) {
+      JobCardDetailsController controller,
+      BuildContext context,
+      ) {
     return Obx(
-      () => JobDetailHeaderCard(
+          () => JobDetailHeaderCard(
         jobTitle: controller.jobTitle.value,
         location: controller.location.value,
         isRemote: controller.isRemote.value,
         candidateCount: controller.candidateCount.value,
         deadline: controller.deadline.value,
-        thumbnailImage: AppImages.jobPost,
+        thumbnailImage: controller.thumbnail.value.isNotEmpty
+            ? controller.thumbnail.value
+            : AppImages.jobPost,
         isSaved: controller.isSaved.value,
         onSave: controller.toggleSave,
         onViewPost: () {
@@ -137,7 +149,7 @@ class JobCardDetailsScreen extends StatelessWidget {
 
   Widget _buildFilterChips(JobCardDetailsController controller) {
     return Obx(
-      () => SingleChildScrollView(
+          () => SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
           children: controller.filters.map((filter) {
@@ -157,7 +169,7 @@ class JobCardDetailsScreen extends StatelessWidget {
 
   Widget _buildCandidatesList(JobCardDetailsController controller) {
     return Obx(
-      () => ListView.builder(
+          () => ListView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: controller.filteredCandidates.length,

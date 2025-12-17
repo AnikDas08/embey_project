@@ -72,7 +72,7 @@ class _VerifyUserState extends State<VerifyUser> {
                         Center(
                           child: CommonText(
                             text:
-                                "${AppString.codeHasBeenSendTo} ${controller.emailController.text}",
+                                "OTP Code has been sent to your registered email",
                             fontSize: 18,
                             top: 10,
                             bottom: 20,
@@ -81,20 +81,20 @@ class _VerifyUserState extends State<VerifyUser> {
                         ),
 
                         /// OTP Filed here
+                        /// OTP Field here
                         Flexible(
                           flex: 0,
                           child: PinCodeTextField(
                             controller: controller.otpController,
                             autoDisposeControllers: false,
-                            cursorColor: AppColors.primary,
-
+                            cursorColor: AppColors.primaryColor, // Ensure this matches your AppColors name
                             appContext: (context),
                             autoFocus: true,
                             pinTheme: PinTheme(
                               shape: PinCodeFieldShape.box,
-                              borderRadius: BorderRadius.circular(16.r),
-                              fieldHeight: 60.h,
-                              fieldWidth: 60.w,
+                              borderRadius: BorderRadius.circular(12.r), // Reduced radius for better fit
+                              fieldHeight: 50.h, // Slightly reduced height
+                              fieldWidth: 45.w,  // Reduced width so 6 fields fit comfortably
                               activeFillColor: AppColors.transparent,
                               selectedFillColor: AppColors.transparent,
                               inactiveFillColor: AppColors.transparent,
@@ -103,22 +103,26 @@ class _VerifyUserState extends State<VerifyUser> {
                               activeColor: AppColors.primaryColor,
                               inactiveColor: AppColors.black,
                             ),
-                            length: 4,
+                            length: 6, // Changed from 4 to 6
                             keyboardType: TextInputType.number,
-                            autovalidateMode: AutovalidateMode.disabled,
+                            autovalidateMode: AutovalidateMode.onUserInteraction,
                             enableActiveFill: true,
                             validator: (value) {
+                              // Changed check to 6 digits
                               if (value != null && value.length == 6) {
                                 return null;
                               } else {
-                                return AppString.otpIsInValid;
+                                return "Please enter a 6-digit code";
                               }
+                            },
+                            onChanged: (value) {
+                              // Optional: you can trigger state changes here
                             },
                           ),
                         ),
 
                         /// Resent OTP or show Timer
-                        GestureDetector(
+                       /* GestureDetector(
                           onTap: controller.time == '00:00'
                               ? () {
                                   controller.startTimer();
@@ -133,7 +137,27 @@ class _VerifyUserState extends State<VerifyUser> {
                             bottom: 20,
                             fontSize: 18,
                           ),
+                        ),*/
+                        
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            CommonText(
+                                text: "Did't receive a code? ",
+                              fontSize: 16.sp,
+                              color: AppColors.grey,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            CommonText(
+                              text: "Resend",
+                              fontSize: 16.sp,
+                              color: AppColors.primaryColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ],
                         ),
+
+                        SizedBox(height: 20.h,),
 
                         ///  Submit Button here
                         CommonButton(

@@ -1,5 +1,6 @@
 import 'package:embeyi/core/component/image/common_image.dart';
 import 'package:embeyi/core/component/text/common_text.dart';
+import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:embeyi/core/utils/constants/app_icons.dart';
 import 'package:embeyi/core/utils/constants/app_images.dart';
 import 'package:flutter/material.dart';
@@ -61,7 +62,7 @@ class JobDetailHeaderCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8.r),
                   image: DecorationImage(
-                    image: AssetImage(thumbnailImage),
+                    image: Image.network(ApiEndPoint.imageUrl+thumbnailImage).image,
                     fit: BoxFit.cover,
                   ),
                 ),

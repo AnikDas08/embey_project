@@ -15,6 +15,7 @@ class LocalStorage {
   static String myName = "";
   static String myEmail = "";
   static String USER = "";
+  static String role = "";
   static UserRole userRole = UserRole.jobSeeker;
 
   // Create Local Storage Instance
@@ -37,6 +38,7 @@ class LocalStorage {
     myImage = localStorage.getString(LocalStorageKeys.myImage) ?? "";
     myName = localStorage.getString(LocalStorageKeys.myName) ?? "";
     myEmail = localStorage.getString(LocalStorageKeys.myEmail) ?? "";
+    role = localStorage.getString(LocalStorageKeys.role) ?? "";
     userRole = UserRole.values.firstWhere(
       (element) =>
           element.name == localStorage.getString(LocalStorageKeys.userRole),
@@ -110,6 +112,14 @@ class LocalStorage {
         );
         break;
     }
+  }
+
+  static Future<void> setRole(String key, String value)async{
+    final localStorage = await _getStorage();
+    await localStorage.setString(key, value);
+  }
+  static Future<String> getRole(String key)async{
+    return _getStorage().then((value) => value.getString(key) ?? "");
   }
 
   static Future<void> setBool(String key, bool value) async {

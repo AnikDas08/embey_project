@@ -75,10 +75,13 @@ class _SelectRouleScreenState extends State<SelectRouleScreen> {
                       LocalStorageKeys.userRole,
                       UserRole.jobSeeker.name,
                     );
+                    await LocalStorage.setRole(LocalStorageKeys.role, "jobSeeker");
                     await LocalStorage.getAllPrefData();
                     setState(() {
                       selectedRole = UserRole.jobSeeker;
                     });
+                    print("User Role 😊😊😊😊${LocalStorage.userRole}");
+                    print("User Role : 😍😍😍😍 kdfdk ${LocalStorage.role}");
                     Get.toNamed(AppRoutes.signUp);
                   },
                   isSeleted: selectedRole == UserRole.jobSeeker,
@@ -93,10 +96,13 @@ class _SelectRouleScreenState extends State<SelectRouleScreen> {
                       LocalStorageKeys.userRole,
                       UserRole.employer.name,
                     );
+                    await LocalStorage.setRole(LocalStorageKeys.role, "recruiter");
                     await LocalStorage.getAllPrefData();
                     setState(() {
                       selectedRole = UserRole.employer;
                     });
+                    print("User Role 😊😊😊😊${LocalStorage.userRole}");
+                    print("User Role : 😍😍😍😍 kdfdk ${LocalStorage.role}");
                     Get.toNamed(AppRoutes.signUp);
                   },
                   isSeleted: selectedRole == UserRole.employer,

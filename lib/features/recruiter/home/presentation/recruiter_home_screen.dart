@@ -1,6 +1,7 @@
 import 'package:embeyi/core/component/bottom_nav_bar/common_bottom_bar.dart';
 import 'package:embeyi/core/component/image/common_image.dart';
 import 'package:embeyi/core/component/text/common_text.dart';
+import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:embeyi/core/config/route/app_routes.dart';
 import 'package:embeyi/core/config/route/recruiter_routes.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
@@ -56,42 +57,52 @@ class RecruiterHomeScreen extends StatelessWidget {
       child: Row(
         children: [
           // Logo
-          CircleAvatar(
-            radius: 32.r,
-            backgroundColor: AppColors.white,
-            child: ClipOval(
-              child: CommonImage(imageSrc: AppImages.logo, size: 64.sp),
-            ),
+          Obx(() {
+            String image=controller.companyImage.value.startsWith("http")?
+            controller.companyImage.value:
+            ApiEndPoint.imageUrl+controller.companyName.value;
+            return CircleAvatar(
+              radius: 32.r,
+              backgroundColor: AppColors.white,
+              child: ClipOval(
+                child: controller.companyImage.value.isNotEmpty
+                    ? CommonImage(
+                    imageSrc: image, size: 64.sp)
+                    : CommonImage(imageSrc: AppImages.logo, size: 64.sp),
+              ),
+            );
+          }
           ),
+
           8.width,
           // Company Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CommonText(
-                  text: 'Jobarman',
+                Obx(() => CommonText(
+                  text: controller.companyName.value,
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w700,
                   color: AppColors.primary,
-                ),
+                )),
                 2.height,
                 Row(
                   children: [
                     CommonImage(imageSrc: AppIcons.location, size: 12.sp),
                     4.width,
-                    CommonText(
-                      text: '2118 Thornridge Cir. Syracuse',
+                    Obx(() => CommonText(
+                      text: controller.companyAddress.value,
                       fontSize: 11.sp,
                       fontWeight: FontWeight.w400,
                       color: AppColors.primaryText,
-                    ),
+                    )),
                   ],
                 ),
               ],
             ),
           ),
-          // Action Icons
+          // Action Icons remain same...
           _buildActionIcon(
             AppIcons.chat,
             hasNotification: false,
@@ -143,48 +154,52 @@ class RecruiterHomeScreen extends StatelessWidget {
   }
 
   Widget _buildStatsGrid() {
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 12.h,
-      crossAxisSpacing: 12.w,
-      childAspectRatio: 1.6,
-      children: [
-        StatCard(
-          count: '05',
-          label: 'Active Jobs',
-          backgroundColor: AppColors.primaryColor,
-          onTap: () {
-            AppRoutes.goToActiveJobPost();
-          },
-        ),
-        StatCard(
-          count: '20',
-          label: 'Pending Request',
-          backgroundColor: const Color(0xFF3AAFB9),
-          onTap: () {
-            AppRoutes.goToPendingJobRequest();
-          },
-        ),
-        StatCard(
-          count: '20',
-          label: 'Short Listed',
-          backgroundColor: const Color(0xFF008F37),
-          onTap: () {
-            AppRoutes.goToShortJobListed();
-          },
-        ),
-        StatCard(
-          count: '10',
-          label: 'Interview',
-          backgroundColor: AppColors.secondaryPrimary,
-          onTap: () {
-            AppRoutes.goToInterviewJob();
-          },
-        ),
-      ],
-    );
+    return Obx(() {
+      final summary = controller.profileData.value?.overviewSummary;
+
+      return GridView.count(
+        crossAxisCount: 2,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        mainAxisSpacing: 12.h,
+        crossAxisSpacing: 12.w,
+        childAspectRatio: 1.6,
+        children: [
+          StatCard(
+            count: (summary?.activePosts ?? 0).toString().padLeft(2, '0'),
+            label: 'Active Jobs',
+            backgroundColor: AppColors.primaryColor,
+            onTap: () {
+              AppRoutes.goToActiveJobPost();
+            },
+          ),
+          StatCard(
+            count: (summary?.pendingRequest ?? 0).toString().padLeft(2, '0'),
+            label: 'Pending Request',
+            backgroundColor: const Color(0xFF3AAFB9),
+            onTap: () {
+              AppRoutes.goToPendingJobRequest();
+            },
+          ),
+          StatCard(
+            count: (summary?.shortlistRequest ?? 0).toString().padLeft(2, '0'),
+            label: 'Short Listed',
+            backgroundColor: const Color(0xFF008F37),
+            onTap: () {
+              AppRoutes.goToShortJobListed();
+            },
+          ),
+          StatCard(
+            count: (summary?.interviewRequest ?? 0).toString().padLeft(2, '0'),
+            label: 'Interview',
+            backgroundColor: AppColors.secondaryPrimary,
+            onTap: () {
+              AppRoutes.goToInterviewJob();
+            },
+          ),
+        ],
+      );
+    });
   }
 
   Widget _buildRecentJobsSection() {
@@ -228,29 +243,57 @@ class RecruiterHomeScreen extends StatelessWidget {
       ],
     );
   }
-
   Widget _buildJobsList() {
     return Obx(
-      () => ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: controller.recentJobs.length,
-        itemBuilder: (context, index) {
-          final job = controller.recentJobs[index];
-          return RecruiterJobCard(
-            jobTitle: job['title']!,
-            location: job['location']!,
-            isFullTime: job['isFullTime'] as bool,
-            isRemote: job['isRemote'] as bool,
-            candidateCount: job['candidateCount'] as int,
-            deadline: job['deadline']!,
-            thumbnailImage: job['thumbnail']!,
-            onTap: () {
-              RecruiterRoutes.goToJobCardDetails();
-            },
+          () {
+        if (controller.isLoadingJobs.value) {
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 24.h),
+              child: CircularProgressIndicator(
+                color: AppColors.primaryColor,
+              ),
+            ),
           );
-        },
-      ),
+        }
+
+        if (controller.recentJobs.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 24.h),
+              child: CommonText(
+                text: 'No recent jobs found',
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w400,
+                color: AppColors.secondaryText,
+              ),
+            ),
+          );
+        }
+
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: controller.recentJobs.length,
+          itemBuilder: (context, index) {
+            final job = controller.recentJobs[index];
+            return RecruiterJobCard(
+              jobTitle: job.title,
+              location: job.location,
+              isFullTime: job.isFullTime,
+              isRemote: job.isRemote,
+              candidateCount: job.totalApplications,
+              deadline: job.formattedDeadline,
+              thumbnailImage: job.thumbnail,
+              onTap: () {
+                Get.toNamed(RecruiterRoutes.jobCardDetails,arguments: {
+                  "postId":job.id,
+                });
+              },
+            );
+          },
+        );
+      },
     );
   }
 }

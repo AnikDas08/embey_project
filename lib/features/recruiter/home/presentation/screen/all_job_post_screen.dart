@@ -2,10 +2,14 @@ import 'package:embeyi/core/component/button/common_button.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/core/utils/extensions/extension.dart';
 import 'package:embeyi/features/recruiter/home/presentation/controller/all_job_post_controller.dart';
+import 'package:embeyi/features/recruiter/home/presentation/controller/home_controller.dart';
 import 'package:embeyi/features/recruiter/home/presentation/widgets/recruiter_job_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+
+import '../../../../../core/component/text/common_text.dart';
+import '../../../../../core/config/route/recruiter_routes.dart';
 
 class AllJobPostScreen extends StatelessWidget {
   const AllJobPostScreen({super.key});
@@ -17,19 +21,22 @@ class AllJobPostScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: _buildAppBar(),
-      body: Column(
-        children: [
-          _buildTabBar(controller),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.all(16.r),
-                child: _buildJobsList(controller),
+      body: GetBuilder<AllJobPostController>(
+        init: AllJobPostController(),
+        builder: (controller)=> Column(
+          children: [
+            _buildTabBar(controller),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.all(16.r),
+                  child: _buildJobsList(controller),
+                ),
               ),
             ),
-          ),
-          _buildCreateJobButton(controller),
-        ],
+            _buildCreateJobButton(controller),
+          ],
+        ),
       ),
     );
   }
@@ -116,24 +123,53 @@ class AllJobPostScreen extends StatelessWidget {
 
   Widget _buildJobsList(AllJobPostController controller) {
     return Obx(
-      () => ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: controller.currentJobs.length,
-        itemBuilder: (context, index) {
-          final job = controller.currentJobs[index];
-          return RecruiterJobCard(
-            jobTitle: job['title']!,
-            location: job['location']!,
-            isFullTime: job['isFullTime'] as bool,
-            isRemote: job['isRemote'] as bool,
-            candidateCount: job['candidateCount'] as int,
-            deadline: job['deadline']!,
-            thumbnailImage: job['thumbnail']!,
-            onTap: () => controller.viewJobDetails(job['title']!),
+          () {
+        if (controller.isLoadingJobs.value) {
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 24.h),
+              child: CircularProgressIndicator(
+                color: AppColors.primaryColor,
+              ),
+            ),
           );
-        },
-      ),
+        }
+
+        if (controller.recentJobs.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 24.h),
+              child: CommonText(
+                text: 'No recent jobs found',
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w400,
+                color: AppColors.secondaryText,
+              ),
+            ),
+          );
+        }
+
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: controller.recentJobs.length,
+          itemBuilder: (context, index) {
+            final job = controller.recentJobs[index];
+            return RecruiterJobCard(
+              jobTitle: job.title,
+              location: job.location,
+              isFullTime: job.isFullTime,
+              isRemote: job.isRemote,
+              candidateCount: job.totalApplications,
+              deadline: job.formattedDeadline,
+              thumbnailImage: job.thumbnail,
+              onTap: () {
+                RecruiterRoutes.goToJobCardDetails();
+              },
+            );
+          },
+        );
+      },
     );
   }
 

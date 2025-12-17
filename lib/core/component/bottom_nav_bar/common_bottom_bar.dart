@@ -54,7 +54,7 @@ class _CommonBottomNavBarState extends State<CommonBottomNavBar> {
   @override
   void initState() {
     bottomNavIndex = widget.currentIndex;
-    if (LocalStorage.userRole == UserRole.jobSeeker) {
+    if (LocalStorage.role=="jobSeeker") {
       unselectedIcons = jobSeekerUnselectedIcons;
       selectedIcons = jobSeekerSelectedIcons;
     } else {
@@ -100,8 +100,9 @@ class _CommonBottomNavBarState extends State<CommonBottomNavBar> {
     appLog(LocalStorage.userRole, source: "user role");
     appLog(index, source: "index");
     appLog(widget.currentIndex, source: "widget current index");
+    print("User Role : 😍😍😍😍${LocalStorage.userRole!.name}");
 
-    if (LocalStorage.userRole == UserRole.jobSeeker) {
+    if (LocalStorage.role=="jobSeeker") {
       // Job Seeker Navigation
       if (index == 0) {
         if (!(widget.currentIndex == 0)) {

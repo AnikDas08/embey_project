@@ -1,45 +1,78 @@
 import 'package:get/get.dart';
-import 'package:embeyi/core/utils/constants/app_images.dart';
+
+import '../../../../../core/config/api/api_end_point.dart';
+import '../../../../../core/services/api/api_service.dart';
+import '../../../../../core/services/storage/storage_services.dart';
+import '../../../../../core/utils/app_utils.dart';
+import '../../data/model/home_model.dart';
+import '../../data/model/job_model.dart';
 
 class RecruiterHomeController extends GetxController {
   // Observable list for recent jobs
-  final RxList<Map<String, dynamic>> recentJobs = <Map<String, dynamic>>[].obs;
+  final RxList<JobData> recentJobs = <JobData>[].obs;
+  final Rx<RecruiterProfileData?> profileData = Rx<RecruiterProfileData?>(null);
+  final RxString companyName = ''.obs;
+  final RxString companyImage = ''.obs;
+  final RxString companyAddress = ''.obs;
+  final RxBool isLoadingJobs = false.obs;
+  final RxBool isLoadingProfile = false.obs;
 
   @override
   void onInit() {
     super.onInit();
-    _loadMockData();
+    getProfile();
+    getJobs();
   }
 
-  void _loadMockData() {
-    recentJobs.value = [
-      {
-        'title': 'Sr. UI/UX Designer',
-        'location': 'California, United State.',
-        'isFullTime': true,
-        'isRemote': true,
-        'candidateCount': 150,
-        'deadline': '01 Dec 25',
-        'thumbnail': AppImages.jobPost,
-      },
-      {
-        'title': 'Web Designer',
-        'location': 'California, United State.',
-        'isFullTime': true,
-        'isRemote': true,
-        'candidateCount': 200,
-        'deadline': '01 Dec 25',
-        'thumbnail': AppImages.jobPost,
-      },
-      {
-        'title': 'Office Assistance',
-        'location': 'California, United State.',
-        'isFullTime': true,
-        'isRemote': true,
-        'candidateCount': 200,
-        'deadline': '01 Dec 25',
-        'thumbnail': AppImages.jobPost,
-      },
-    ];
+  Future<void> getProfile() async {
+    isLoadingProfile.value = true;
+    update();
+    try {
+      final response = await ApiService.get(
+          ApiEndPoint.user,
+          header: {"Authorization": "Bearer ${LocalStorage.token}"}
+      );
+      if (response.statusCode == 200) {
+        final profileModel = RecruiterProfileModel.fromJson(response.data);
+        profileData.value = profileModel.data;
+
+        // Update observables for UI
+        companyName.value = profileModel.data.name;
+        companyImage.value = profileModel.data.image;
+        companyAddress.value = profileModel.data.address;
+      } else {
+        Utils.errorSnackBar(response.statusCode, response.message);
+      }
+    } catch (e) {
+      Utils.errorSnackBar(0, e.toString());
+    }
+    isLoadingProfile.value = false;
+    update();
+  }
+
+  Future<void> getJobs() async {
+    isLoadingJobs.value = true;
+    update();
+    try {
+      final response = await ApiService.get(
+          ApiEndPoint.job_all,
+          header: {"Authorization": "Bearer ${LocalStorage.token}"}
+      );
+      if (response.statusCode == 200) {
+        final jobModel = RecruiterJobModel.fromJson(response.data);
+        recentJobs.value = jobModel.data.take(3).toList(); // Get first 3 jobs for recent
+      } else {
+        Utils.errorSnackBar(response.statusCode, response.message);
+      }
+    } catch (e) {
+      Utils.errorSnackBar(0, e.toString());
+    }
+    isLoadingJobs.value = false;
+    update();
+  }
+
+  void refreshData() {
+    getProfile();
+    getJobs();
   }
 }

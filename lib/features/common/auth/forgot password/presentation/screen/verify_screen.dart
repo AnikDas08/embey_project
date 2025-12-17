@@ -78,9 +78,10 @@ class _VerifyScreenState extends State<VerifyScreen> {
                             child: CommonText(
                               text:
                                   "${AppString.codeHasBeenSendTo} ${controller.emailController.text}",
-                              fontSize: 18,
+                              fontSize: 16.sp,
                               top: 10,
                               bottom: 60,
+                              maxLines: 2,
                             ),
                           ),
 
@@ -113,7 +114,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
                                 activeColor: AppColors.primaryColor,
                                 inactiveColor: AppColors.secondaryText,
                               ),
-                              length: 4,
+                              length: 6,
                               keyboardType: TextInputType.number,
                               autovalidateMode: AutovalidateMode.disabled,
                               enableActiveFill: true,
@@ -121,7 +122,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
                           ),
 
                           /// Resent OTP or show Timer
-                          GestureDetector(
+                          /*GestureDetector(
                             onTap: controller.time == '00:00'
                                 ? () {
                                     controller.startTimer();
@@ -136,7 +137,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
                               bottom: 20,
                               fontSize: 18,
                             ),
-                          ),
+                          ),*/
 
                           ///  Submit Button here
                           CommonButton(
