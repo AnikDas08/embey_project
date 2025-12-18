@@ -1,10 +1,10 @@
-import 'package:embeyi/core/component/image/common_image.dart';
-import 'package:embeyi/core/utils/constants/app_icons.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:embeyi/core/component/appbar/common_appbar.dart';
 import 'package:embeyi/core/component/button/common_button.dart';
+import 'package:embeyi/core/component/image/common_image.dart';
 import 'package:embeyi/core/component/text/common_text.dart';
 import 'package:embeyi/core/component/text_field/common_text_field.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
@@ -18,457 +18,235 @@ class RecruiterEditJobPostScreen extends StatelessWidget {
     final controller = Get.put(RecruiterEditJobPostController());
 
     return Scaffold(
-      appBar: CommonAppbar(
-        title: 'EDIT POST',
-        showLeading: true,
-        centerTitle: true,
-        textColor: AppColors.black,
-        elevation: 0,
-      ),
-      body: SafeArea(
-        child: Column(
+      backgroundColor: Colors.white,
+      appBar: CommonAppbar(title: 'EDIT POST', centerTitle: true),
+      body: Obx(() {
+        // Show loader if the initial data isn't ready yet
+        if (controller.isLoading.value && controller.jobDetails.value == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        return Column(
           children: [
             Expanded(
               child: SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 20.h),
+                padding: EdgeInsets.all(16.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // --- IMAGE PICKER SECTION ---
+                    _buildImagePicker(controller),
 
-                      // Profile Image Upload Section
-                      _buildProfileImageSection(controller),
+                    SizedBox(height: 24.h),
 
-                      SizedBox(height: 24.h),
-
-                      // Job Title
-                      _buildLabel('Job Title'),
-                      SizedBox(height: 8.h),
-                      CommonTextField(
+                    _buildLabel('Job Title'),
+                    CommonTextField(
                         controller: controller.jobTitleController,
-                        hintText: 'Enter job title',
-                        fillColor: AppColors.white,
-                        borderColor: AppColors.borderColor,
-                      ),
+                        hintText: 'Enter title'
+                    ),
 
-                      SizedBox(height: 16.h),
+                    SizedBox(height: 16.h),
+                    _buildLabel('Job Category'),
+                    _buildDropdown(
+                      value: controller.selectedCategoryName.value,
+                      items: controller.categories.map((e) => e['name'].toString()).toList(),
+                      onChanged: (v) => controller.setCategory(v),
+                      hint: "Select Category",
+                    ),
 
-                      // Job Category
-                      _buildLabel('Job Category'),
-                      SizedBox(height: 8.h),
-                      Obx(
-                        () => _buildDropdown(
-                          value: controller.selectedJobCategory.value,
-                          items: controller.jobCategories,
-                          onChanged: controller.updateJobCategory,
+                    SizedBox(height: 16.h),
+                    _buildLabel('Job Type'),
+                    _buildDropdown(
+                      value: controller.selectedJobType.value,
+                      items: controller.jobTypes,
+                      onChanged: (v) => controller.selectedJobType.value = v,
+                    ),
+
+                    SizedBox(height: 16.h),
+                    _buildLabel('Experience Level'),
+                    _buildDropdown(
+                      value: controller.selectedExperienceLevel.value,
+                      items: controller.experienceLevels,
+                      onChanged: (v) => controller.selectedExperienceLevel.value = v,
+                    ),
+
+                    SizedBox(height: 16.h),
+                    _buildLabel('Job Level'),
+                    _buildDropdown(
+                      value: controller.selectedJobLevel.value,
+                      items: controller.jobLevels,
+                      onChanged: (v) => controller.selectedJobLevel.value = v,
+                    ),
+
+                    SizedBox(height: 16.h),
+                    // --- SALARY ROW ---
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildLabeledField('Min Salary', controller.minSalaryController),
                         ),
-                      ),
-
-                      SizedBox(height: 16.h),
-
-                      // Employment Type
-                      _buildLabel('Employment Type'),
-                      SizedBox(height: 8.h),
-                      Obx(
-                        () => _buildDropdown(
-                          value: controller.selectedEmploymentType.value,
-                          items: controller.employmentTypes,
-                          onChanged: controller.updateEmploymentType,
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: _buildLabeledField('Max Salary', controller.maxSalaryController),
                         ),
-                      ),
+                      ],
+                    ),
 
-                      SizedBox(height: 16.h),
-
-                      // Job Type
-                      _buildLabel('Job Type'),
-                      SizedBox(height: 8.h),
-                      Obx(
-                        () => _buildDropdown(
-                          value: controller.selectedJobType.value,
-                          items: controller.jobTypes,
-                          onChanged: controller.updateJobType,
-                        ),
-                      ),
-
-                      SizedBox(height: 16.h),
-
-                      // Experience Level
-                      _buildLabel('Experience Level'),
-                      SizedBox(height: 8.h),
-                      Obx(
-                        () => _buildDropdown(
-                          value: controller.selectedExperienceLevel.value,
-                          items: controller.experienceLevels,
-                          onChanged: controller.updateExperienceLevel,
-                        ),
-                      ),
-
-                      SizedBox(height: 16.h),
-
-                      // Salary Range
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildLabel('Min Salary'),
-                                SizedBox(height: 8.h),
-                                CommonTextField(
-                                  controller: controller.minSalaryController,
-                                  hintText: 'Min Salary',
-                                  keyboardType: TextInputType.number,
-                                  fillColor: AppColors.white,
-                                  borderColor: AppColors.borderColor,
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(width: 12.w),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildLabel('Max Salary'),
-                                SizedBox(height: 8.h),
-                                CommonTextField(
-                                  controller: controller.maxSalaryController,
-                                  hintText: 'Max Salary',
-                                  keyboardType: TextInputType.number,
-                                  fillColor: AppColors.white,
-                                  borderColor: AppColors.borderColor,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      SizedBox(height: 16.h),
-
-                      // Job Location
-                      _buildLabel('Job Location'),
-                      SizedBox(height: 8.h),
-                      CommonTextField(
+                    SizedBox(height: 16.h),
+                    _buildLabel('Job Location'),
+                    CommonTextField(
                         controller: controller.jobLocationController,
-                        hintText: 'Enter job location',
-                        fillColor: AppColors.white,
-                        borderColor: AppColors.borderColor,
-                      ),
+                        hintText: 'Location'
+                    ),
 
-                      SizedBox(height: 16.h),
-
-                      // Company Description
-                      _buildLabel('Job Description'),
-                      SizedBox(height: 8.h),
-                      CommonTextField(
+                    SizedBox(height: 16.h),
+                    _buildLabel('Job Description'),
+                    CommonTextField(
                         controller: controller.companyDescriptionController,
-                        hintText: 'Enter company description',
-                        maxLines: 5,
-                        textInputAction: TextInputAction.newline,
-                        fillColor: AppColors.white,
-                        borderColor: AppColors.borderColor,
-                      ),
+                        hintText: 'Description',
+                        maxLines: 4
+                    ),
 
-                      SizedBox(height: 16.h),
+                    SizedBox(height: 16.h),
+                    _buildLabel('Deadline'),
+                    CommonTextField(
+                      controller: controller.applicationDeadlineController,
+                      readOnly: true,
+                      suffixIcon: const Icon(Icons.calendar_today, size: 18),
+                      onTap: controller.selectDeadlineDate,
+                    ),
 
-                      // // Key Responsibilities
-                      // _buildLabel('Key Responsibilities'),
-                      // SizedBox(height: 8.h),
-                      // CommonTextField(
-                      //   controller: controller.keyResponsibilitiesController,
-                      //   hintText: 'Enter key responsibilities',
-                      //   maxLines: 5,
-                      //   textInputAction: TextInputAction.newline,
-                      //   fillColor: AppColors.white,
-                      //   borderColor: AppColors.borderColor,
-                      // ),
-
-                      // SizedBox(height: 16.h),
-
-                      // // Requirements
-                      // _buildLabel('Requirements'),
-                      // SizedBox(height: 8.h),
-                      // CommonTextField(
-                      //   controller: controller.requirementsController,
-                      //   hintText: 'Enter requirements',
-                      //   maxLines: 5,
-                      //   textInputAction: TextInputAction.newline,
-                      //   fillColor: AppColors.white,
-                      //   borderColor: AppColors.borderColor,
-                      // ),
-
-                      // SizedBox(height: 16.h),
-
-                      // // Working Hours
-                      // _buildLabel('Working Hours'),
-                      // SizedBox(height: 8.h),
-                      // CommonTextField(
-                      //   controller: controller.workingHoursController,
-                      //   hintText: 'Enter working hours',
-                      //   fillColor: AppColors.white,
-                      //   borderColor: AppColors.borderColor,
-                      // ),
-
-                      // SizedBox(height: 16.h),
-
-                      // // How To Apply
-                      // _buildLabel('How To Apply'),
-                      // SizedBox(height: 8.h),
-                      // CommonTextField(
-                      //   controller: controller.howToApplyController,
-                      //   hintText: 'Enter application instructions',
-                      //   maxLines: 3,
-                      //   textInputAction: TextInputAction.newline,
-                      //   fillColor: AppColors.white,
-                      //   borderColor: AppColors.borderColor,
-                      // ),
-                      SizedBox(height: 16.h),
-
-                      // Application Deadline
-                      _buildLabel('Deadline'),
-                      SizedBox(height: 8.h),
-                      CommonTextField(
-                        controller: controller.applicationDeadlineController,
-                        hintText: 'Select deadline',
-                        readOnly: true,
-                        fillColor: AppColors.white,
-                        borderColor: AppColors.borderColor,
-                        suffixIcon: Icon(
-                          Icons.calendar_today,
-                          size: 18.sp,
-                          color: AppColors.textFiledColor,
+                    SizedBox(height: 16.h),
+                    _buildLabel('Skills'),
+                    Wrap(
+                      spacing: 8.w,
+                      children: [
+                        ...controller.skills.map((s) => Chip(
+                          label: Text(s),
+                          onDeleted: () => controller.removeSkill(s),
+                          backgroundColor: AppColors.primaryColor.withOpacity(0.1),
+                        )),
+                        ActionChip(
+                            label: const Text("+ Add Skill"),
+                            onPressed: controller.showAddSkillDialog
                         ),
-                        onTap: controller.selectDeadlineDate,
-                      ),
-
-                      SizedBox(height: 16.h),
-
-                      // S&S Required
-                      _buildLabel('Skill Required'),
-                      SizedBox(height: 8.h),
-                      Obx(
-                        () => _buildDropdown(
-                          value: controller.selectedSSSRequired.value,
-                          items: controller.sssRequiredOptions,
-                          onChanged: controller.updateSSSRequired,
-                        ),
-                      ),
-
-                      SizedBox(height: 20.h),
-
-                      // Skills Tags Section
-                      Obx(
-                        () => Wrap(
-                          spacing: 8.w,
-                          runSpacing: 8.h,
-                          children: [
-                            ...controller.skills.map(
-                              (skill) => _buildSkillChip(skill, controller),
-                            ),
-                            _buildAddSkillButton(controller),
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(height: 24.h),
-                    ],
-                  ),
+                      ],
+                    ),
+                    SizedBox(height: 30.h),
+                  ],
                 ),
               ),
             ),
 
-            // Submit Button
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -2),
-                  ),
-                ],
-              ),
+            // --- SUBMIT BUTTON ---
+            Padding(
+              padding: EdgeInsets.all(16.w),
               child: CommonButton(
-                titleText: 'Submit',
-                titleSize: 16,
-                titleWeight: FontWeight.w600,
-                buttonHeight: 50.h,
-                buttonRadius: 8,
-                buttonColor: AppColors.primaryColor,
-                isGradient: false,
-                onTap: controller.submitJobPost,
+                titleText: controller.isLoading.value ? 'Updating...' : 'Submit',
+                onTap: controller.isLoading.value ? null : controller.submitJobPost,
               ),
             ),
           ],
-        ),
-      ),
+        );
+      }),
     );
   }
 
-  Widget _buildProfileImageSection(RecruiterEditJobPostController controller) {
-    return Container(
-      padding: EdgeInsets.all(30.w),
-      decoration: ShapeDecoration(
-        shape: RoundedRectangleBorder(
-          side: BorderSide(width: 1, color: const Color(0xFF123499)),
-          borderRadius: BorderRadius.circular(8),
-        ),
-      ),
-      child: Center(
-        child: Column(
-          children: [
-            GestureDetector(
-              onTap: controller.pickProfileImage,
-              child: Obx(
-                () => controller.profileImagePath.value != null
-                    ? CommonImage(
-                        imageSrc: controller.profileImagePath.value!,
-                        size: 40.sp,
-                      )
-                    : CommonImage(imageSrc: AppIcons.upload2, size: 40.sp),
-              ),
-            ),
-            SizedBox(height: 8.h),
-            CommonText(
-              text: 'Upload/Cover Image',
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primaryColor,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLabel(String text) {
-    return CommonText(
-      text: text,
-      fontSize: 14,
-      fontWeight: FontWeight.w500,
-      color: AppColors.primaryText,
-      textAlign: TextAlign.start,
-    );
-  }
-
-  Widget _buildDropdown({
-    required String value,
-    required List<String> items,
-    required Function(String) onChanged,
-  }) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(4.r),
-        border: Border.all(color: AppColors.borderColor, width: 1),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: value,
-          isExpanded: true,
-          icon: Icon(
-            Icons.keyboard_arrow_down,
-            color: AppColors.black,
-            size: 20.sp,
-          ),
-          style: TextStyle(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w400,
-            color: AppColors.primaryText,
-          ),
-          items: items.map((String item) {
-            return DropdownMenuItem<String>(value: item, child: Text(item));
-          }).toList(),
-          onChanged: (String? newValue) {
-            if (newValue != null) onChanged(newValue);
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSkillChip(
-    String skill,
-    RecruiterEditJobPostController controller,
-  ) {
-    // Different colors for different skills
-    Color chipColor;
-    Color textColor;
-
-    switch (skill) {
-      case 'Figma':
-        chipColor = const Color(0xFFE8E8F5);
-        textColor = const Color(0xFF123499);
-        break;
-      case 'UI Design':
-        chipColor = const Color(0xFFFFE8F5);
-        textColor = const Color(0xFFCC0066);
-        break;
-      case 'Website Design':
-        chipColor = const Color(0xFFFFF4E8);
-        textColor = const Color(0xFFFF8F27);
-        break;
-      case 'Recruiting':
-        chipColor = const Color(0xFFE8F5ED);
-        textColor = const Color(0xFF008F37);
-        break;
-      default:
-        chipColor = const Color(0xFFE8E8F5);
-        textColor = const Color(0xFF123499);
-    }
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: chipColor,
-        borderRadius: BorderRadius.circular(16.r),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+  // --- Image Picker Widget with Logic for File vs Network ---
+  Widget _buildImagePicker(RecruiterEditJobPostController controller) {
+    return Center(
+      child: Stack(
         children: [
-          CommonText(
-            text: skill,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: textColor,
-          ),
-          SizedBox(width: 6.w),
           GestureDetector(
-            onTap: () => controller.removeSkill(skill),
-            child: Icon(Icons.close, size: 16.sp, color: textColor),
+            onTap: controller.pickProfileImage,
+            child: Container(
+              height: 160.h,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: AppColors.borderColor),
+                color: Colors.grey[100],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12.r),
+                child: Obx(() {
+                  // PRIORITY 1: Show the local file if the user just picked one
+                  if (controller.profileImagePath.value != null) {
+                    return Image.file(
+                      File(controller.profileImagePath.value!),
+                      fit: BoxFit.cover,
+                      key: ValueKey(controller.profileImagePath.value), // Forces refresh
+                    );
+                  }
+                  // PRIORITY 2: Show the existing image from the server
+                  else if (controller.existingImageUrl.value.isNotEmpty) {
+                    return CommonImage(
+                        imageSrc: controller.existingImageUrl.value,
+                    );
+                  }
+                  // PRIORITY 3: Placeholder icon
+                  else {
+                    return const Icon(Icons.add_a_photo_outlined, size: 40, color: Colors.grey);
+                  }
+                }),
+              ),
+            ),
+          ),
+          // Edit Icon Overlay
+          Positioned(
+            bottom: 8.h,
+            right: 8.w,
+            child: GestureDetector(
+              onTap: controller.pickProfileImage,
+              child: Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: const BoxDecoration(
+                    color: AppColors.primaryColor,
+                    shape: BoxShape.circle
+                ),
+                child: const Icon(Icons.edit, color: Colors.white, size: 20),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildAddSkillButton(RecruiterEditJobPostController controller) {
-    return GestureDetector(
-      onTap: controller.showAddSkillDialog,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: AppColors.borderColor, width: 1),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.add, size: 16.sp, color: AppColors.primaryText),
-            SizedBox(width: 4.w),
-            CommonText(
-              text: 'Add Skill',
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: AppColors.primaryText,
-            ),
-          ],
+  Widget _buildLabeledField(String label, TextEditingController ctrl) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLabel(label),
+        CommonTextField(controller: ctrl, keyboardType: TextInputType.number),
+      ],
+    );
+  }
+
+  Widget _buildLabel(String text) => Padding(
+    padding: EdgeInsets.only(bottom: 8.h),
+    child: CommonText(text: text, fontSize: 14.sp, fontWeight: FontWeight.w600),
+  );
+
+  Widget _buildDropdown({
+    required String? value,
+    required List<String> items,
+    required Function(String) onChanged,
+    String hint = "Select",
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w),
+      decoration: BoxDecoration(
+          border: Border.all(color: AppColors.borderColor),
+          borderRadius: BorderRadius.circular(8.r)
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: items.contains(value) ? value : null,
+          hint: Text(hint),
+          isExpanded: true,
+          items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+          onChanged: (v) => onChanged(v!),
         ),
       ),
     );

@@ -26,7 +26,7 @@ class ActiveJobPostScreen extends StatelessWidget {
             child: SingleChildScrollView(
               child: Padding(
                 padding: EdgeInsets.all(16.r),
-                child: _buildJobsList(controller),
+                /*child: _buildJobsList(controller),*/
               ),
             ),
           ),
@@ -56,7 +56,7 @@ class ActiveJobPostScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildJobsList(ActiveJobPostController controller) {
+  /*Widget _buildJobsList(ActiveJobPostController controller) {
     return Obx(
       () => ListView.builder(
         shrinkWrap: true,
@@ -65,21 +65,24 @@ class ActiveJobPostScreen extends StatelessWidget {
         itemBuilder: (context, index) {
           final job = controller.activeJobs[index];
           return RecruiterJobCard(
-            jobTitle: job['title']!,
-            location: job['location']!,
-            isFullTime: job['isFullTime'] as bool,
-            isRemote: job['isRemote'] as bool,
-            candidateCount: job['candidateCount'] as int,
-            deadline: job['deadline']!,
-            thumbnailImage: job['thumbnail']!,
+            jobTitle: job.title,
+            location: job.location,
+            isFullTime: job.isFullTime,
+            isRemote: job.isRemote,
+            candidateCount: job.totalApplications,
+            deadline: job.formattedDeadline,
+            thumbnailImage: job.thumbnail,
+            userImages: job.userImages, // Pass the list here
             onTap: () {
-              RecruiterRoutes.goToJobCardDetails();
+              Get.toNamed(RecruiterRoutes.jobCardDetails, arguments: {
+                "postId": job.id,
+              });
             },
           );
         },
       ),
     );
-  }
+  }*/
 
   Widget _buildCreateJobButton(ActiveJobPostController controller) {
     return Container(

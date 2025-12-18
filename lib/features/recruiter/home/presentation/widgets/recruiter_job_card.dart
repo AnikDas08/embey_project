@@ -12,6 +12,7 @@ class RecruiterJobCard extends StatelessWidget {
   final String location;
   final bool isFullTime;
   final bool isRemote;
+  final List<String> userImages;
   final int candidateCount;
   final String deadline;
   final String thumbnailImage;
@@ -25,6 +26,7 @@ class RecruiterJobCard extends StatelessWidget {
     required this.isRemote,
     required this.candidateCount,
     required this.deadline,
+    required this.userImages,
     required this.thumbnailImage,
     required this.onTap,
   });
@@ -132,24 +134,28 @@ class RecruiterJobCard extends StatelessWidget {
                       height: 24.h,
                       child: Stack(
                         children: List.generate(
-                          4,
-                          (index) => Positioned(
+                          // Show up to 4 images
+                          userImages.length > 4 ? 4 : userImages.length,
+                              (index) => Positioned(
                             left: index * 14.w,
                             child: Container(
                               width: 24.w,
                               height: 24.h,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: Colors.grey[300],
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 2,
-                                ),
+                                border: Border.all(color: Colors.white, width: 2),
+                                color: Colors.grey[200],
                               ),
-                              child: CommonImage(
-                                imageSrc: AppImages.profile,
-                                width: 24.w,
-                                height: 24.h,
+                              child: ClipOval(
+                                child: CommonImage(
+                                  // Using your build image logic or a simple NetworkImage
+                                  imageSrc: userImages[index].startsWith('http')
+                                      ? userImages[index]
+                                      : "https://shariful5001.binarybards.online${userImages[index]}",
+                                  defaultImage: AppImages.profile,
+                                  width: 24.w,
+                                  height: 24.h,
+                                ),
                               ),
                             ),
                           ),

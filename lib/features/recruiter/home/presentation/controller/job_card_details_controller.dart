@@ -1,9 +1,12 @@
 import 'package:embeyi/core/config/api/api_end_point.dart';
+import 'package:embeyi/core/config/route/app_routes.dart';
 import 'package:embeyi/core/config/route/recruiter_routes.dart';
 import 'package:embeyi/core/services/api/api_service.dart';
+import 'package:embeyi/features/recruiter/home/data/model/application_model.dart';
 import 'package:get/get.dart';
 import 'package:embeyi/core/utils/constants/app_images.dart';
 
+import '../../../../../core/utils/app_utils.dart';
 import '../../data/model/job_details_model.dart';
 
 class JobCardDetailsController extends GetxController {
@@ -11,9 +14,10 @@ class JobCardDetailsController extends GetxController {
   final RxString selectedFilter = ''.obs;
   final RxBool isSaved = false.obs;
   final RxBool isLoading = true.obs;
-  final RxList<Map<String, dynamic>> candidates = <Map<String, dynamic>>[].obs;
-  final RxList<Map<String, dynamic>> filteredCandidates =
-      <Map<String, dynamic>>[].obs;
+  final RxBool isLoadingApplications = true.obs;
+
+  // Changed from Map to ApplicationData
+  final RxList<ApplicationData> applications = <ApplicationData>[].obs;
 
   // Job details - now fetched from API
   final Rx<JobDetailsData?> jobDetails = Rx<JobDetailsData?>(null);
@@ -45,21 +49,13 @@ class JobCardDetailsController extends GetxController {
     if (postId.isNotEmpty) {
       fetchJobDetails();
     }
-    _loadMockCandidates();
   }
 
   Future<void> fetchJobDetails() async {
     try {
       isLoading.value = true;
 
-      // TODO: Replace with your actual API service call
-      // Example:
-      // final response = await ApiService.getJobDetails(postId);
-      // final jobDetailsModel = JobDetailsModel.fromJson(response);
-
-      // For now, using mock data structure
-      // You need to replace this with your actual API call
-      final response=await ApiService.get("job-post/$postId");
+      final response = await ApiService.get("job-post/$postId");
 
       final jobDetailsModel = JobDetailsModel.fromJson(response.data);
 
@@ -80,136 +76,92 @@ class JobCardDetailsController extends GetxController {
         // Update filter labels with actual count
         filters[0] = 'Candidate (${jobDetailsModel.data.totalApplications})';
 
-        // Set initial filter and apply
+        // Set initial filter and fetch applications
         selectedFilter.value = filters[0];
-        _applyFilter();
+        getApplicationValue(); // Fetch all applications initially
       }
     } catch (e) {
+      print("Error fetching job details: $e");
       Get.snackbar('Error', 'Failed to load job details: $e');
     } finally {
       isLoading.value = false;
+      update();
     }
   }
 
-  // Mock API call - REPLACE THIS WITH YOUR ACTUAL API SERVICE
-  Future<Map<String, dynamic>> _mockApiCall() async {
-    await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
+  Future<void> getApplicationValue({String? matchRange}) async {
+    try {
+      isLoadingApplications.value = true;
 
-    return {
-      "success": true,
-      "message": "Post fetched successfully",
-      "data": {
-        "_id": "6934108559cfe9a273319041",
-        "thumbnail": "/image/cardpic-1765523424581.png",
-        "recruiter": {
-          "_id": "6933e58959cfe9a273318e66",
-          "name": "delwar",
-          "email": "delwarbscse@gmail.com",
-          "image": "https://i.ibb.co/z5YHLV9/profile.png"
-        },
-        "title": "UI/UX Designer",
-        "description": "We need a ui/ux designer",
-        "status": "active",
-        "category": "Graphics Designer",
-        "job_type": "FULL_TIME",
-        "job_level": "MID_LEVEL",
-        "experience_level": "1-3yrs",
-        "min_salary": 2000,
-        "max_salary": 2000,
-        "location": "Cumilla Galaxy",
-        "required_skills": ["creative design", "play football"],
-        "deadline": "2026-11-13T00:00:00.000Z",
-        "gioLocation": {
-          "type": "Point",
-          "coordinates": [55.718636, -4.942789]
-        },
-        "is_deleted": false,
-        "responsibilities": [],
-        "benefits": [],
-        "createdAt": "2025-12-06T11:16:21.591Z",
-        "updatedAt": "2025-12-12T07:10:24.688Z",
-        "__v": 0,
-        "categoryId": "69283df2bbe6451e2b25ce4b",
-        "totalapplications": 2,
-        "userImages": [
-          "/image/image-1765355300219.png",
-          "/image/image-1765355300219.png"
-        ]
+      // Build the API URL based on filter
+      String apiUrl = "application?post=$postId";
+      if (matchRange != null && matchRange.isNotEmpty) {
+        apiUrl += "&match=$matchRange";
       }
-    };
+
+      print("Fetching applications from: $apiUrl");
+
+      final response = await ApiService.get(apiUrl);
+
+      print("Applications API Response: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        final applicationModelList = ApplicationListModel.fromJson(response.data);
+
+        if (applicationModelList.success) {
+          // Store the applications data
+          applications.value = applicationModelList.data;
+
+          print("Applications loaded: ${applications.length}");
+        }
+      }
+    } catch (e) {
+      print("Error fetching applications: $e");
+      Get.snackbar('Error', 'Failed to load application details: $e');
+    } finally {
+      isLoadingApplications.value = false;
+    }
   }
 
-  void _loadMockCandidates() {
-    candidates.value = [
-      {
-        'name': 'Ronald Richards',
-        'jobTitle': 'Sr. UI/UX Designer',
-        'experience': '5 Years Experience',
-        'description':
-        'A Dedicated And Reliable Professional With Strong Teamwork And Problem Solving Skills, Committed To Delivering Quality Results On Time',
-        'matchPercentage': 90,
-        'profileImage': AppImages.profile,
-      },
-      {
-        'name': 'Albert Flores',
-        'jobTitle': 'Sr. UI/UX Designer',
-        'experience': '5 Years Experience',
-        'description':
-        'A Dedicated And Reliable Professional With Strong Teamwork And Problem Solving Skills, Committed To Delivering Quality Results On Time',
-        'matchPercentage': 70,
-        'profileImage': AppImages.profile,
-      },
-      {
-        'name': 'Cody Fisher',
-        'jobTitle': 'Sr. UI/UX Designer',
-        'experience': '5 Years Experience',
-        'description':
-        'A Dedicated And Reliable Professional With Strong Teamwork And Problem Solving Skills, Committed To Delivering Quality Results On Time',
-        'matchPercentage': 40,
-        'profileImage': AppImages.profile,
-      },
-      {
-        'name': 'Theresa Webb',
-        'jobTitle': 'Sr. UI/UX Designer',
-        'experience': '5 Years Experience',
-        'description':
-        'A Dedicated And Reliable Professional With Strong Teamwork And Problem Solving Skills, Committed To Delivering Quality Results On Time',
-        'matchPercentage': 78,
-        'profileImage': AppImages.profile,
-      },
-      {
-        'name': 'Wade Warren',
-        'jobTitle': 'Sr. UI/UX Designer',
-        'experience': '5 Years Experience',
-        'description':
-        'A Dedicated And Reliable Professional With Strong Teamwork And Problem Solving Skills, Committed To Delivering Quality Results On Time',
-        'matchPercentage': 81,
-        'profileImage': AppImages.profile,
-      },
-    ];
+  Future<void> deletePost()async{
+    try{
+      final response=await ApiService.delete(
+          "job-post/$postId"
+      );
+      if(response.statusCode==200){
+        Utils.successSnackBar("Success", "Successful delete post");
+        Get.offAllNamed(RecruiterRoutes.home);
+      }
+    }
+    catch(e){
+      Utils.errorSnackBar("Error", e.toString());
+    }
   }
+
+
 
   void selectFilter(String filter) {
     selectedFilter.value = filter;
-    _applyFilter();
-  }
 
-  void _applyFilter() {
-    if (selectedFilter.value.startsWith('Candidate')) {
-      filteredCandidates.value = candidates;
-    } else if (selectedFilter.value == '70-80% MATCH') {
-      filteredCandidates.value = candidates
-          .where((c) => c['matchPercentage'] >= 70 && c['matchPercentage'] < 80)
-          .toList();
-    } else if (selectedFilter.value == '80-90% Match') {
-      filteredCandidates.value = candidates
-          .where((c) => c['matchPercentage'] >= 80 && c['matchPercentage'] < 90)
-          .toList();
-    } else if (selectedFilter.value == '90-95+') {
-      filteredCandidates.value = candidates
-          .where((c) => c['matchPercentage'] >= 90)
-          .toList();
+    // Determine the match range based on selected filter
+    String? matchRange;
+
+
+    if (filter.startsWith('Candidate')) {
+      // Show all candidates - no match filter
+      matchRange = null;
+    } else if (filter == '70-80% MATCH') {
+      matchRange = '70-80';
+    } else if (filter == '80-90% Match') {
+      matchRange = '80-90';
+    } else if (filter == '90-95+') {
+      matchRange = '90-100';
     }
+
+    print("Selected filter: $filter, Match range: $matchRange");
+
+    // Fetch applications with the new filter
+    getApplicationValue(matchRange: matchRange);
   }
 
   void toggleSave() {
@@ -228,11 +180,16 @@ class JobCardDetailsController extends GetxController {
     Get.snackbar('Close Post', 'Closing job post...');
   }
 
-  void viewCandidateProfile(String candidateName) {
-    Get.snackbar('Candidate Profile', 'Opening $candidateName profile...');
+  void viewCandidateProfile(String applicationId) {
+    print("Opening application: $applicationId");
     Get.toNamed(
       RecruiterRoutes.resume,
-      arguments: {'isShortlist': true, 'isInterview': true, 'isReject': true},
+      arguments: {
+        'applicationId': applicationId,
+        'isShortlist': true,
+        'isInterview': true,
+        'isReject': true
+      },
     );
   }
 }

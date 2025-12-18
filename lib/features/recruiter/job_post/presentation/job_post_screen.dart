@@ -25,7 +25,7 @@ class JobPostScreen extends StatelessWidget {
             child: SingleChildScrollView(
               child: Padding(
                 padding: EdgeInsets.all(16.r),
-                child: _buildJobsList(controller),
+                /*child: _buildJobsList(controller),*/
               ),
             ),
           ),
@@ -119,7 +119,7 @@ class JobPostScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildJobsList(RecruiterJobPostController controller) {
+ /* Widget _buildJobsList(RecruiterJobPostController controller) {
     return Obx(
       () => ListView.builder(
         shrinkWrap: true,
@@ -140,7 +140,7 @@ class JobPostScreen extends StatelessWidget {
         },
       ),
     );
-  }
+  }*/
 
   Widget _buildCreateJobButton(RecruiterJobPostController controller) {
     return Container(

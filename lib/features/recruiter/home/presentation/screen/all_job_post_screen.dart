@@ -163,8 +163,11 @@ class AllJobPostScreen extends StatelessWidget {
               candidateCount: job.totalApplications,
               deadline: job.formattedDeadline,
               thumbnailImage: job.thumbnail,
+              userImages: job.userImages, // Pass the list here
               onTap: () {
-                RecruiterRoutes.goToJobCardDetails();
+                Get.toNamed(RecruiterRoutes.jobCardDetails, arguments: {
+                  "postId": job.id,
+                });
               },
             );
           },

@@ -42,14 +42,18 @@ class ApiService {
   }) => _request(url, "DELETE", body: body, header: header);
 
   static Future<ApiResponseModel> multipart(
-    String url, {
-    Map<String, String> header = const {},
-    Map<String, String> body = const {},
-    String method = "PATCH",
-    String imageName = 'image',
-    String? imagePath,
-  }) async {
+      String url, {
+        Map<String, String> header = const {},
+        Map<String, String> body = const {}, // Default is unmodifiable
+        String method = "PATCH",
+        String imageName = 'image',
+        String? imagePath,
+      }) async {
     FormData formData = FormData();
+
+    // 1. Create a modifiable copy of the body to prevent the crash
+    final Map<String, String> modifiableBody = Map<String, String>.from(body);
+
     if (imagePath != null && imagePath.isNotEmpty) {
       File file = File(imagePath);
       String extension = file.path.split('.').last.toLowerCase();
@@ -61,16 +65,16 @@ class ApiService {
           await MultipartFile.fromFile(
             imagePath,
             filename: "$imageName.$extension",
-            contentType:
-                mimeType != null
-                    ? DioMediaType.parse(mimeType)
-                    : DioMediaType.parse("image/jpeg"),
+            contentType: mimeType != null
+                ? DioMediaType.parse(mimeType)
+                : DioMediaType.parse("image/jpeg"),
           ),
         ),
       );
     }
 
-    body.forEach((key, value) {
+    // 2. Use the modifiable map here
+    modifiableBody.forEach((key, value) {
       formData.fields.add(MapEntry(key, value));
     });
 

@@ -15,6 +15,7 @@ class JobDetailHeaderCard extends StatelessWidget {
   final int candidateCount;
   final String deadline;
   final String thumbnailImage;
+  final List<String> userImages; // Added parameter for user avatars
   final VoidCallback onViewPost;
   final VoidCallback onRePost;
   final VoidCallback onDeletePost;
@@ -29,6 +30,7 @@ class JobDetailHeaderCard extends StatelessWidget {
     required this.candidateCount,
     required this.deadline,
     required this.thumbnailImage,
+    this.userImages = const [], // Default to empty list
     required this.onViewPost,
     required this.onRePost,
     required this.onDeletePost,
@@ -62,7 +64,7 @@ class JobDetailHeaderCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8.r),
                   image: DecorationImage(
-                    image: Image.network(ApiEndPoint.imageUrl+thumbnailImage).image,
+                    image: Image.network(ApiEndPoint.imageUrl + thumbnailImage).image,
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -159,28 +161,7 @@ class JobDetailHeaderCard extends StatelessWidget {
               // Candidate Count with Avatars
               Row(
                 children: [
-                  SizedBox(
-                    width: 70.w,
-                    height: 24.h,
-                    child: Stack(
-                      children: List.generate(
-                        4,
-                        (index) => Positioned(
-                          left: index * 14.w,
-                          child: Container(
-                            width: 24.w,
-                            height: 24.h,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.grey[300],
-                              border: Border.all(color: Colors.white, width: 2),
-                            ),
-                            child: CommonImage(imageSrc: AppImages.profile),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                  _buildUserAvatars(),
                   4.width,
                   Text(
                     '$candidateCount Candidate Applied',
@@ -237,6 +218,96 @@ class JobDetailHeaderCard extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildUserAvatars() {
+    // Maximum 4 avatars to display
+    final displayCount = userImages.length > 4 ? 4 : userImages.length;
+
+    // If no user images, show placeholder avatars
+    if (userImages.isEmpty) {
+      return SizedBox(
+        width: 70.w,
+        height: 24.h,
+        child: Stack(
+          children: List.generate(
+            candidateCount > 4 ? 4 : candidateCount,
+                (index) => Positioned(
+              left: index * 14.w,
+              child: Container(
+                width: 24.w,
+                height: 24.h,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.grey[300],
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: ClipOval(
+                  child: CommonImage(
+                    imageSrc: AppImages.profile,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Show actual user images (max 4)
+    return SizedBox(
+      width: 70.w,
+      height: 24.h,
+      child: Stack(
+        children: List.generate(
+          displayCount,
+              (index) => Positioned(
+            left: index * 14.w,
+            child: Container(
+              width: 24.w,
+              height: 24.h,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              child: ClipOval(
+                child: Image.network(
+                  ApiEndPoint.imageUrl + userImages[index],
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    // Fallback to placeholder if image fails to load
+                    return Container(
+                      color: Colors.grey[300],
+                      child: CommonImage(
+                        imageSrc: AppImages.profile,
+                      ),
+                    );
+                  },
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Container(
+                      color: Colors.grey[300],
+                      child: Center(
+                        child: SizedBox(
+                          width: 12.w,
+                          height: 12.h,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 1.5,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.secondaryPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

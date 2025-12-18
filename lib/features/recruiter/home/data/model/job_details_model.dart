@@ -76,10 +76,12 @@ class JobDetailsData {
       id: json['_id'] ?? '',
       thumbnail: json['thumbnail'] ?? '',
       recruiter: JobRecruiter.fromJson(json['recruiter'] ?? {}),
-      title: json['title'] ?? '',
+      title: json['title'] ?? 'No Title',
       description: json['description'] ?? '',
       status: json['status'] ?? '',
-      category: json['category'] ?? '',
+      category: json['category'] is Map
+          ? (json['category']['name'] ?? '')
+          : (json['category']?.toString() ?? ''),
       jobType: json['job_type'] ?? '',
       jobLevel: json['job_level'] ?? '',
       experienceLevel: json['experience_level'] ?? '',
@@ -87,10 +89,12 @@ class JobDetailsData {
       maxSalary: json['max_salary'] ?? 0,
       location: json['location'] ?? '',
       requiredSkills: (json['required_skills'] as List?)
-          ?.map((skill) => skill.toString())
-          .toList() ??
-          [],
-      deadline: json['deadline'] ?? '',
+          ?.map((skill) => skill is Map ? skill['name'].toString() : skill.toString())
+          .toList() ?? [],
+
+      deadline: json['deadline']?.toString() ?? '',
+
+      // gioLocation key check (matches your JSON: "gioLocation")
       geoLocation: JobGeoLocation.fromJson(json['gioLocation'] ?? {}),
       isDeleted: json['is_deleted'] ?? false,
       responsibilities: (json['responsibilities'] as List?)

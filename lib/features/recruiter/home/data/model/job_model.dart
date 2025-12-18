@@ -131,8 +131,7 @@ class JobData {
           [],
       userImages: (json['userImages'] as List?)
           ?.map((item) => item.toString())
-          .toList() ??
-          [],
+          .toList() ?? [],
       totalApplications: json['totalapplications'] ?? 0,
       geoLocation: json['gioLocation'] != null
           ? GeoLocation.fromJson(json['gioLocation'])

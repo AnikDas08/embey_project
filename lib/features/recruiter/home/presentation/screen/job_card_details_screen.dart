@@ -17,7 +17,7 @@ class JobCardDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(JobCardDetailsController());
+    JobCardDetailsController controller = Get.put(JobCardDetailsController());
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -54,7 +54,9 @@ class JobCardDetailsScreen extends StatelessWidget {
       elevation: 0,
       leading: IconButton(
         icon: Icon(Icons.arrow_back, color: AppColors.black, size: 24.sp),
-        onPressed: () => Get.back(),
+        onPressed: () => {
+          Navigator.pop(Get.context!),
+        },
       ),
       title: Obx(() => Text(
         controller.jobTitle.value.isNotEmpty
@@ -74,8 +76,26 @@ class JobCardDetailsScreen extends StatelessWidget {
       JobCardDetailsController controller,
       BuildContext context,
       ) {
-    return Obx(
-          () => JobDetailHeaderCard(
+    return Obx(() {
+      // 1. Check if the controller is currently fetching data
+      if (controller.isLoading.value) {
+        return Container(
+          width: double.infinity,
+          height: 180.h, // Approximate height of your header card
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: const Center(
+            child: CircularProgressIndicator(
+              color: AppColors.secondaryPrimary,
+            ),
+          ),
+        );
+      }
+
+      // 2. Data is loaded, show the actual Header Card
+      return JobDetailHeaderCard(
         jobTitle: controller.jobTitle.value,
         location: controller.location.value,
         isRemote: controller.isRemote.value,
@@ -84,65 +104,68 @@ class JobCardDetailsScreen extends StatelessWidget {
         thumbnailImage: controller.thumbnail.value.isNotEmpty
             ? controller.thumbnail.value
             : AppImages.jobPost,
+        userImages: controller.userImages.toList(), // Ensure fresh list
         isSaved: controller.isSaved.value,
         onSave: controller.toggleSave,
         onViewPost: () {
-          RecruiterRoutes.goToViewJobPost();
+          Get.toNamed(
+            RecruiterRoutes.viewJobPost,
+            arguments: {'postId': controller.postId},
+          );
         },
         onRePost: controller.rePost,
         onDeletePost: () {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              backgroundColor: AppColors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16.r),
-              ),
-              contentPadding: EdgeInsets.all(16.r),
-              content: CommonText(
-                text: 'Are you sure you want to Delete Job Post?',
-                maxLines: 2,
-                fontSize: 20.sp,
-                fontWeight: FontWeight.w400,
-                color: AppColors.black,
-              ),
-              actions: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: CommonButton(
-                        titleText: 'No',
-                        onTap: () {
-                          Get.back();
-                        },
-                        buttonColor: AppColors.transparent,
-                        borderColor: AppColors.black,
-                        titleColor: AppColors.black,
-                        titleSize: 16.sp,
-                        titleWeight: FontWeight.w500,
-                      ),
-                    ),
-                    SizedBox(width: 16.w),
-                    Expanded(
-                      child: CommonButton(
-                        titleText: 'Yes',
-                        onTap: () {
-                          Get.back();
-                        },
-                        buttonColor: AppColors.red,
-                        borderColor: AppColors.red,
-                        titleColor: AppColors.white,
-                        isGradient: false,
-                        titleSize: 16.sp,
-                        titleWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          );
+          _showDeleteDialog(context, controller);
         },
+      );
+    });
+  }
+
+// Cleaned up the dialog into a separate method for readability
+  void _showDeleteDialog(BuildContext context, JobCardDetailsController controller) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        contentPadding: EdgeInsets.all(16.r),
+        content: CommonText(
+          text: 'Are you sure you want to Delete Job Post?',
+          maxLines: 2,
+          fontSize: 20.sp,
+          fontWeight: FontWeight.w400,
+          color: AppColors.black,
+        ),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: CommonButton(
+                  titleText: 'No',
+                  onTap: () => Get.back(),
+                  buttonColor: AppColors.transparent,
+                  borderColor: AppColors.black,
+                  titleColor: AppColors.black,
+                ),
+              ),
+              SizedBox(width: 16.w),
+              Expanded(
+                child: CommonButton(
+                  titleText: 'Yes',
+                  onTap: () {
+                   controller.deletePost();
+                  },
+                  buttonColor: AppColors.red,
+                  borderColor: AppColors.red,
+                  titleColor: AppColors.white,
+                  isGradient: false,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -168,24 +191,65 @@ class JobCardDetailsScreen extends StatelessWidget {
   }
 
   Widget _buildCandidatesList(JobCardDetailsController controller) {
-    return Obx(
-          () => ListView.builder(
+    return Obx(() {
+      // Show loading indicator while fetching applications
+      if (controller.isLoadingApplications.value) {
+        return Center(
+          child: Padding(
+            padding: EdgeInsets.all(32.r),
+            child: const CircularProgressIndicator(),
+          ),
+        );
+      }
+
+      // Show empty state if no applications found
+      if (controller.applications.isEmpty) {
+        return Center(
+          child: Padding(
+            padding: EdgeInsets.all(32.r),
+            child: Column(
+              children: [
+                CommonText(
+                  text: controller.selectedFilter.value.startsWith('Candidate')
+                      ? 'No candidates applied yet'
+                      : 'No candidates match this criteria',
+                  fontSize: 16.sp,
+                  color: AppColors.black.withOpacity(0.6),
+                ),
+                if (!controller.selectedFilter.value.startsWith('Candidate')) ...[
+                  SizedBox(height: 16.h),
+                  CommonText(
+                    text: 'Try selecting "Candidate" filter to see all',
+                    fontSize: 14.sp,
+                    color: AppColors.black.withOpacity(0.4),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      }
+
+      // Display list of applications
+      return ListView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        itemCount: controller.filteredCandidates.length,
+        itemCount: controller.applications.length,
         itemBuilder: (context, index) {
-          final candidate = controller.filteredCandidates[index];
+          final application = controller.applications[index];
+
+          // Map API data to CandidateCard
           return CandidateCard(
-            name: candidate['name'],
-            jobTitle: candidate['jobTitle'],
-            experience: candidate['experience'],
-            description: candidate['description'],
-            matchPercentage: candidate['matchPercentage'],
-            profileImage: candidate['profileImage'],
-            onTap: () => controller.viewCandidateProfile(candidate['name']),
+            name: application.user.name,
+            jobTitle: application.title,
+            experience: application.experienceYears, // "2 Years Experience"
+            description: application.user.bio,
+            matchPercentage: application.jobMatch,
+            profileImage: application.user.image,
+            onTap: () => controller.viewCandidateProfile(application.id),
           );
         },
-      ),
-    );
+      );
+    });
   }
 }

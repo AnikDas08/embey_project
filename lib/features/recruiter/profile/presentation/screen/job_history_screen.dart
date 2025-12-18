@@ -19,14 +19,14 @@ class JobHistoryScreen extends StatelessWidget {
       body: Column(
         children: [
           _buildTabBar(controller),
-          Expanded(
+          /*Expanded(
             child: SingleChildScrollView(
               child: Padding(
                 padding: EdgeInsets.all(16.r),
                 child: _buildJobsList(controller),
               ),
             ),
-          ),
+          ),*/
         ],
       ),
     );
@@ -112,7 +112,7 @@ class JobHistoryScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildJobsList(RecruiterJobPostController controller) {
+  /*Widget _buildJobsList(RecruiterJobPostController controller) {
     return Obx(
       () => ListView.builder(
         shrinkWrap: true,
@@ -133,5 +133,5 @@ class JobHistoryScreen extends StatelessWidget {
         },
       ),
     );
-  }
+  }*/
 }

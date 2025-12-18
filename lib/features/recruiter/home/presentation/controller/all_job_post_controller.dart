@@ -34,7 +34,7 @@ class AllJobPostController extends GetxController {
       );
       if (response.statusCode == 200) {
         final jobModel = RecruiterJobModel.fromJson(response.data);
-        recentJobs.value = jobModel.data.take(3).toList(); // Get first 3 jobs for recent
+        recentJobs.value = jobModel.data.toList(); // Get first 3 jobs for recent
       } else {
         Utils.errorSnackBar(response.statusCode, response.message);
       }
