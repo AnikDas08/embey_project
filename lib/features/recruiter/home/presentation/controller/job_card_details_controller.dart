@@ -3,6 +3,7 @@ import 'package:embeyi/core/config/route/app_routes.dart';
 import 'package:embeyi/core/config/route/recruiter_routes.dart';
 import 'package:embeyi/core/services/api/api_service.dart';
 import 'package:embeyi/features/recruiter/home/data/model/application_model.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:embeyi/core/utils/constants/app_images.dart';
 
@@ -39,6 +40,7 @@ class JobCardDetailsController extends GetxController {
 
   // Post ID from previous screen
   late String postId;
+  TextEditingController deleteReason=TextEditingController();
 
   @override
   void onInit() {

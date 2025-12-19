@@ -6,7 +6,7 @@ import 'package:embeyi/core/utils/helpers/other_helper.dart';
 import '../../../../../core/services/api/api_service.dart';
 import '../../../home/data/model/job_details_model.dart';
 
-class CreateJobPostController extends GetxController {
+class RepostController extends GetxController {
   final jobTitleController = TextEditingController();
   final minSalaryController = TextEditingController();
   final maxSalaryController = TextEditingController();
@@ -41,9 +41,19 @@ class CreateJobPostController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchCategories();
+    postId = Get.arguments['postId'] ?? '';
+    loadInitialData();
   }
 
+  Future<void> loadInitialData() async {
+    try {
+      isLoading.value = true;
+      await fetchCategories();
+      await fetchJobDetails();
+    } finally {
+      isLoading.value = false;
+    }
+  }
 
   Future<void> fetchCategories() async {
     final response = await ApiService.get("job-category");
@@ -58,10 +68,11 @@ class CreateJobPostController extends GetxController {
     if (response.statusCode == 200) {
       final data = JobDetailsModel.fromJson(response.data).data;
       jobDetails.value = data;
+      _populateFields(data);
     }
   }
 
-  /*void _populateFields(JobDetailsData data) {
+  void _populateFields(JobDetailsData data) {
     jobTitleController.text = data.title ?? "";
     minSalaryController.text = data.minSalary.toString();
     maxSalaryController.text = data.maxSalary.toString();
@@ -69,13 +80,21 @@ class CreateJobPostController extends GetxController {
     companyDescriptionController.text = data.description;
     applicationDeadlineController.text = data.deadline.split('T').first;
     selectedCategoryName.value = data.category;
-    categoryId = data.categoryId;
+    if (categories.isNotEmpty && data.category != null) {
+      final match = categories.firstWhere(
+            (element) => element['name'] == data.category,
+        orElse: () => {},
+      );
+      if (match.isNotEmpty) {
+        categoryId = match['id'];
+      }
+    }
     selectedJobType.value = data.jobType;
     selectedExperienceLevel.value = data.experienceLevel;
     selectedJobLevel.value = data.jobLevel;
     skills.assignAll(data.requiredSkills);
     existingImageUrl.value = data.thumbnail;
-  }*/
+  }
 
   void setCategory(String name) {
     selectedCategoryName.value = name;
@@ -130,10 +149,12 @@ class CreateJobPostController extends GetxController {
       isLoading.value = true;
       final Map<String, String> body = {};
 
+      // Helper to add data to body
       void addIfValid(String key, String? value) {
         if (value != null && value.trim().isNotEmpty) body[key] = value.trim();
       }
 
+      // Common fields for both requests
       addIfValid('title', jobTitleController.text);
       addIfValid('description', companyDescriptionController.text);
       addIfValid('category', categoryId);
@@ -145,42 +166,31 @@ class CreateJobPostController extends GetxController {
       addIfValid('location', jobLocationController.text);
       addIfValid('deadline', applicationDeadlineController.text);
 
+      // Map Skills
       for (int i = 0; i < skills.length; i++) {
         body['required_skills[$i]'] = skills[i];
-
-        debugPrint("========== SUBMITTING JOB POST ==========");
-        debugPrint("Has Image: ${selectedImagePath.value.isNotEmpty}");
-        debugPrint("Image Path: ${selectedImagePath.value}");
-        debugPrint("Body: $body");
-
-        // Check if file exists before uploading
-        if (selectedImagePath.value.isNotEmpty) {
-          final file = File(selectedImagePath.value);
-          final exists = await file.exists();
-          debugPrint("File exists: $exists");
-          if (exists) {
-            final fileSize = await file.length();
-            debugPrint("File size: ${fileSize} bytes");
-          }
-        }
       }
 
-      if (!imageChanged.value && existingImageUrl.value.isNotEmpty) {
-        body['image'] = existingImageUrl.value;
+      final response;
+
+      if (imageChanged.value && selectedImagePath.value.isNotEmpty) {
+        response = await ApiService.multipartImage(
+            "job-post",
+            method: 'POST',
+            body: body,
+            files: [{"name": "image", "image": selectedImagePath.value}]
+        );
+      } else {
+        body['prevImage'] = existingImageUrl.value;
+        body['prevPostId'] = postId;
+
+        response = await ApiService.post("job-post", body: body);
       }
-
-      String? imagePath = selectedImagePath.value.isNotEmpty ? selectedImagePath.value : null;
-      imagePath ??= existingImageUrl.value;
-
-      /*final response = (imageChanged.value && imagePath != null)
-          ? await ApiService.multipartImage("job-post",method: 'POST',body: body,files: [{"name": "image", "image": imagePath}])
-          : await ApiService.post("job-post/$postId", body: body);*/
-      final response = await ApiService.multipartImage("job-post", body: body,files: [{"name": "image", "image": imagePath}]);
-
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         Get.back(result: true);
-        Get.snackbar('Success', 'Post Re-create successfully', backgroundColor: Colors.green, colorText: Colors.white);
+        Get.snackbar('Success', 'Post created successfully',
+            backgroundColor: Colors.green, colorText: Colors.white);
       }
     } catch (e) {
       Get.snackbar('Error', e.toString());

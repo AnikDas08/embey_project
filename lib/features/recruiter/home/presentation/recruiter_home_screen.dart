@@ -277,6 +277,9 @@ class RecruiterHomeScreen extends StatelessWidget {
           itemCount: controller.recentJobs.length,
           itemBuilder: (context, index) {
             final job = controller.recentJobs[index];
+            final thumbnailImage=job.thumbnail.startsWith("http")?
+            job.thumbnail:
+            ApiEndPoint.imageUrl+job.thumbnail;
             return RecruiterJobCard(
               jobTitle: job.title,
               location: job.location,

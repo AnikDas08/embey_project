@@ -83,6 +83,47 @@ class ApiService {
     return _request(url, method, body: formData, header: header);
   }
 
+  static Future<ApiResponseModel> multipartImage(
+      String url, {
+        Map<String, String> header = const {},
+        Map<String, String> body = const {},
+        String method = "POST",
+        List files = const [],
+      }) async {
+    FormData formData = FormData();
+
+    for (var item in files) {
+      String imageName = item['name'] ?? "image";
+      String? imagePath = item['image'];
+      if (imagePath != null && imagePath.isNotEmpty) {
+        File file = File(imagePath);
+        String extension = file.path.split('.').last.toLowerCase();
+        String? mimeType = lookupMimeType(imagePath);
+        formData.files.add(
+          MapEntry(
+            imageName,
+            await MultipartFile.fromFile(
+              imagePath,
+              filename: "$imageName.$extension",
+              contentType: mimeType != null
+                  ? DioMediaType.parse(mimeType)
+                  : DioMediaType.parse("image/jpeg"),
+            ),
+          ),
+        );
+      }
+    }
+
+    body.forEach((key, value) {
+      formData.fields.add(MapEntry(key, value));
+    });
+
+    final headers = Map<String, String>.from(header);
+    headers['Content-Type'] = 'multipart/form-data';
+
+    return _request(url, method, body: formData, header: header);
+  }
+
   /// ========== [ API REQUEST HANDLER ] ========== ///
   static Future<ApiResponseModel> _request(
     String url,

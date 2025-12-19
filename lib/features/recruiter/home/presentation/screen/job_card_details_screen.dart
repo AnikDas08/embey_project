@@ -1,9 +1,11 @@
 import 'package:embeyi/core/component/button/common_button.dart';
 import 'package:embeyi/core/component/text/common_text.dart';
+import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:embeyi/core/config/route/recruiter_routes.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/core/utils/constants/app_images.dart';
 import 'package:embeyi/core/utils/extensions/extension.dart';
+import 'package:embeyi/features/recruiter/job_post/presentation/screen/repost_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -113,7 +115,9 @@ class JobCardDetailsScreen extends StatelessWidget {
             arguments: {'postId': controller.postId},
           );
         },
-        onRePost: controller.rePost,
+        onRePost: (){
+          Get.to(()=>RepostScreen(),arguments: {'postId': controller.postId});
+        },
         onDeletePost: () {
           _showDeleteDialog(context, controller);
         },
@@ -155,7 +159,8 @@ class JobCardDetailsScreen extends StatelessWidget {
                 child: CommonButton(
                   titleText: 'Yes',
                   onTap: () {
-                   controller.deletePost();
+                    Get.back();
+                    deleteDialog(context, controller);
                   },
                   buttonColor: AppColors.red,
                   borderColor: AppColors.red,
@@ -164,6 +169,60 @@ class JobCardDetailsScreen extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void deleteDialog(BuildContext context, JobCardDetailsController controller){
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        contentPadding: EdgeInsets.all(16.r),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                CommonText(
+                    text: "Reject Reason",
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.black,
+                ),
+                IconButton(onPressed: (){
+                  Get.back();
+                }, icon: Icon(Icons.close,),)
+              ],
+            ),
+            SizedBox(height: 12.h,),
+            TextField(
+              maxLines: 4,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+              controller: controller.deleteReason,
+            )
+          ],
+        ),
+        actions: [
+          CommonButton(
+            titleText: 'Submit',
+            onTap: () {
+              controller.deletePost();
+            },
+            buttonColor: AppColors.primaryColor,
+            borderColor: AppColors.primaryColor,
+            titleColor: AppColors.black,
+            isGradient: false,
           ),
         ],
       ),
@@ -242,10 +301,10 @@ class JobCardDetailsScreen extends StatelessWidget {
           return CandidateCard(
             name: application.user.name,
             jobTitle: application.title,
-            experience: application.experienceYears, // "2 Years Experience"
+            experience: application.experienceYears,
             description: application.user.bio,
             matchPercentage: application.jobMatch,
-            profileImage: application.user.image,
+            profileImage: ApiEndPoint.imageUrl+application.user.image,
             onTap: () => controller.viewCandidateProfile(application.id),
           );
         },

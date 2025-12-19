@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:embeyi/core/config/api/api_end_point.dart';
+import 'package:embeyi/features/recruiter/job_post/presentation/controller/repost_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -11,22 +12,20 @@ import 'package:embeyi/core/component/text_field/common_text_field.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import '../controller/edit_job_post_controller.dart';
 
-class RecruiterEditJobPostScreen extends StatelessWidget {
-  const RecruiterEditJobPostScreen({super.key});
+class RepostScreen extends StatelessWidget {
+  const RepostScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(RecruiterEditJobPostController());
+    final controller = Get.put(RepostController());
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: CommonAppbar(title: 'EDIT POST', centerTitle: true),
+      appBar: CommonAppbar(title: 'Re-Post', centerTitle: true),
       body: Obx(() {
-        // Show loader if the initial data isn't ready yet
         if (controller.isLoading.value && controller.jobDetails.value == null) {
           return const Center(child: CircularProgressIndicator());
         }
-
         return Column(
           children: [
             Expanded(
@@ -47,13 +46,23 @@ class RecruiterEditJobPostScreen extends StatelessWidget {
                     ),
 
                     SizedBox(height: 16.h),
-                    _buildLabel('Job Category'),
-                    _buildDropdown(
-                      value: controller.selectedCategoryName.value,
-                      items: controller.categories.map((e) => e['name'].toString()).toList(),
-                      onChanged: (v) => controller.setCategory(v),
-                      hint: "Select Category",
-                    ),
+                    Obx(() => Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildLabel('Job Category'),
+                        _buildDropdown(
+                          // Ensure the value actually exists in the current list of categories
+                          value: controller.categories.any((e) => e['name'] == controller.selectedCategoryName.value)
+                              ? controller.selectedCategoryName.value
+                              : null,
+                          items: controller.categories.map((e) => e['name'].toString()).toList(),
+                          onChanged: (v) {
+                            if (v != null) controller.setCategory(v);
+                          },
+                          hint: "Select Category", // It's safer to keep the hint
+                        ),
+                      ],
+                    )),
 
                     SizedBox(height: 16.h),
                     _buildLabel('Job Type'),
@@ -143,7 +152,7 @@ class RecruiterEditJobPostScreen extends StatelessWidget {
             Padding(
               padding: EdgeInsets.all(16.w),
               child: CommonButton(
-                titleText: controller.isLoading.value ? 'Updating...' : 'Submit',
+                titleText: controller.isLoading.value ? 'Reposting...' : 'Repost',
                 onTap: controller.isLoading.value ? null : controller.submitJobPost,
               ),
             ),
@@ -154,7 +163,7 @@ class RecruiterEditJobPostScreen extends StatelessWidget {
   }
 
   // Updated Image Picker Widget - Same pattern as PersonalInfo
-  Widget _buildImagePicker(RecruiterEditJobPostController controller) {
+  Widget _buildImagePicker(RepostController controller) {
     return Center(
       child: Stack(
         children: [
@@ -171,11 +180,9 @@ class RecruiterEditJobPostScreen extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12.r),
                 child: Obx(() {
-                  // Safe null checking - same as PersonalInfo
                   final hasSelectedImage = controller.selectedImage.value != null;
                   final hasExistingImage = controller.existingImageUrl.value.isNotEmpty;
 
-                  // PRIORITY 1: Show FileImage for newly selected image
                   if (hasSelectedImage) {
                     return Image.file(
                       controller.selectedImage.value!,
@@ -186,7 +193,6 @@ class RecruiterEditJobPostScreen extends StatelessWidget {
                       },
                     );
                   }
-                  // PRIORITY 2: Show NetworkImage for existing image
                   else if (hasExistingImage) {
                     return Image.network(
                       ApiEndPoint.imageUrl+controller.existingImageUrl.value,
@@ -207,7 +213,6 @@ class RecruiterEditJobPostScreen extends StatelessWidget {
                       },
                     );
                   }
-                  // PRIORITY 3: Placeholder
                   else {
                     return const Icon(Icons.add_a_photo_outlined, size: 40, color: Colors.grey);
                   }
@@ -235,7 +240,6 @@ class RecruiterEditJobPostScreen extends StatelessWidget {
       ),
     );
   }
-
   Widget _buildLabeledField(String label, TextEditingController ctrl) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

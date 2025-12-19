@@ -28,9 +28,10 @@ class RecruiterEditJobPostController extends GetxController {
   final Rx<JobDetailsData?> jobDetails = Rx<JobDetailsData?>(null);
   final RxList<String> skills = <String>[].obs;
 
-  // Image handling
-  final Rx<String?> profileImagePath = Rx<String?>(null);
-  final existingImageUrl = ''.obs;
+  // Image handling - Changed to File type
+  final Rx<File?> selectedImage = Rx<File?>(null);
+  final RxString existingImageUrl = ''.obs;
+  final RxString selectedImagePath = "".obs;
   final imageChanged = false.obs;
   final ImagePicker _picker = ImagePicker();
 
@@ -92,25 +93,26 @@ class RecruiterEditJobPostController extends GetxController {
     categoryId = categories.firstWhere((e) => e['name'] == name)['id'];
   }
 
-  // Pick Image directly as a File
-  Future<void> pickProfileImage() async {
+  // Pick Image - Updated to use File
+  Future<void> pickImage() async {
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
-        // Downscale to 1080p to avoid "Image decoding logging dropped"
         maxWidth: 1080,
         maxHeight: 1080,
-        imageQuality: 85, // Compress slightly to save bandwidth
+        imageQuality: 85,
       );
 
       if (image != null) {
-        profileImagePath.value = image.path;
+        selectedImage.value = File(image.path);
+        selectedImagePath.value = image.path;
         imageChanged.value = true;
+        update();
         debugPrint("Image Path: ${image.path}");
       }
-    }catch(e){
-        debugPrint("Error picking image: $e");
-      }
+    } catch(e) {
+      debugPrint("Error picking image: $e");
+    }
   }
 
   void showAddSkillDialog() {
@@ -139,7 +141,6 @@ class RecruiterEditJobPostController extends GetxController {
       isLoading.value = true;
       final Map<String, String> body = {};
 
-      // Only add to body if the field is NOT NULL or EMPTY
       void addIfValid(String key, String? value) {
         if (value != null && value.trim().isNotEmpty) body[key] = value.trim();
       }
@@ -157,19 +158,37 @@ class RecruiterEditJobPostController extends GetxController {
 
       for (int i = 0; i < skills.length; i++) {
         body['required_skills[$i]'] = skills[i];
+
+        debugPrint("========== SUBMITTING JOB POST ==========");
+        debugPrint("Has Image: ${selectedImagePath.value.isNotEmpty}");
+        debugPrint("Image Path: ${selectedImagePath.value}");
+        debugPrint("Body: $body");
+
+        // Check if file exists before uploading
+        if (selectedImagePath.value.isNotEmpty) {
+          final file = File(selectedImagePath.value);
+          final exists = await file.exists();
+          debugPrint("File exists: $exists");
+          if (exists) {
+            final fileSize = await file.length();
+            debugPrint("File size: ${fileSize} bytes");
+          }
+        }
       }
 
-      // If image changed, use multipart. If not, use standard patch.
-      final response = (imageChanged.value && profileImagePath.value != null)
-          ? await ApiService.multipart("job-post/$postId", method: 'PATCH', body: body, imagePath: profileImagePath.value)
+      String? imagePath = selectedImagePath.value.isNotEmpty ? selectedImagePath.value : null;
+
+      final response = (imageChanged.value && imagePath != null)
+          ? await ApiService.multipartImage("job-post/$postId",method: 'PATCH',body: body,files: [{"name": "image", "image": imagePath}])
           : await ApiService.patch("job-post/$postId", body: body);
+
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         Get.back(result: true);
         Get.snackbar('Success', 'Post updated successfully', backgroundColor: Colors.green, colorText: Colors.white);
       }
     } catch (e) {
-      Get.snackbar('Error', 'Update failed');
+      Get.snackbar('Error', e.toString());
     } finally {
       isLoading.value = false;
     }

@@ -1,5 +1,6 @@
 import 'package:embeyi/core/component/image/common_image.dart';
 import 'package:embeyi/core/component/text/common_text.dart';
+import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/core/utils/constants/app_icons.dart';
 import 'package:embeyi/core/utils/constants/app_images.dart';
@@ -225,7 +226,7 @@ class RecruiterJobCard extends StatelessWidget {
     // Check if it's a relative path from API (starts with /)
     if (thumbnailImage.startsWith('/')) {
       // You need to add your base URL here
-      const String baseUrl = 'YOUR_API_BASE_URL'; // e.g., 'https://api.example.com'
+      const String baseUrl = ApiEndPoint.imageUrl; // e.g., 'https://api.example.com'
       return Image.network(
         '$baseUrl$thumbnailImage',
         fit: BoxFit.cover,
