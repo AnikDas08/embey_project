@@ -183,7 +183,6 @@ class JobCardDetailsController extends GetxController {
   }
 
   void viewCandidateProfile(String applicationId) {
-    print("Opening application: $applicationId");
     Get.toNamed(
       RecruiterRoutes.resume,
       arguments: {

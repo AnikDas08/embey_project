@@ -8,6 +8,7 @@ import 'package:embeyi/features/job_seeker/home/presentation/screen/job_seeker_h
 import 'package:embeyi/features/job_seeker/jobs/presentation/screen/jobs_screen.dart';
 import 'package:embeyi/features/job_seeker/jobs/presentation/screen/job_details_screen.dart';
 import 'package:embeyi/features/job_seeker/jobs/presentation/screen/company_overview_screen.dart';
+import 'package:embeyi/features/job_seeker/jobs/presentation/screen/webview_screen_here.dart';
 import 'package:embeyi/features/job_seeker/profile/presentation/screen/payment_history_screen.dart';
 import 'package:embeyi/features/job_seeker/profile/presentation/screen/profile/add_education_screen.dart';
 import 'package:embeyi/features/job_seeker/profile/presentation/screen/profile/add_work_experience_screen.dart';
@@ -46,6 +47,7 @@ class JobSeekerRoutes {
   static const String setting = "/job_seeker_setting_screen.dart";
   static const String jobs = "/job_seeker_jobs_screen.dart";
   static const String jobDetails = "/job_details_screen.dart";
+  static const String jobWebView = "/jobWebView";
   static const String companyOverview = "/company_overview_screen.dart";
   static const String history = "/job_seeker_history_screen.dart";
   static const String appliedDetails = "/applied_details_screen.dart";
@@ -90,6 +92,7 @@ class JobSeekerRoutes {
       page: () => const JobSeekerHelpSupportScreen(),
     ),
     GetPage(name: setting, page: () => const JobSeekerSettingScreen()),
+    GetPage(name: jobWebView, page: () => const JobWebViewScreen()),
     GetPage(name: jobs, page: () => JobsScreen()),
     GetPage(name: jobDetails, page: () => const JobDetailsScreen()),
     GetPage(name: companyOverview, page: () => const CompanyOverviewScreen()),

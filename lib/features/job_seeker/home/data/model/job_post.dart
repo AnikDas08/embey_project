@@ -85,8 +85,8 @@ class JobPost {
   final String? jobType;
   final String? jobLevel;
   final String? experienceLevel;
-  final int? minSalary;
-  final int? maxSalary;
+  final num? minSalary;
+  final num? maxSalary;
   final String? location;
   bool? isFavourite;
   bool? isApplied;
@@ -149,8 +149,8 @@ class JobPost {
       jobType: json['job_type'] as String?,
       jobLevel: json['job_level'] as String?,
       experienceLevel: json['experience_level'] as String?,
-      minSalary: json['min_salary'] as int?,
-      maxSalary: json['max_salary'] as int?,
+      minSalary: json['min_salary'] as num?,
+      maxSalary: json['max_salary'] as num?,
       location: json['location'] as String?,
       // List parsing: List<dynamic>? is mapped to List<String>?
       requiredSkills: (json['required_skills'] as List<dynamic>?)

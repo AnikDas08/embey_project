@@ -160,7 +160,7 @@ class JobCardDetailsScreen extends StatelessWidget {
                   titleText: 'Yes',
                   onTap: () {
                     Get.back();
-                    deleteDialog(context, controller);
+                    controller.deletePost();
                   },
                   buttonColor: AppColors.red,
                   borderColor: AppColors.red,

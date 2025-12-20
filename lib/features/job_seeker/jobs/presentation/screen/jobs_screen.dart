@@ -8,6 +8,7 @@ import 'package:embeyi/features/job_seeker/home/presentation/widgets/home_widget
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import '../../../../../core/config/api/api_end_point.dart';
 import '../controller/jobs_controller.dart';
 
 class JobsScreen extends StatelessWidget {
@@ -111,9 +112,15 @@ class JobsScreen extends StatelessWidget {
 
                       // Get company logo with base URL
                       final thumbnail = jobPost.thumbnail ?? '';
-                      final companyLogo = thumbnail.isNotEmpty
-                          ? 'https://shariful5001.binarybards.online$thumbnail'
-                          : 'assets/images/noImage.png';
+                      String companyLogo;
+
+                      if (thumbnail.isEmpty) {
+                        companyLogo = 'assets/images/noImage.png'; // Fallback for empty
+                      } else if (thumbnail.startsWith('http')) {
+                        companyLogo = thumbnail; // Use direct URL
+                      } else {
+                        companyLogo = ApiEndPoint.imageUrl + thumbnail; // Prepend base URL for local paths
+                      }
 
                       return Padding(
                         padding: EdgeInsets.only(bottom: 16.h),

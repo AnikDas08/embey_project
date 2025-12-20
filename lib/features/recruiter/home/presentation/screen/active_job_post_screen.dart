@@ -4,6 +4,7 @@ import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import '../../../../../core/component/text/common_text.dart';
 import '../controller/active_job_post_controller.dart';
 import '../widgets/recruiter_job_card.dart';
 
@@ -26,7 +27,7 @@ class ActiveJobPostScreen extends StatelessWidget {
             child: SingleChildScrollView(
               child: Padding(
                 padding: EdgeInsets.all(16.r),
-                /*child: _buildJobsList(controller),*/
+                child: _buildJobsList(controller),
               ),
             ),
           ),
@@ -56,33 +57,60 @@ class ActiveJobPostScreen extends StatelessWidget {
     );
   }
 
-  /*Widget _buildJobsList(ActiveJobPostController controller) {
+  Widget _buildJobsList(ActiveJobPostController controller) {
     return Obx(
-      () => ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: controller.activeJobs.length,
-        itemBuilder: (context, index) {
-          final job = controller.activeJobs[index];
-          return RecruiterJobCard(
-            jobTitle: job.title,
-            location: job.location,
-            isFullTime: job.isFullTime,
-            isRemote: job.isRemote,
-            candidateCount: job.totalApplications,
-            deadline: job.formattedDeadline,
-            thumbnailImage: job.thumbnail,
-            userImages: job.userImages, // Pass the list here
-            onTap: () {
-              Get.toNamed(RecruiterRoutes.jobCardDetails, arguments: {
-                "postId": job.id,
-              });
-            },
+          () {
+        if (controller.isLoadingJob.value) {
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 24.h),
+              child: CircularProgressIndicator(
+                color: AppColors.primaryColor,
+              ),
+            ),
           );
-        },
-      ),
+        }
+
+        if (controller.recentJobs.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 24.h),
+              child: CommonText(
+                text: 'No recent jobs found',
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w400,
+                color: AppColors.secondaryText,
+              ),
+            ),
+          );
+        }
+
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: controller.recentJobs.length,
+          itemBuilder: (context, index) {
+            final job = controller.recentJobs[index];
+            return RecruiterJobCard(
+              jobTitle: job.title,
+              location: job.location,
+              isFullTime: job.isFullTime,
+              isRemote: job.isRemote,
+              candidateCount: job.totalApplications,
+              deadline: job.formattedDeadline,
+              thumbnailImage: job.thumbnail,
+              userImages: job.userImages, // Pass the list here
+              onTap: () {
+                Get.toNamed(RecruiterRoutes.jobCardDetails, arguments: {
+                  "postId": job.id,
+                });
+              },
+            );
+          },
+        );
+      },
     );
-  }*/
+  }
 
   Widget _buildCreateJobButton(ActiveJobPostController controller) {
     return Container(

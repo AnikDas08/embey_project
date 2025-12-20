@@ -191,13 +191,11 @@ class AddWorkExperienceScreen extends StatelessWidget {
                                   },
                                   activeColor: AppColors.primary,
                                 ),
-                                Expanded(
-                                  child: CommonText(
-                                    text: 'I Currently Work at This Company',
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 12.sp,
-                                    color: AppColors.secondaryText,
-                                  ),
+                                CommonText(
+                                  text: 'I Currently Work at This Company',
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 12.sp,
+                                  color: AppColors.secondaryText,
                                 ),
                               ],
                             );

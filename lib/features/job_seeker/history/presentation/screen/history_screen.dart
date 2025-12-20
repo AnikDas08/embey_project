@@ -154,6 +154,16 @@ class HistoryScreen extends StatelessWidget {
               }
 
               final application = applications[index];
+              final thumbnail = application.post?.thumbnail ?? '';
+              String companyLogo;
+
+              if (thumbnail.isEmpty) {
+                companyLogo = 'assets/images/noImage.png'; // Fallback for empty
+              } else if (thumbnail.startsWith('http')) {
+                companyLogo = thumbnail; // Use direct URL
+              } else {
+                companyLogo = ApiEndPoint.imageUrl + thumbnail; // Prepend base URL for local paths
+              }
 
               if (isInterview) {
                 return InterviewJobCard(
@@ -181,9 +191,7 @@ class HistoryScreen extends StatelessWidget {
                 jobTitle: application.post?.title ?? application.title,
                 companyName: application.user?.name ?? 'Unknown Company',
                 location: application.post?.location ?? 'Unknown Location',
-                companyLogo: _getImageUrl(
-                    application.post?.thumbnail ?? application.user?.image ?? ''
-                ),
+                companyLogo: companyLogo,
                 status: application.history.isNotEmpty
                     ? application.history.last.title
                     : application.displayStatus,

@@ -1,64 +1,45 @@
+import 'package:embeyi/core/services/storage/storage_services.dart';
 import 'package:get/get.dart';
 import 'package:embeyi/core/utils/constants/app_images.dart';
+
+import '../../../../../core/config/api/api_end_point.dart';
+import '../../../../../core/services/api/api_service.dart';
+import '../../../../../core/utils/app_utils.dart';
+import '../../data/model/job_model.dart';
 
 class ActiveJobPostController extends GetxController {
   // Observable list for active jobs
   final RxList<Map<String, dynamic>> activeJobs = <Map<String, dynamic>>[].obs;
 
+  final RxList<JobData> recentJobs = <JobData>[].obs;
+  final isLoadingJob=false.obs;
+
   @override
   void onInit() {
     super.onInit();
-    _loadActiveJobs();
+    getJobs();
   }
 
-  void _loadActiveJobs() {
-    activeJobs.value = [
-      {
-        'title': 'Sr. UI/UX Designer',
-        'location': 'California, United State.',
-        'isFullTime': true,
-        'isRemote': true,
-        'candidateCount': 150,
-        'deadline': '01 Dec 25',
-        'thumbnail': AppImages.jobPost,
-      },
-      {
-        'title': 'Web Designer',
-        'location': 'California, United State.',
-        'isFullTime': true,
-        'isRemote': true,
-        'candidateCount': 200,
-        'deadline': '01 Dec 25',
-        'thumbnail': AppImages.jobPost,
-      },
-      {
-        'title': 'Office Assistance',
-        'location': 'California, United State.',
-        'isFullTime': true,
-        'isRemote': true,
-        'candidateCount': 200,
-        'deadline': '01 Dec 25',
-        'thumbnail': AppImages.jobPost,
-      },
-      {
-        'title': 'Marketing Manager',
-        'location': 'California, United State.',
-        'isFullTime': true,
-        'isRemote': true,
-        'candidateCount': 200,
-        'deadline': '01 Dec 25',
-        'thumbnail': AppImages.jobPost,
-      },
-      {
-        'title': 'IT Executive',
-        'location': 'California, United State.',
-        'isFullTime': true,
-        'isRemote': true,
-        'candidateCount': 200,
-        'deadline': '01 Dec 25',
-        'thumbnail': AppImages.jobPost,
-      },
-    ];
+
+  Future<void> getJobs() async {
+    isLoadingJob.value = true;
+    update();
+    try {
+      final response = await ApiService.get(
+          ApiEndPoint.job_all+"?status=active",
+          header: {"Authorization": "Bearer ${LocalStorage.token}"}
+      );
+      if (response.statusCode == 200) {
+        final jobModel = RecruiterJobModel.fromJson(response.data);
+        recentJobs.value = jobModel.data.toList(); // Get first 3 jobs for recent
+      } else {
+        Utils.errorSnackBar(response.statusCode, response.message);
+      }
+    } catch (e) {
+      Utils.errorSnackBar(0, e.toString());
+    }
+    isLoadingJob.value = false;
+    update();
   }
 
   void createNewJobPost() {

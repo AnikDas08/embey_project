@@ -21,20 +21,24 @@ class InterviewJobScreen extends StatelessWidget {
         children: [
           _buildTabBar(controller),
           Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.all(16.r),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildMonthLabel(controller),
-                    12.height,
-                    _buildDateSelector(controller),
-                    16.height,
-                    _buildTodayLabel(),
-                    12.height,
-                    _buildInterviewsList(controller),
-                  ],
+            child: RefreshIndicator(
+              onRefresh: controller.refreshInterviews,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Padding(
+                  padding: EdgeInsets.all(16.r),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildMonthLabel(controller),
+                      12.height,
+                      _buildDateSelector(controller),
+                      16.height,
+                      _buildTodayLabel(controller),
+                      12.height,
+                      _buildInterviewsList(controller),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -69,7 +73,7 @@ class InterviewJobScreen extends StatelessWidget {
       color: Colors.white,
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       child: Obx(
-        () => Row(
+            () => Row(
           children: [
             Expanded(
               child: _buildTabButton(
@@ -124,7 +128,7 @@ class InterviewJobScreen extends StatelessWidget {
 
   Widget _buildMonthLabel(InterviewJobController controller) {
     return Obx(
-      () => Row(
+          () => Row(
         children: [
           Text(
             controller.selectedMonth.value,
@@ -143,7 +147,7 @@ class InterviewJobScreen extends StatelessWidget {
 
   Widget _buildDateSelector(InterviewJobController controller) {
     return Obx(
-      () => DateSelector(
+          () => DateSelector(
         dates: controller.dates,
         selectedIndex: controller.selectedDateIndex.value,
         onDateSelected: controller.selectDate,
@@ -151,42 +155,127 @@ class InterviewJobScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTodayLabel() {
-    return Text(
-      'Today',
-      style: TextStyle(
-        fontSize: 16.sp,
-        fontWeight: FontWeight.w700,
-        color: AppColors.black,
-      ),
+  Widget _buildTodayLabel(InterviewJobController controller) {
+    return Obx(
+          () {
+        final selectedDateMap = controller.dates[controller.selectedDateIndex.value];
+        final isToday = selectedDateMap['date'] ==
+            DateTime.now().day.toString().padLeft(2, '0');
+
+        return Text(
+          isToday ? 'Today' : '${selectedDateMap['day']}, ${selectedDateMap['date']}',
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w700,
+            color: AppColors.black,
+          ),
+        );
+      },
     );
   }
 
   Widget _buildInterviewsList(InterviewJobController controller) {
-    return Obx(
-      () => controller.currentInterviews.isEmpty
-          ? _buildEmptyState()
-          : ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: controller.currentInterviews.length,
-              itemBuilder: (context, index) {
-                final interview = controller.currentInterviews[index];
-                return InterviewCandidateCard(
-                  name: interview['name'],
-                  jobTitle: interview['jobTitle'],
-                  experience: interview['experience'],
-                  scheduleTime: interview['scheduleTime'],
-                  profileImage: interview['profileImage'],
-                  isCompleted: controller.selectedTabIndex.value == 1,
-                  onTap: () => controller.viewCandidateProfile(
-                    interview['name'],
-                    controller.selectedTabIndex.value == 1,
-                  ),
-                  onEdit: () => controller.editInterview(interview['name']),
-                );
-              },
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return _buildLoadingState();
+      }
+
+      if (controller.errorMessage.value.isNotEmpty) {
+        return _buildErrorState(controller);
+      }
+
+      if (controller.currentInterviews.isEmpty) {
+        return _buildEmptyState();
+      }
+
+      return ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: controller.currentInterviews.length,
+        itemBuilder: (context, index) {
+          final interview = controller.currentInterviews[index];
+
+          // 🔥 Controller data formatter
+          final cardData = controller.getInterviewCardData(interview);
+
+          return InterviewCandidateCard(
+            name: cardData['name'],
+            jobTitle: cardData['jobTitle'],
+            experience: cardData['experience'],
+            scheduleTime: cardData['scheduleTime'], // dd-MM-yyyy
+            profileImage: cardData['profileImage'],
+            isCompleted: controller.selectedTabIndex.value == 1,
+            onTap: () =>
+                controller.viewCandidateProfile(interview.id),
+            onEdit: () =>
+                controller.editInterview(interview.id),
+          );
+        },
+      );
+    });
+  }
+
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 40.h),
+        child: CircularProgressIndicator(
+          color: AppColors.primaryColor,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(InterviewJobController controller) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 40.h, horizontal: 20.w),
+        child: Column(
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 48.sp,
+              color: Colors.red,
             ),
+            12.height,
+            Text(
+              'Failed to load interviews',
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+                color: AppColors.black,
+              ),
+            ),
+            8.height,
+            Text(
+              controller.errorMessage.value,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w400,
+                color: AppColors.secondaryText,
+              ),
+            ),
+            16.height,
+            ElevatedButton(
+              onPressed: controller.fetchInterviews,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryColor,
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+              ),
+              child: Text(
+                'Retry',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -194,13 +283,23 @@ class InterviewJobScreen extends StatelessWidget {
     return Center(
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 40.h),
-        child: Text(
-          'No interviews scheduled',
-          style: TextStyle(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w500,
-            color: AppColors.secondaryText,
-          ),
+        child: Column(
+          children: [
+            Icon(
+              Icons.event_busy,
+              size: 48.sp,
+              color: AppColors.secondaryText,
+            ),
+            12.height,
+            Text(
+              'No interviews scheduled',
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+                color: AppColors.secondaryText,
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -1,98 +1,62 @@
 import 'package:embeyi/core/config/route/recruiter_routes.dart';
 import 'package:get/get.dart';
-import 'package:embeyi/core/utils/constants/app_images.dart';
+import '../../../../../core/config/api/api_end_point.dart';
+import '../../../../../core/services/api/api_service.dart';
+import '../../../../../core/utils/app_utils.dart';
+import '../../../home/data/model/job_model.dart';
 
 class RecruiterJobPostController extends GetxController {
-  // Observable properties
   final RxInt selectedTabIndex = 0.obs; // 0 = Active, 1 = Closed
-  final RxList<Map<String, dynamic>> activeJobs = <Map<String, dynamic>>[].obs;
-  final RxList<Map<String, dynamic>> closedJobs = <Map<String, dynamic>>[].obs;
+  final RxList<JobData> recentJobs = <JobData>[].obs;
+  final RxBool isLoadingJob = false.obs;
 
   @override
   void onInit() {
     super.onInit();
-    _loadJobs();
+    getJobs();
   }
 
-  void _loadJobs() {
-    activeJobs.value = [
-      {
-        'title': 'Sr. UI/UX Designer',
-        'location': 'California, United State.',
-        'isFullTime': true,
-        'isRemote': true,
-        'candidateCount': 150,
-        'deadline': '01 Dec 25',
-        'thumbnail': AppImages.jobPost,
-      },
-      {
-        'title': 'Web Designer',
-        'location': 'California, United State.',
-        'isFullTime': true,
-        'isRemote': true,
-        'candidateCount': 200,
-        'deadline': '01 Dec 25',
-        'thumbnail': AppImages.jobPost,
-      },
-      {
-        'title': 'Office Assistance',
-        'location': 'California, United State.',
-        'isFullTime': true,
-        'isRemote': true,
-        'candidateCount': 200,
-        'deadline': '01 Dec 25',
-        'thumbnail': AppImages.jobPost,
-      },
-      {
-        'title': 'Marketing Manager',
-        'location': 'California, United State.',
-        'isFullTime': true,
-        'isRemote': true,
-        'candidateCount': 200,
-        'deadline': '01 Dec 25',
-        'thumbnail': AppImages.jobPost,
-      },
-      {
-        'title': 'IT Executive',
-        'location': 'California, United State.',
-        'isFullTime': true,
-        'isRemote': true,
-        'candidateCount': 200,
-        'deadline': '01 Dec 25',
-        'thumbnail': AppImages.jobPost,
-      },
-    ];
+  /// Fetches jobs based on the current selectedTabIndex
+  Future<void> getJobs() async {
+    isLoadingJob.value = true;
 
-    closedJobs.value = [
-      {
-        'title': 'Senior Developer',
-        'location': 'California, United State.',
-        'isFullTime': true,
-        'isRemote': true,
-        'candidateCount': 300,
-        'deadline': '01 Nov 25',
-        'thumbnail': AppImages.jobPost,
-      },
-    ];
+    // Clear list so the UI shows the loader clearly when switching tabs
+    recentJobs.clear();
+
+    try {
+      // Determine status string based on tab index
+      final statusQuery = selectedTabIndex.value == 0 ? "active" : "closed";
+
+      final response = await ApiService.get(
+        "${ApiEndPoint.job_all}?status=$statusQuery",
+      );
+
+      if (response.statusCode == 200) {
+        final jobModel = RecruiterJobModel.fromJson(response.data);
+        recentJobs.value = jobModel.data;
+      } else {
+        Utils.errorSnackBar(response.statusCode, response.message);
+      }
+    } catch (e) {
+      Utils.errorSnackBar(0, e.toString());
+    } finally {
+      isLoadingJob.value = false;
+    }
   }
 
+  /// This is the key fix: update index AND fetch new data
   void selectTab(int index) {
+    if (selectedTabIndex.value == index) return; // Prevent redundant calls
     selectedTabIndex.value = index;
-  }
-
-  List<Map<String, dynamic>> get currentJobs {
-    return selectedTabIndex.value == 0 ? activeJobs : closedJobs;
+    getJobs();
   }
 
   void createNewJobPost() {
     RecruiterRoutes.goToCreateJobPost();
   }
 
-  void viewJobDetails(String jobTitle) {
-    RecruiterRoutes.goToJobCardDetails();
-  }
-
-  void editJobPost(String jobTitle) {
-    RecruiterRoutes.goToEditJobPost();
+  // Navigation with arguments
+  void viewJobDetails(String jobId) {
+    Get.toNamed(RecruiterRoutes.jobCardDetails, arguments: {"postId": jobId});
   }
 }

@@ -10,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import '../../../../../core/config/api/api_end_point.dart';
+
 class CategoryDetails extends StatelessWidget {
   CategoryDetails({super.key});
   final controller = Get.put(CategoryDetailController());
@@ -17,7 +19,7 @@ class CategoryDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Design')),
+      appBar: AppBar(title: Text(controller.categoryName.value)),
       body: Obx(() {
         // Show loading indicator
         if (controller.isLoadingJobs.value) {
@@ -110,9 +112,15 @@ class CategoryDetails extends StatelessWidget {
 
                       // Get company logo with base URL
                       final thumbnail = jobPost.thumbnail ?? '';
-                      final companyLogo = thumbnail.isNotEmpty
-                          ? 'https://shariful5001.binarybards.online$thumbnail'
-                          : 'assets/images/noImage.png';
+                      String companyLogo;
+
+                      if (thumbnail.isEmpty) {
+                        companyLogo = 'assets/images/noImage.png'; // Fallback for empty
+                      } else if (thumbnail.startsWith('http')) {
+                        companyLogo = thumbnail; // Use direct URL
+                      } else {
+                        companyLogo = ApiEndPoint.imageUrl + thumbnail; // Prepend base URL for local paths
+                      }
 
                       return Padding(
                         padding: EdgeInsets.only(bottom: 16.h),

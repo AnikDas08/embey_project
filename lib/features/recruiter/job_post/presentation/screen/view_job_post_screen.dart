@@ -7,12 +7,13 @@ import 'package:embeyi/core/config/route/recruiter_routes.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/core/utils/constants/app_images.dart';
 import 'package:embeyi/core/utils/extensions/extension.dart';
-import 'package:embeyi/features/job_seeker/jobs/presentation/widgets/job_details_widgets.dart';
+import 'package:embeyi/features/job_seeker/jobs/presentation/widgets/job_details_widgets.dart' hide DescriptionText;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../controller/view_job_controller.dart';
+import '../widgets/description_text.dart';
 
 class ViewJobPostScreen extends StatelessWidget {
   const ViewJobPostScreen({super.key});

@@ -111,9 +111,9 @@ class RecruiterRoutes {
     GetPage(
       name: resume,
       page: () => ResumeScreen(
-        isShortlist: Get.arguments['isShortlist'] ?? true,
+        /*isShortlist: Get.arguments['isShortlist'] ?? true,
         isInterview: Get.arguments['isInterview'] ?? true,
-        isReject: Get.arguments['isReject'] ?? true,
+        isReject: Get.arguments['isReject'] ?? true,*/
       ),
     ),
     GetPage(name: message, page: () => MessageScreen()),

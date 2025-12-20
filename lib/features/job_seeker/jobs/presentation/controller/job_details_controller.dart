@@ -35,7 +35,7 @@ class JobDetailsController extends GetxController {
   }
 
   String getJobTitle() => jobData.value?.title ?? 'Job Title';
-  String getRecuirterId() => jobData.value?.recruiter.id ?? '';
+  String getRecuirterId() => jobData.value?.recruiter!.id ?? '';
 
   String getLocation() => jobData.value?.location ?? 'Location';
 
@@ -65,9 +65,9 @@ class JobDetailsController extends GetxController {
     return '$diff Days Ago';
   }
 
-  String getCompanyName() => jobData.value?.recruiter.name ?? 'Company';
+  String getCompanyName() => jobData.value?.recruiter!.name ?? 'Company';
 
-  String getCompanyLogo() => jobData.value?.recruiter.image ?? '';
+  String getCompanyLogo() => jobData.value?.recruiter!.image ?? '';
 
   String getThumbnail() => jobData.value?.thumbnail ?? '';
 

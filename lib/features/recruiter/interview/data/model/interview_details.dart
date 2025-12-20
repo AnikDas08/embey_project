@@ -1,137 +1,91 @@
-class InterviewResponse {
+// application_details_model.dart
+
+class ApplicationInterview {
   final bool success;
   final String message;
-  final Pagination pagination;
-  final List<InterviewData> data;
+  final ApplicationData data;
 
-  InterviewResponse({
+  ApplicationInterview({
     required this.success,
     required this.message,
-    required this.pagination,
     required this.data,
   });
 
-  factory InterviewResponse.fromJson(Map<dynamic, dynamic> json) {
-    return InterviewResponse(
+  factory ApplicationInterview.fromJson(Map<dynamic, dynamic> json) {
+    return ApplicationInterview(
       success: json['success'] ?? false,
       message: json['message'] ?? '',
-      pagination: Pagination.fromJson(json['pagination'] ?? {}),
-      data: (json['data'] as List?)
-          ?.map((item) => InterviewData.fromJson(item))
-          .toList() ??
-          [],
+      data: ApplicationData.fromJson(json['data'] ?? {}),
     );
   }
 }
 
-class Pagination {
-  final int total;
-  final int limit;
-  final int page;
-  final int totalPage;
-  final int cursor;
-
-  Pagination({
-    required this.total,
-    required this.limit,
-    required this.page,
-    required this.totalPage,
-    required this.cursor,
-  });
-
-  factory Pagination.fromJson(Map<String, dynamic> json) {
-    return Pagination(
-      total: json['total'] ?? 0,
-      limit: json['limit'] ?? 0,
-      page: json['page'] ?? 0,
-      totalPage: json['totalPage'] ?? 0,
-      cursor: json['cursor'] ?? 0,
-    );
-  }
-}
-
-class InterviewData {
+class ApplicationData {
   final String id;
-  final InterviewDetails interviewDetails;
   final User user;
   final Post post;
   final Recruiter recruiter;
   final String title;
   final String yearOfExperience;
+  final String resume;
+  final List<String> otherDocuments;
   final String status;
   final bool isInterviewCompleted;
   final int jobMatch;
-  final String inteviewStatus;
+  final String interviewStatus;
   final String hiringStatus;
-  final String? rejectedReason;
-  final int? remainingDays;
   final List<History> history;
+  final String? rejectedReason;
+  final InterviewDetails? interviewDetails;
   final String createdAt;
   final String updatedAt;
 
-  InterviewData({
+  ApplicationData({
     required this.id,
-    required this.interviewDetails,
     required this.user,
     required this.post,
     required this.recruiter,
     required this.title,
     required this.yearOfExperience,
+    required this.resume,
+    required this.otherDocuments,
     required this.status,
     required this.isInterviewCompleted,
     required this.jobMatch,
-    required this.inteviewStatus,
+    required this.interviewStatus,
     required this.hiringStatus,
-    this.rejectedReason,
-    this.remainingDays,
     required this.history,
+    this.rejectedReason,
+    this.interviewDetails,
     required this.createdAt,
     required this.updatedAt,
   });
 
-  factory InterviewData.fromJson(Map<String, dynamic> json) {
-    return InterviewData(
+  factory ApplicationData.fromJson(Map<String, dynamic> json) {
+    return ApplicationData(
       id: json['_id'] ?? '',
-      interviewDetails:
-      InterviewDetails.fromJson(json['interviewDetails'] ?? {}),
       user: User.fromJson(json['user'] ?? {}),
       post: Post.fromJson(json['post'] ?? {}),
       recruiter: Recruiter.fromJson(json['recruiter'] ?? {}),
       title: json['title'] ?? '',
       yearOfExperience: json['year_of_experience'] ?? '',
+      resume: json['resume'] ?? '',
+      otherDocuments: List<String>.from(json['other_documents'] ?? []),
       status: json['status'] ?? '',
       isInterviewCompleted: json['isInterviewCompleted'] ?? false,
       jobMatch: json['jobMatch'] ?? 0,
-      inteviewStatus: json['inteviewStatus'] ?? '',
+      interviewStatus: json['inteviewStatus'] ?? '',
       hiringStatus: json['hiringStatus'] ?? '',
-      rejectedReason: json['rejectedReason'],
-      remainingDays: json['remainingDays'],
       history: (json['history'] as List?)
-          ?.map((item) => History.fromJson(item))
+          ?.map((e) => History.fromJson(e))
           .toList() ??
           [],
+      rejectedReason: json['rejectedReason'],
+      interviewDetails: json['interviewDetails'] != null
+          ? InterviewDetails.fromJson(json['interviewDetails'])
+          : null,
       createdAt: json['createdAt'] ?? '',
       updatedAt: json['updatedAt'] ?? '',
-    );
-  }
-}
-
-class InterviewDetails {
-  final String date;
-  final String time;
-  final String interviewType;
-
-  InterviewDetails({
-    required this.date,
-    required this.time,
-    required this.interviewType,
-  });
-
-  factory InterviewDetails.fromJson(Map<String, dynamic> json) {
-    return InterviewDetails(
-      date: json['date'] ?? '',
-      time: json['time'] ?? '',
-      interviewType: json['interview_type'] ?? '',
     );
   }
 }
@@ -141,14 +95,14 @@ class User {
   final String name;
   final String email;
   final String image;
-  final String bio;
+  final String? bio;
 
   User({
     required this.id,
     required this.name,
     required this.email,
     required this.image,
-    required this.bio,
+    this.bio,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -157,7 +111,7 @@ class User {
       name: json['name'] ?? '',
       email: json['email'] ?? '',
       image: json['image'] ?? '',
-      bio: json['bio'] ?? '',
+      bio: json['bio'],
     );
   }
 }
@@ -167,14 +121,26 @@ class Post {
   final String thumbnail;
   final String title;
   final String description;
+  final String jobType;
+  final String jobLevel;
+  final int minSalary;
+  final int maxSalary;
   final String location;
+  final List<String> requiredSkills;
+  final String deadline;
 
   Post({
     required this.id,
     required this.thumbnail,
     required this.title,
     required this.description,
+    required this.jobType,
+    required this.jobLevel,
+    required this.minSalary,
+    required this.maxSalary,
     required this.location,
+    required this.requiredSkills,
+    required this.deadline,
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -183,7 +149,13 @@ class Post {
       thumbnail: json['thumbnail'] ?? '',
       title: json['title'] ?? '',
       description: json['description'] ?? '',
+      jobType: json['job_type'] ?? '',
+      jobLevel: json['job_level'] ?? '',
+      minSalary: json['min_salary'] ?? 0,
+      maxSalary: json['max_salary'] ?? 0,
       location: json['location'] ?? '',
+      requiredSkills: List<String>.from(json['required_skills'] ?? []),
+      deadline: json['deadline'] ?? '',
     );
   }
 }
@@ -230,6 +202,26 @@ class History {
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       date: json['date'] ?? '',
+    );
+  }
+}
+
+class InterviewDetails {
+  final String date;
+  final String time;
+  final String interviewType;
+
+  InterviewDetails({
+    required this.date,
+    required this.time,
+    required this.interviewType,
+  });
+
+  factory InterviewDetails.fromJson(Map<String, dynamic> json) {
+    return InterviewDetails(
+      date: json['date'] ?? '',
+      time: json['time'] ?? '',
+      interviewType: json['interview_type'] ?? '',
     );
   }
 }

@@ -10,6 +10,8 @@ import 'package:embeyi/core/utils/constants/app_colors.dart'; // Assuming you ne
 import 'package:embeyi/features/job_seeker/home/presentation/controller/recomended_jod_controller.dart';
 import 'package:embeyi/features/job_seeker/home/presentation/widgets/auto_apply.dart';
 
+import '../../../../../core/config/api/api_end_point.dart';
+
 
 class AllRecommendedJobScreen extends StatelessWidget {
   const AllRecommendedJobScreen({super.key});
@@ -89,10 +91,15 @@ class AllRecommendedJobScreen extends StatelessWidget {
                       final isRemote = jobType == 'REMOTE';
 
                       final thumbnail = jobPost.thumbnail ?? '';
-                      final companyLogo = thumbnail.isNotEmpty
-                          ? 'https://shariful5001.binarybards.online$thumbnail'
-                          : 'assets/images/noImage.png';
-                      // --- End Data Extraction ---
+                      String companyLogo;
+
+                      if (thumbnail.isEmpty) {
+                        companyLogo = 'assets/images/noImage.png'; // Fallback for empty
+                      } else if (thumbnail.startsWith('http')) {
+                        companyLogo = thumbnail; // Use direct URL
+                      } else {
+                        companyLogo = ApiEndPoint.imageUrl + thumbnail; // Prepend base URL for local paths
+                      }
 
                       return Padding(
                         padding: EdgeInsets.only(bottom: 16.h),

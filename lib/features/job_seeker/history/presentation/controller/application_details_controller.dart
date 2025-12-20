@@ -1,3 +1,4 @@
+import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -55,13 +56,13 @@ class AppliedDetailsController extends GetxController {
   String getImageUrl(String imagePath) {
     if (imagePath.isEmpty) return '';
     if (imagePath.startsWith('http')) return imagePath;
-    return 'YOUR_BASE_URL' + imagePath; // Replace with your actual base URL
+    return ApiEndPoint.imageUrl+ imagePath; // Replace with your actual base URL
   }
 
   String getDocumentUrl(String docPath) {
     if (docPath.isEmpty) return '';
     if (docPath.startsWith('http')) return docPath;
-    return 'YOUR_BASE_URL' + docPath; // Replace with your actual base URL
+    return ApiEndPoint.imageUrl + docPath; // Replace with your actual base URL
   }
 
   String getFileName(String path) {

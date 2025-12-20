@@ -3,6 +3,8 @@ import 'package:embeyi/core/utils/extensions/extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import '../../../../../core/component/text/common_text.dart';
+import '../../../../../core/config/api/api_end_point.dart';
 import '../controller/pending_job_request_controller.dart';
 import '../../../home/presentation/widgets/candidate_card.dart';
 
@@ -22,7 +24,7 @@ class PendingJobRequestScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildJobTitleDropdown(controller),
+              _buildCategoryDropdown(controller),
               16.height,
               _buildCandidatesList(controller),
             ],
@@ -41,7 +43,7 @@ class PendingJobRequestScreen extends StatelessWidget {
         onPressed: () => Get.back(),
       ),
       title: Obx(
-        () => Text(
+            () => Text(
           'Request (${controller.totalRequestCount})',
           style: TextStyle(
             fontSize: 18.sp,
@@ -54,9 +56,9 @@ class PendingJobRequestScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildJobTitleDropdown(PendingJobRequestController controller) {
+  Widget _buildCategoryDropdown(PendingJobRequestController controller) {
     return Obx(
-      () => Container(
+          () => Container(
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -65,7 +67,7 @@ class PendingJobRequestScreen extends StatelessWidget {
         ),
         child: DropdownButtonHideUnderline(
           child: DropdownButton<String>(
-            value: controller.selectedJobTitle.value,
+            value: controller.selectedCategory.value,
             isExpanded: true,
             icon: Icon(
               Icons.keyboard_arrow_down,
@@ -77,15 +79,15 @@ class PendingJobRequestScreen extends StatelessWidget {
               fontWeight: FontWeight.w600,
               color: AppColors.black,
             ),
-            items: controller.jobTitles.map((String jobTitle) {
+            items: controller.categoryNames.map((String category) {
               return DropdownMenuItem<String>(
-                value: jobTitle,
-                child: Text(jobTitle),
+                value: category,
+                child: Text(category),
               );
             }).toList(),
             onChanged: (String? newValue) {
               if (newValue != null) {
-                controller.selectJobTitle(newValue);
+                controller.selectCategory(newValue);
               }
             },
           ),
@@ -95,43 +97,53 @@ class PendingJobRequestScreen extends StatelessWidget {
   }
 
   Widget _buildCandidatesList(PendingJobRequestController controller) {
-    return Obx(
-      () => controller.filteredRequests.isEmpty
-          ? _buildEmptyState()
-          : ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: controller.filteredRequests.length,
-              itemBuilder: (context, index) {
-                final candidate = controller.filteredRequests[index];
-                return CandidateCard(
-                  name: candidate['name'],
-                  jobTitle: candidate['jobTitle'],
-                  experience: candidate['experience'],
-                  description: candidate['description'],
-                  matchPercentage: candidate['matchPercentage'],
-                  profileImage: candidate['profileImage'],
-                  onTap: () =>
-                      controller.viewCandidateProfile(candidate['name']),
-                );
-              },
-            ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 40.h),
-        child: Text(
-          'No pending requests for this position',
-          style: TextStyle(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w500,
-            color: AppColors.secondaryText,
+    return Obx(() {
+      // Show loading indicator while fetching applications
+      if (controller.isLoadingApplications.value) {
+        return Center(
+          child: Padding(
+            padding: EdgeInsets.all(32.r),
+            child: const CircularProgressIndicator(),
           ),
-        ),
-      ),
-    );
+        );
+      }
+
+      // Show empty state if no applications after filtering
+      if (controller.filteredApplications.isEmpty) {
+        return Center(
+          child: Padding(
+            padding: EdgeInsets.all(32.r),
+            child: Text(
+              'No pending requests found',
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: AppColors.black.withOpacity(0.5),
+              ),
+            ),
+          ),
+        );
+      }
+
+      // Display filtered list of applications
+      return ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: controller.filteredApplications.length,
+        itemBuilder: (context, index) {
+          final application = controller.filteredApplications[index];
+
+          // Map API data to CandidateCard
+          return CandidateCard(
+            name: application.user.name,
+            jobTitle: application.title,
+            experience: application.experienceYears,
+            description: application.user.bio,
+            matchPercentage: application.jobMatch,
+            profileImage: ApiEndPoint.imageUrl + application.user.image,
+            onTap: () => controller.viewCandidateProfile(application.id),
+          );
+        },
+      );
+    });
   }
 }

@@ -79,7 +79,7 @@ class AppliedDetails extends StatelessWidget {
                     companyName: detail.user.name,
                     location: detail.post.location,
                     status: controller.currentStatus,
-                    companyLogo: ApiEndPoint.imageUrl+controller.getImageUrl(
+                    companyLogo: controller.getImageUrl(
                         detail.post.thumbnail.isNotEmpty
                             ? detail.post.thumbnail
                             : detail.user.image

@@ -3,6 +3,7 @@ import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import '../../../../../core/config/api/api_end_point.dart';
 import '../controller/short_job_listed_controller.dart';
 import '../../../home/presentation/widgets/shortlisted_candidate_card.dart';
 
@@ -45,26 +46,43 @@ class ShortJobListedScreen extends StatelessWidget {
 
   Widget _buildCandidatesList(ShortJobListedController controller) {
     return Obx(
-      () => controller.shortlistedCandidates.isEmpty
-          ? _buildEmptyState()
-          : ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: controller.shortlistedCandidates.length,
-              itemBuilder: (context, index) {
-                final candidate = controller.shortlistedCandidates[index];
-                return ShortlistedCandidateCard(
-                  name: candidate['name'],
-                  jobTitle: candidate['jobTitle'],
-                  experience: candidate['experience'],
-                  description: candidate['description'],
-                  profileImage: candidate['profileImage'],
-                  onTap: () =>
-                      controller.viewCandidateProfile(candidate['name']),
-                  onDelete: () => controller.deleteCandidate(index),
-                );
-              },
+          () {
+        // 1. Check if the controller is currently loading data
+        if (controller.isLoading.value) {
+          return SizedBox(
+            height: Get.height * 0.7, // Centers it roughly on the screen
+            child: const Center(
+              child: CircularProgressIndicator(
+                color: AppColors.primary, // Or your preferred color
+              ),
             ),
+          );
+        }
+
+        // 2. If not loading, check if the list is empty
+        if (controller.applications.isEmpty) {
+          return _buildEmptyState();
+        }
+
+        // 3. Otherwise, show the list
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: controller.applications.length,
+          itemBuilder: (context, index) {
+            final application = controller.applications[index];
+            return ShortlistedCandidateCard(
+              name: application.user.name,
+              jobTitle: application.title,
+              experience: application.experienceYears,
+              description: application.user.bio,
+              profileImage: ApiEndPoint.imageUrl+application.user.image,
+              onTap: () => controller.viewCandidateProfile(application.id),
+              onDelete: () => controller.deleteCandidate(application.id),
+            );
+          },
+        );
+      },
     );
   }
 

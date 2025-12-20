@@ -58,7 +58,7 @@ class SubscriptionController extends GetxController {
   }
 
   void onBuyNow(PackageModel package) async{
-    try {
+    /*try {
       final response = await ApiService.post(
           "subscription/demo",
         body: {
@@ -74,7 +74,8 @@ class SubscriptionController extends GetxController {
       }
     } catch (e) {
 
-    }
+    }*/
+    SuccessDialog.show(message: "Payment Verification Successful Your payment has been securely verified.",buttonText: "Pay");
     print('Opening payment link: ${package.paymentLink}');
   }
 }

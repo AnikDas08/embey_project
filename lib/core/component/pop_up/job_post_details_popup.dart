@@ -4,10 +4,14 @@ import 'package:embeyi/core/component/text/common_text.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/core/utils/constants/app_images.dart';
 import 'package:embeyi/core/utils/extensions/extension.dart';
-import 'package:embeyi/features/job_seeker/jobs/presentation/widgets/job_details_widgets.dart';
+import 'package:embeyi/features/job_seeker/jobs/presentation/widgets/job_details_widgets.dart' hide DescriptionText, JobTitleSection, JobInfoTags;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+
+import '../../../features/recruiter/job_post/presentation/widgets/description_text.dart';
+import '../../../features/recruiter/job_post/presentation/widgets/job_info_tags.dart';
+import '../../../features/recruiter/job_post/presentation/widgets/job_title_section.dart';
 
 class JobPostDetailsPopup extends StatelessWidget {
   const JobPostDetailsPopup({super.key});

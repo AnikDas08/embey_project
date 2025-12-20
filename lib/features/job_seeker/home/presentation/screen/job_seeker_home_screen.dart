@@ -1,6 +1,7 @@
 import 'package:embeyi/core/component/bottom_nav_bar/common_bottom_bar.dart';
 import 'package:embeyi/core/component/bottom_shit/filder_bottom_shit.dart';
 import 'package:embeyi/core/component/card/job_card.dart';
+import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:embeyi/core/config/route/job_seeker_routes.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/core/utils/constants/app_icons.dart';
@@ -138,7 +139,10 @@ class JobSeekerHomeScreen extends StatelessWidget {
                               title: category['name'],
                               onTap: () {
                                 print("category id 😂😂$categoryId");
-                                Get.toNamed(JobSeekerRoutes.categoryDetails,arguments: categoryId);
+                                Get.toNamed(JobSeekerRoutes.categoryDetails,arguments: {
+                                  "categoryId": categoryId,
+                                  "categoryName": category['name'],
+                                });
                               },
                               isJobCountVisible: false,
                             );
@@ -261,15 +265,19 @@ class JobSeekerHomeScreen extends StatelessWidget {
                               final jobType = jobPost.jobType?.toUpperCase();
                               final isFullTime = jobType == 'FULL_TIME';
                               final isFavoutie = jobPost.isFavourite;
-                              final isRemote = jobType == 'REMOTE'; // Note: You might need separate logic for REMOTE vs FULL_TIME/PART_TIME.
+                              final isRemote = jobType == 'REMOTE';
 
-                              // Get company logo with base URL
-                              final thumbnail = jobPost.thumbnail ?? ''; // Use empty string as fallback
-                              final companyLogo = thumbnail.isNotEmpty
-                                  ? 'https://shariful5001.binarybards.online$thumbnail'
-                                  : 'assets/images/noImage.png'; // Fallback image asset
+                              final thumbnail = jobPost.thumbnail ?? '';
+                              String companyLogo;
 
-                              // --- 2. Pass the safely extracted, non-nullable values to JobCard ---
+                              if (thumbnail.isEmpty) {
+                                companyLogo = 'assets/images/noImage.png'; // Fallback for empty
+                              } else if (thumbnail.startsWith('http')) {
+                                companyLogo = thumbnail; // Use direct URL
+                              } else {
+                                companyLogo = ApiEndPoint.imageUrl + thumbnail; // Prepend base URL for local paths
+                              }
+
 
                               return Padding(
                                 padding: EdgeInsets.only(bottom: 16.h),

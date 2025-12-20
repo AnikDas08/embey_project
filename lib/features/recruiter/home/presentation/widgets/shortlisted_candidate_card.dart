@@ -56,7 +56,7 @@ class ShortlistedCandidateCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     image: DecorationImage(
-                      image: AssetImage(profileImage),
+                      image: NetworkImage(profileImage),
                       fit: BoxFit.cover,
                     ),
                   ),

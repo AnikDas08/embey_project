@@ -231,7 +231,7 @@ class JobDetailsScreen extends StatelessWidget {
                           SuccessDialog.showApplicationSuccess(
                             message:
                             'Your application has been Successful. We\'ll keep you updated.',
-                          buttonText: 'Done',
+                            buttonText: 'Done',
                             onBackToHome: () => Get.back(),
                           );
                         },

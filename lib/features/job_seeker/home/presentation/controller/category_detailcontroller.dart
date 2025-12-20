@@ -36,12 +36,14 @@ class CategoryDetailController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    if (Get.arguments != null) {
+    /*if (Get.arguments != null) {
       // 1. Store the ID from arguments
       categoryId = Get.arguments as String;
       // 2. Set the observable filter parameter
       selectedCategory.value = categoryId;
-    }
+    }*/
+    categoryId= Get.arguments['categoryId'];
+    categoryName.value = Get.arguments['categoryName'];
     print("Initial Category ID: $categoryId");
     // 3. Call getPost to fetch jobs using the stored filter state.
     getPost(useFilter: true);
