@@ -1,3 +1,4 @@
+import 'package:embeyi/core/component/image/common_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
@@ -41,16 +42,11 @@ class RecentApplicantCard extends StatelessWidget {
         child: Row(
           children: [
             // Profile Image
-            Container(
-              width: 48.w,
-              height: 48.h,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: DecorationImage(
-                  image: AssetImage(profileImage),
-                  fit: BoxFit.cover,
-                ),
-              ),
+            CommonImage(
+                imageSrc: profileImage,
+                width: 48.w,
+                height: 48.h,
+
             ),
             12.width,
             // Candidate Details

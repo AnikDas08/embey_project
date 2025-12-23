@@ -4,11 +4,10 @@ import 'package:get/get.dart';
 
 import '../../../../../core/services/api/api_service.dart';
 import '../../../../../core/services/storage/storage_services.dart';
-import '../../data/subscription_model.dart';
-import '../screen/profile/payment_dialog.dart';
+import '../../../../job_seeker/profile/data/subscription_model.dart';
 
 
-class SubscriptionController extends GetxController {
+class RecruiterSubscriptionController extends GetxController {
   final isLoading = true.obs;
   final selectedPlanIndex = 0.obs;
   final packages = <PackageModel>[].obs;
@@ -61,10 +60,10 @@ class SubscriptionController extends GetxController {
     try {
       final response = await ApiService.post(
           "subscription/demo",
-        body: {
-          "receipt": package.id,
-          "userId": LocalStorage.userId,
-        }
+          body: {
+            "receipt": package.id,
+            "userId": LocalStorage.userId,
+          }
       );
       if(response.statusCode==200){
         SuccessDialog.show(message: "Payment Verification Successful Your payment has been securely verified.",buttonText: "Confirm",onTap: (){
@@ -77,7 +76,7 @@ class SubscriptionController extends GetxController {
     } catch (e) {
 
     }
-   /* SuccessDialog.show(message: "Payment Verification Successful Your payment has been securely verified.",buttonText: "Pay");
+    /* SuccessDialog.show(message: "Payment Verification Successful Your payment has been securely verified.",buttonText: "Pay");
     print('Opening payment link: ${package.paymentLink}');*/
   }
 }

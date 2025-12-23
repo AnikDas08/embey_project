@@ -15,7 +15,7 @@ class SubscriptionPackScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(SubscriptionController());
+    final controller = Get.find<SubscriptionController>();
 
     return Scaffold(
       backgroundColor: Colors.white,

@@ -168,7 +168,7 @@ class PersonalInfoController extends GetxController {
       Get.to(()=>CoreSkillsScreen(),arguments: {
         "resumeId": "".toString(),
         "personalInformation":updateData,
-        "resumeName":resumeName.toString(),
+        "resumeName":resumeNameController.text,
       });
 
       // ... rest of the code

@@ -1,9 +1,11 @@
 import 'package:embeyi/core/config/api/api_end_point.dart';
+import 'package:embeyi/features/job_seeker/profile/presentation/screen/subscription_pack_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../../../core/component/text/common_text.dart';
 import '../../../../../core/utils/extensions/extension.dart';
+import '../../../../recruiter/profile/presentation/screen/subscription_pack_screen.dart';
 import '../controller/my_subscription_controller.dart';
 
 class MySubscriptionScreen extends StatelessWidget {
@@ -298,7 +300,7 @@ class MySubscriptionScreen extends StatelessWidget {
       width: double.infinity,
       height: 52.h,
       child: ElevatedButton(
-        onPressed: controller.onRenewPack,
+        onPressed: ()=>Get.to(() => const SubscriptionPackScreen()),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF3B4DE3),
           foregroundColor: Colors.white,

@@ -1,3 +1,4 @@
+import 'package:embeyi/features/job_seeker/profile/presentation/controller/subscription_package_all_controllerer.dart';
 import 'package:get/get.dart';
 
 import '../../../features/common/auth/change_password/presentation/controller/change_password_controller.dart';
@@ -26,5 +27,6 @@ class JobSeekerDependencyInjection extends Bindings {
     Get.lazyPut(() => SettingController(), fenix: true);
     Get.lazyPut(() => PrivacyPolicyController(), fenix: true);
     Get.lazyPut(() => TermsOfServicesController(), fenix: true);
+    Get.lazyPut(() => SubscriptionController(), fenix: true);
   }
 }

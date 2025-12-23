@@ -198,12 +198,15 @@ class CertificationScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              CommonText(
-                text: certification.title,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-                maxLines: 2,
+              Expanded(
+                child: CommonText(
+                  text: certification.title,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                  maxLines: 2,
+                  textAlign: TextAlign.left,
+                ),
               ),
               8.width,
               // Edit and Delete buttons
@@ -271,12 +274,15 @@ class CertificationScreen extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                 ),
-                CommonText(
-                  text: certification.description!,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.grey.shade700,
-                  maxLines: 5,
+                Expanded(
+                  child: CommonText(
+                    text: certification.description!,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.grey.shade700,
+                    maxLines: 20,
+                    textAlign: TextAlign.left,
+                  ),
                 ),
               ],
             ),

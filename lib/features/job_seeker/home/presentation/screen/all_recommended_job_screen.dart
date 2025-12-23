@@ -116,7 +116,7 @@ class AllRecommendedJobScreen extends StatelessWidget {
                           isRemote: isRemote,
                           onTap: () {
                             if (jobPost.id != null && jobPost.id!.isNotEmpty) {
-                              //JobSeekerRoutes.goToJobDetails(jobId: jobPost.id!);
+                              Get.toNamed(JobSeekerRoutes.jobDetails,arguments: jobPost.id);
                             }
                           },
                           onFavoriteTap: () {

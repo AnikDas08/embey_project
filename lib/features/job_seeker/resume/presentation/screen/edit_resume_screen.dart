@@ -125,7 +125,11 @@ class EditResumeScreen extends StatelessWidget {
                   title: 'Core Skills & Experience',
                   subtitle: 'Complete',
                   onTap: () {
-                    Get.to(() => CoreSkillsScreen(), arguments: resumeId);
+                    Get.to(()=>CoreSkillsScreen(),arguments: {
+                      "resumeId": resumeId.toString(),
+                      "personalInformation":{"name":""},
+                      "resumeName":"".toString(),
+                    });
                   },
                 ),
                 12.height,
@@ -138,7 +142,9 @@ class EditResumeScreen extends StatelessWidget {
                   title: 'Project',
                   subtitle: 'Complete',
                   onTap: () {
-                    Get.to(() => ProjectScreen(), arguments: resumeId);
+                    Get.to(() => ProjectScreen(), arguments: {
+                      "resumeId": resumeId.toString(),
+                    });
                   },
                 ),
                 16.height,
@@ -151,7 +157,9 @@ class EditResumeScreen extends StatelessWidget {
                   title: 'Education',
                   subtitle: 'Complete',
                   onTap: () {
-                    Get.to(() => EducationScreenResume(), arguments: resumeId);
+                    Get.to(() => EducationScreenResume(), arguments: {
+                      "resumeId": resumeId.toString(),
+                    });
                   },
                 ),
                 16.height,
@@ -164,7 +172,9 @@ class EditResumeScreen extends StatelessWidget {
                   title: 'Certification',
                   subtitle: 'Complete',
                   onTap: () {
-                    Get.to(() => CertificationScreen(), arguments: resumeId);
+                    Get.to(() => CertificationScreen(), arguments: {
+                      "resumeId": resumeId.toString(),
+                    });
                   },
                 ),
               ],

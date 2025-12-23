@@ -165,7 +165,7 @@ class JobTitleSection extends StatelessWidget {
         ),
         8.height,
         CommonText(
-          text: salary,
+          text: "Salary: " + salary,
           fontSize: 12.sp,
           fontWeight: FontWeight.w500,
           color: AppColors.primaryText,
@@ -310,11 +310,14 @@ class CompanyInfoCard extends StatelessWidget {
                     ),
             ),
 
-            CommonText(
-              text: companyName,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primary,
+            Expanded(
+              child: CommonText(
+                text: companyName,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primary,
+                maxLines: 1,
+              ),
             ),
           ],
         ),

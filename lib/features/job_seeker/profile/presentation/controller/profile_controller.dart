@@ -179,7 +179,6 @@ class ProfileController extends GetxController {
         Get.to(() => JobSeekerPaymentHistory(
           transactions: transactionsList.toList(),
         ));
-
         Utils.successSnackBar("Success", "OTP verified successfully");
       } else {
         Utils.errorSnackBar(response.statusCode, response.message);

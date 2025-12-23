@@ -1,26 +1,20 @@
-import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../../core/component/text/common_text.dart';
+import 'package:get/get.dart';
+
 import '../../../../../core/component/button/common_button.dart';
+import '../../../../../core/component/text/common_text.dart';
+import '../../../../../core/utils/constants/app_colors.dart';
 import '../../../../../core/utils/extensions/extension.dart';
+import '../../../../job_seeker/profile/presentation/controller/platform_review_controller.dart';
+//import '../controller/platform_review_controller.dart';
 
-class PlatformReviewScreen extends StatefulWidget {
-  const PlatformReviewScreen({super.key});
+class PlatformReviewScreen extends StatelessWidget {
+  PlatformReviewScreen({super.key});
 
-  @override
-  State<PlatformReviewScreen> createState() => _PlatformReviewScreenState();
-}
-
-class _PlatformReviewScreenState extends State<PlatformReviewScreen> {
-  int selectedRating = 0;
-  final TextEditingController reviewController = TextEditingController();
-
-  @override
-  void dispose() {
-    reviewController.dispose();
-    super.dispose();
-  }
+  final controller = Get.put(PlatformReviewController());
+  final selectedRating = 0.obs;
+  final reviewController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -84,42 +78,49 @@ class _PlatformReviewScreenState extends State<PlatformReviewScreen> {
                 ),
                 16.height,
                 Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(5, (index) {
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            selectedRating = index + 1;
-                          });
-                        },
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 4.w),
-                          child: Icon(
-                            index < selectedRating
-                                ? Icons.star
-                                : Icons.star_border,
-                            size: 48.sp,
-                            color: index < selectedRating
-                                ? AppColors.warning
-                                : AppColors.secondaryText,
+                  child: Obx(
+                        () => Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(5, (index) {
+                        return GestureDetector(
+                          onTap: () {
+                            selectedRating.value = index + 1;
+                          },
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 4.w),
+                            child: Icon(
+                              index < selectedRating.value
+                                  ? Icons.star
+                                  : Icons.star_border,
+                              size: 48.sp,
+                              color: index < selectedRating.value
+                                  ? AppColors.warning
+                                  : AppColors.secondaryText,
+                            ),
                           ),
-                        ),
-                      );
-                    }),
-                  ),
-                ),
-                if (selectedRating > 0) ...[
-                  8.height,
-                  Center(
-                    child: CommonText(
-                      text: _getRatingText(selectedRating),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.primary,
+                        );
+                      }),
                     ),
                   ),
-                ],
+                ),
+                Obx(() {
+                  if (selectedRating.value > 0) {
+                    return Column(
+                      children: [
+                        8.height,
+                        Center(
+                          child: CommonText(
+                            text: _getRatingText(selectedRating.value),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                  return const SizedBox.shrink();
+                }),
                 32.height,
 
                 /// Review Text Area
@@ -147,23 +148,41 @@ class _PlatformReviewScreenState extends State<PlatformReviewScreen> {
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.all(16.w),
                     ),
+                    onChanged: (value) {
+                      // Trigger rebuild to enable/disable button
+                      selectedRating.refresh();
+                    },
                   ),
                 ),
                 32.height,
 
                 /// Submit Button
-                CommonButton(
-                  titleText: 'Submit Review',
-                  onTap: selectedRating > 0 && reviewController.text.isNotEmpty
-                      ? () {
-                          // Submit review
-                          _showThankYouDialog(context);
-                        }
-                      : null,
-                  buttonColor:
-                      selectedRating > 0 && reviewController.text.isNotEmpty
-                      ? AppColors.primary
-                      : AppColors.secondaryText,
+                Obx(
+                      () => controller.isLoading.value
+                      ? Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primary,
+                    ),
+                  )
+                      : CommonButton(
+                    titleText: 'Submit Review',
+                    onTap: selectedRating.value > 0 &&
+                        reviewController.text.isNotEmpty
+                        ? () async {
+                      final success = await controller.submitReview(
+                        rating: selectedRating.value,
+                        comment: reviewController.text.trim(),
+                      );
+                      if (success) {
+                        _showThankYouDialog(context);
+                      }
+                    }
+                        : null,
+                    buttonColor: selectedRating.value > 0 &&
+                        reviewController.text.isNotEmpty
+                        ? AppColors.primary
+                        : AppColors.secondaryText,
+                  ),
                 ),
                 24.height,
               ],
@@ -215,6 +234,7 @@ class _PlatformReviewScreenState extends State<PlatformReviewScreen> {
               fontWeight: FontWeight.w400,
               color: AppColors.secondaryText,
               textAlign: TextAlign.center,
+              maxLines: 2,
             ),
             24.height,
             CommonButton(

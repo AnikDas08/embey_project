@@ -9,6 +9,7 @@ import '../../../../../core/config/api/api_end_point.dart';
 import '../../../../../core/config/route/recruiter_routes.dart';
 import '../../../../../core/services/api/api_service.dart';
 import '../../../../../core/utils/app_utils.dart';
+import '../../../home/data/model/home_model.dart';
 
 class RecruiterProfileController extends GetxController {
   /// Language List here
@@ -23,12 +24,20 @@ class RecruiterProfileController extends GetxController {
   /// select image here
   String? image;
 
-  /// edit button loading here
-  bool isLoading = false;
 
   /// all controller here
   TextEditingController nameController = TextEditingController();
   TextEditingController numberController = TextEditingController();
+
+  final Rx<RecruiterProfileData?> profileData = Rx<RecruiterProfileData?>(null);
+  RxBool isLoadingProfile=false.obs;
+  RxString name="".obs;
+  RxString profileImages="".obs;
+  RxString address="".obs;
+  RxString mobile="".obs;
+  RxString email="".obs;
+  RxString linkedin="".obs;
+  RxString subscription="".obs;
 
   /// select image function here
   getProfileImage() async {
@@ -43,46 +52,35 @@ class RecruiterProfileController extends GetxController {
     Get.back();
   }
 
+  void onInit() {
+    super.onInit();
+    getProfile();
+  }
+
   /// update profile function here
-  Future<void> editProfileRepo() async {
-    if (!formKey.currentState!.validate()) return;
-
-    if (!LocalStorage.isLogIn) return;
-    isLoading = true;
+  Future<void> getProfile() async {
+    isLoadingProfile.value = true;
     update();
+    try {
+      final response = await ApiService.get(
+          ApiEndPoint.user,
+          header: {"Authorization": "Bearer ${LocalStorage.token}"}
+      );
+      if (response.statusCode == 200) {
+        final profileModel = RecruiterProfileModel.fromJson(response.data);
+        profileData.value = profileModel.data;
+        name.value = profileModel.data.name;
+        profileImages.value = profileModel.data.image;
+        subscription.value = profileModel.data.subscription;
+        name.value = profileModel.data.name;
 
-    Map<String, String> body = {
-      "fullName": nameController.text,
-      "phone": numberController.text,
-    };
-
-    var response = await ApiService.multipart(
-      ApiEndPoint.user,
-      body: body,
-      imagePath: image,
-      imageName: "image",
-    );
-
-    if (response.statusCode == 200) {
-      var data = response.data;
-
-      LocalStorage.userId = data['data']?["_id"] ?? "";
-      LocalStorage.myImage = data['data']?["image"] ?? "";
-      LocalStorage.myName = data['data']?["fullName"] ?? "";
-      LocalStorage.myEmail = data['data']?["email"] ?? "";
-
-      LocalStorage.setString("userId", LocalStorage.userId);
-      LocalStorage.setString("myImage", LocalStorage.myImage);
-      LocalStorage.setString("myName", LocalStorage.myName);
-      LocalStorage.setString("myEmail", LocalStorage.myEmail);
-
-      Utils.successSnackBar("Successfully Profile Updated", response.message);
-      Get.toNamed(RecruiterRoutes.profile);
-    } else {
-      Utils.errorSnackBar(response.statusCode, response.message);
+      } else {
+        Utils.errorSnackBar(response.statusCode, response.message);
+      }
+    } catch (e) {
+      Utils.errorSnackBar(0, e.toString());
     }
-
-    isLoading = false;
+    isLoadingProfile.value = false;
     update();
   }
 

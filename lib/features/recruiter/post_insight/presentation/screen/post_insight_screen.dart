@@ -1,4 +1,5 @@
 import 'package:embeyi/core/component/bottom_nav_bar/common_bottom_bar.dart';
+import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/core/utils/extensions/extension.dart';
 import 'package:flutter/material.dart';
@@ -18,23 +19,33 @@ class PostInsightScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: _buildAppBar(),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(16.r),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildDropdowns(controller),
-              16.height,
-              _buildStatsGrid(controller),
-              24.height,
-              _buildRecentApplicants(controller),
-              24.height,
-              _buildRecentQualified(controller),
-            ],
+      body: Obx(() {
+        if (controller.isLoading.value && controller.jobTitlesList.isEmpty) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (controller.jobTitlesList.isEmpty) {
+          return const Center(child: Text('No posts available'));
+        }
+
+        return SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.all(16.r),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildDropdowns(controller),
+                16.height,
+                _buildStatsGrid(controller),
+                24.height,
+                _buildRecentApplicants(controller),
+                24.height,
+                _buildRecentQualified(controller),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      }),
       bottomNavigationBar: const SafeArea(
         child: CommonBottomNavBar(currentIndex: 1),
       ),
@@ -65,20 +76,26 @@ class PostInsightScreen extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Obx(
-            () => _buildDropdown(
-              value: controller.selectedJobTitle.value,
-              items: controller.jobTitles,
-              onChanged: controller.selectJobTitle,
-            ),
-          ),
+          child: Obx(() {
+            if (controller.postIds.isEmpty) {
+              return const SizedBox();
+            }
+
+            return _buildDropdown(
+              value: controller.selectedPostId.value,
+              items: controller.postIds,
+              displayNames: controller.postIds.map((id) => controller.getTitleForId(id)).toList(),
+              onChanged: controller.selectPostId,
+            );
+          }),
         ),
         12.width,
         Expanded(
           child: Obx(
-            () => _buildDropdown(
+                () => _buildDropdown(
               value: controller.selectedTimePeriod.value,
               items: controller.timePeriods,
+              displayNames: controller.timePeriods,
               onChanged: controller.selectTimePeriod,
             ),
           ),
@@ -90,6 +107,7 @@ class PostInsightScreen extends StatelessWidget {
   Widget _buildDropdown({
     required String value,
     required List<String> items,
+    required List<String> displayNames,
     required Function(String) onChanged,
   }) {
     return Container(
@@ -113,9 +131,12 @@ class PostInsightScreen extends StatelessWidget {
             fontWeight: FontWeight.w600,
             color: AppColors.black,
           ),
-          items: items.map((String item) {
-            return DropdownMenuItem<String>(value: item, child: Text(item));
-          }).toList(),
+          items: List.generate(items.length, (index) {
+            return DropdownMenuItem<String>(
+              value: items[index],
+              child: Text(displayNames[index]),
+            );
+          }),
           onChanged: (String? newValue) {
             if (newValue != null) onChanged(newValue);
           },
@@ -126,7 +147,7 @@ class PostInsightScreen extends StatelessWidget {
 
   Widget _buildStatsGrid(PostInsightController controller) {
     return Obx(
-      () => GridView.count(
+          () => GridView.count(
         crossAxisCount: 2,
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
@@ -173,21 +194,38 @@ class PostInsightScreen extends StatelessWidget {
         ),
         12.height,
         Obx(
-          () => ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: controller.recentApplicants.length,
-            itemBuilder: (context, index) {
-              final applicant = controller.recentApplicants[index];
-              return RecentApplicantCard(
-                name: applicant['name'],
-                jobTitle: applicant['jobTitle'],
-                matchPercentage: applicant['matchPercentage'],
-                profileImage: applicant['profileImage'],
-                onTap: () => controller.viewApplicantProfile(applicant['name']),
+              () {
+            if (controller.recentApplicants.isEmpty) {
+              return Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                child: Center(
+                  child: Text(
+                    'No recent applicants',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
               );
-            },
-          ),
+            }
+
+            return ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: controller.recentApplicants.length,
+              itemBuilder: (context, index) {
+                final applicant = controller.recentApplicants[index];
+                return RecentApplicantCard(
+                  name: applicant['name'],
+                  jobTitle: applicant['jobTitle'],
+                  matchPercentage: applicant['matchPercentage'],
+                  profileImage: ApiEndPoint.imageUrl+applicant['profileImage'],
+                  onTap: () => controller.viewApplicantProfile(applicant['id']),
+                );
+              },
+            );
+          },
         ),
       ],
     );
@@ -207,21 +245,38 @@ class PostInsightScreen extends StatelessWidget {
         ),
         12.height,
         Obx(
-          () => ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: controller.recentQualified.length,
-            itemBuilder: (context, index) {
-              final qualified = controller.recentQualified[index];
-              return RecentApplicantCard(
-                name: qualified['name'],
-                jobTitle: qualified['jobTitle'],
-                matchPercentage: qualified['matchPercentage'],
-                profileImage: qualified['profileImage'],
-                onTap: () => controller.viewApplicantProfile(qualified['name']),
+              () {
+            if (controller.recentQualified.isEmpty) {
+              return Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                child: Center(
+                  child: Text(
+                    'No qualified applicants yet',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
               );
-            },
-          ),
+            }
+
+            return ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: controller.recentQualified.length,
+              itemBuilder: (context, index) {
+                final qualified = controller.recentQualified[index];
+                return RecentApplicantCard(
+                  name: qualified['name'],
+                  jobTitle: qualified['jobTitle'],
+                  matchPercentage: qualified['matchPercentage'],
+                  profileImage: ApiEndPoint.imageUrl+qualified['profileImage'],
+                  onTap: () => controller.viewApplicantProfile(qualified['id']),
+                );
+              },
+            );
+          },
         ),
       ],
     );

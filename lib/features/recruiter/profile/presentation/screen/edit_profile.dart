@@ -84,8 +84,8 @@ class RecruiterEditProfileScreen extends StatelessWidget {
                   /// Submit Button here
                   CommonButton(
                     titleText: AppString.saveAndChanges,
-                    isLoading: controller.isLoading,
-                    onTap: controller.editProfileRepo,
+                    //isLoading: controller.isLoading,
+                    //onTap: controller.editProfileRepo,
                   ),
                 ],
               ),

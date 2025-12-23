@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../../core/services/api/api_service.dart';
 
-class MySubscriptionController extends GetxController {
+class RecruiterMySubscriptionController extends GetxController {
   final isLoading = true.obs;
   final errorMessage = ''.obs;
 

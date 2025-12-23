@@ -8,6 +8,18 @@ class JobDetailsController extends GetxController {
   final Rx<JobPostModel?> jobData = Rx<JobPostModel?>(null);
 
   String? jobId;
+  String? url;
+  bool? isNotSystem;
+  String? minSalary;
+  String? maxSalary;
+  String? recruiter_company;
+  String? salary_status;
+  String? location;
+  String? deadline;
+  List<String>? requiredSkills;
+  List<String>? responsibilities;
+  List<String>? benefits;
+
 
   @override
   void onInit() {
@@ -26,6 +38,14 @@ class JobDetailsController extends GetxController {
       if (response.statusCode == 200) {
         final data = response.data;
         jobData.value = JobPostModel.fromJson(data['data']);
+        url=response.data["data"]["job_url"]??"";
+        isNotSystem=response.data["data"]["is_third_party_job"];
+        recruiter_company=response.data["data"]["recruiter_company"]??"";
+        salary_status=response.data["data"]["salary_status"]??"";
+        location=response.data["data"]["location"]??"";
+        deadline=response.data["data"]["deadline"]??"";
+        responsibilities = List<String>.from(data["responsibilities"] ?? []);
+        benefits = List<String>.from(data["benefits"] ?? []);
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to load job details');
@@ -36,6 +56,7 @@ class JobDetailsController extends GetxController {
 
   String getJobTitle() => jobData.value?.title ?? 'Job Title';
   String getRecuirterId() => jobData.value?.recruiter!.id ?? '';
+  String getUrl() => jobData.value?.recruiter!.id ?? '';
 
   String getLocation() => jobData.value?.location ?? 'Location';
 
@@ -73,11 +94,12 @@ class JobDetailsController extends GetxController {
 
   String getDescription() => jobData.value?.description ?? 'No description available';
 
-  String getCategory() => jobData.value?.category ?? 'Category';
+  String getCategory() => jobData.value?.category ?? '';
 
   List<String> getRequiredSkills() => jobData.value?.requiredSkills ?? [];
 
   bool isFullTime() => jobData.value?.jobType == 'FULL_TIME';
+
 
   String _getMonthName(int month) {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',

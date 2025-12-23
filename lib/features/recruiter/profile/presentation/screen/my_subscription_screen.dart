@@ -1,13 +1,20 @@
+import 'package:embeyi/core/config/api/api_end_point.dart';
+import 'package:embeyi/features/job_seeker/profile/presentation/screen/subscription_pack_screen.dart';
+import 'package:embeyi/features/recruiter/profile/presentation/controller/my_subscription_controllers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import '../../../../../core/component/text/common_text.dart';
 import '../../../../../core/utils/extensions/extension.dart';
+import '../../../../recruiter/profile/presentation/screen/subscription_pack_screen.dart';
 
-class MySubscriptionScreen extends StatelessWidget {
-  const MySubscriptionScreen({super.key});
+class RecruiterMySubscriptionScreen extends StatelessWidget {
+  const RecruiterMySubscriptionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(RecruiterMySubscriptionController());
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -17,32 +24,79 @@ class MySubscriptionScreen extends StatelessWidget {
             _buildHeader(context),
 
             Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 24.w),
-                  child: Column(
-                    children: [
-                      32.height,
+              child: Obx(() {
+                if (controller.isLoading.value) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
 
-                      // Profile Section
-                      _buildProfileSection(),
+                if (controller.errorMessage.value.isNotEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 64.sp,
+                          color: Colors.red.shade300,
+                        ),
+                        16.height,
+                        CommonText(
+                          text: controller.errorMessage.value,
+                          fontSize: 14,
+                          color: Colors.red,
+                          textAlign: TextAlign.center,
+                        ),
+                        24.height,
+                        ElevatedButton(
+                          onPressed: controller.fetchMySubscription,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF3B4DE3),
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 32.w,
+                              vertical: 12.h,
+                            ),
+                          ),
+                          child: const CommonText(
+                            text: 'Retry',
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
 
-                      40.height,
+                return SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24.w),
+                    child: Column(
+                      children: [
+                        32.height,
 
-                      // Subscription Details Table
-                      _buildSubscriptionTable(),
+                        // Profile Section
+                        _buildProfileSection(controller),
 
-                      40.height,
+                        40.height,
 
-                      // Renew Button
-                      _buildRenewButton(),
+                        // Subscription Details Table
+                        _buildSubscriptionTable(controller),
 
-                      40.height,
-                    ],
+                        40.height,
+
+                        // Renew Button
+                        _buildRenewButton(controller),
+
+                        40.height,
+                      ],
+                    ),
                   ),
-                ),
-              ),
+                );
+              }),
             ),
           ],
         ),
@@ -79,104 +133,138 @@ class MySubscriptionScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileSection() {
-    return Column(
-      children: [
-        // Profile Image
-        Container(
-          width: 100.w,
-          height: 100.w,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: const Color(0xFF1E3A5F),
-            border: Border.all(color: Colors.grey.shade200, width: 2),
-            image: const DecorationImage(
-              image: AssetImage('assets/images/profile.png'),
-              fit: BoxFit.cover,
+  Widget _buildProfileSection(RecruiterMySubscriptionController controller) {
+    return Obx(() {
+      return Column(
+        children: [
+          // Profile Image
+          Container(
+            width: 100.w,
+            height: 100.w,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF1E3A5F),
+              border: Border.all(color: Colors.grey.shade200, width: 2),
+            ),
+            child: controller.userImage.value!=null
+                ? ClipOval(
+              child: Image.network(
+                ApiEndPoint.imageUrl+controller.userImage.value,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(
+                    Icons.person,
+                    size: 50.sp,
+                    color: Colors.white,
+                  );
+                },
+              ),
+            )
+                : Icon(
+              Icons.person,
+              size: 50.sp,
+              color: Colors.white,
             ),
           ),
-        ),
 
-        16.height,
+          16.height,
 
-        // Name
-        const CommonText(
-          text: 'Shakir Ahmed',
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: Colors.black87,
-        ),
-
-        6.height,
-
-        // Role
-        CommonText(
-          text: 'UX Designer',
-          fontSize: 14,
-          fontWeight: FontWeight.w400,
-          color: Colors.grey.shade600,
-        ),
-
-        12.height,
-
-        // Premium Badge
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFF4E6),
-            borderRadius: BorderRadius.circular(20.r),
+          // Name
+          CommonText(
+            text: controller.userName.value,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.workspace_premium,
-                color: const Color(0xFFFF9800),
-                size: 18.sp,
-              ),
-              6.width,
-              const CommonText(
-                text: 'Premium Plan',
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFFFF9800),
-              ),
-            ],
+
+          6.height,
+
+          // Designation
+          CommonText(
+            text: controller.userDesignation.value,
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: Colors.grey.shade600,
           ),
-        ),
-      ],
-    );
+
+          12.height,
+
+          // Plan Badge
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              color: controller.isActive
+                  ? const Color(0xFFFFF4E6)
+                  : Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.workspace_premium,
+                  color: controller.isActive
+                      ? const Color(0xFFFF9800)
+                      : Colors.grey.shade600,
+                  size: 18.sp,
+                ),
+                6.width,
+                CommonText(
+                  text: controller.packageName.value,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: controller.isActive
+                      ? const Color(0xFFFF9800)
+                      : Colors.grey.shade600,
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    });
   }
 
-  Widget _buildSubscriptionTable() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.grey.shade200, width: 1),
-      ),
-      child: Column(
-        children: [
-          _buildTableRow('Pack Nam', 'Premium Plan', isFirst: true),
-          _buildDivider(),
-          _buildTableRow('Price', '\$19.99'),
-          _buildDivider(),
-          _buildTableRow('Start Date', '01 January 2025'),
-          _buildDivider(),
-          _buildTableRow('End Date', '31 January 2025'),
-          _buildDivider(),
-          _buildTableRow('Remaining Days', '25 Days', isLast: true),
-        ],
-      ),
-    );
+  Widget _buildSubscriptionTable(RecruiterMySubscriptionController controller) {
+    return Obx(() {
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: Colors.grey.shade200, width: 1),
+        ),
+        child: Column(
+          children: [
+            _buildTableRow('Pack Name', controller.packageName.value,
+                isFirst: true),
+            _buildDivider(),
+            _buildTableRow('Price', controller.formattedPrice),
+            _buildDivider(),
+            _buildTableRow('Start Date', controller.startDate.value),
+            _buildDivider(),
+            _buildTableRow('End Date', controller.endDate.value),
+            _buildDivider(),
+            _buildTableRow(
+              'Remaining Days',
+              controller.remainingDaysText,
+              isLast: true,
+              valueColor: controller.remainingDays.value < 5
+                  ? Colors.red
+                  : Colors.black87,
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildTableRow(
-    String label,
-    String value, {
-    bool isFirst = false,
-    bool isLast = false,
-  }) {
+      String label,
+      String value, {
+        bool isFirst = false,
+        bool isLast = false,
+        Color? valueColor,
+      }) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
       child: Row(
@@ -192,7 +280,7 @@ class MySubscriptionScreen extends StatelessWidget {
             text: value,
             fontSize: 15,
             fontWeight: FontWeight.w600,
-            color: Colors.black87,
+            color: valueColor ?? Colors.black87,
           ),
         ],
       ),
@@ -207,14 +295,12 @@ class MySubscriptionScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRenewButton() {
+  Widget _buildRenewButton(RecruiterMySubscriptionController controller) {
     return SizedBox(
       width: double.infinity,
       height: 52.h,
       child: ElevatedButton(
-        onPressed: () {
-          // Handle renew action
-        },
+        onPressed: ()=>Get.to(() => const SubscriptionPackScreen()),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF3B4DE3),
           foregroundColor: Colors.white,

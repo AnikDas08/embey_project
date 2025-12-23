@@ -15,6 +15,7 @@ import '../../../../../core/component/other_widgets/item.dart';
 import '../../../../../core/component/text/common_text.dart';
 import '../../../../../core/utils/constants/app_images.dart';
 import '../../../../../core/utils/constants/app_string.dart';
+import '../../../../job_seeker/profile/presentation/controller/profile_controller.dart';
 
 class RecruiterProfileScreen extends StatelessWidget {
   const RecruiterProfileScreen({super.key});
@@ -48,30 +49,36 @@ class RecruiterProfileScreen extends StatelessWidget {
                       child: CircleAvatar(
                         radius: 50.sp,
                         backgroundColor: Colors.transparent,
-                        child: const ClipOval(
-                          child: CommonImage(
-                            imageSrc: AppImages.profile,
-                            size: 100,
-                            defaultImage: AppImages.profile,
+                        child: ClipOval(
+                          child: Obx(
+                            ()=> CommonImage(
+                              imageSrc: controller.profileImages.value,
+                              size: 100,
+                              defaultImage: AppImages.profile,
+                            ),
                           ),
                         ),
                       ),
                     ),
 
                     /// User Name here
-                    const CommonText(
-                      text: LocalStorageKeys.myName,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      top: 16,
-                      bottom: 4,
+                    Obx(
+                      ()=>CommonText(
+                        text: controller.name.value,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        top: 16,
+                        bottom: 4,
+                      ),
                     ),
-                    CommonText(
-                      text: "UI/UX Designer",
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.secondaryText,
-                    ),
+                    /*Obx(
+                      ()=> CommonText(
+                        text: "UI/UX Designer",
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.secondaryText,
+                      ),
+                    ),*/
                     Row(
                       mainAxisSize: MainAxisSize.min,
 
@@ -82,12 +89,14 @@ class RecruiterProfileScreen extends StatelessWidget {
                           height: 20.h,
                         ),
                         8.width,
-                        CommonText(
-                          text: 'Premium Plan',
-                          textAlign: TextAlign.center,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.secondaryPrimary,
+                        Obx(
+                           ()=> CommonText(
+                            text: controller.subscription.value,
+                            textAlign: TextAlign.center,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.secondaryPrimary,
+                          ),
                         ),
                       ],
                     ),
@@ -165,7 +174,7 @@ final List<ProfileItemData> profileItems = [
     imageSrc: AppIcons.history3,
     title: 'Payment History',
     onTap: () {
-      RecruiterProfileController.showPaymentHistoryPopUp();
+      ProfileController().showPaymentHistoryPopUp();
     },
   ),
   ProfileItemData(

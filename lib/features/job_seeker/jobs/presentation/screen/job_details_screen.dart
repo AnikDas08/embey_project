@@ -67,7 +67,7 @@ class JobDetailsScreen extends StatelessWidget {
                         ),
                         child: CommonImage(
                           imageSrc: controller.getThumbnail().isNotEmpty
-                              ? ApiEndPoint.imageUrl+controller.getThumbnail()
+                              ? controller.getThumbnail().startsWith("http")?controller.getThumbnail():ApiEndPoint.imageUrl+controller.getThumbnail()
                               : AppImages.jobDetails,
                           fill: BoxFit.cover,
                           height: 220.h,
@@ -99,7 +99,7 @@ class JobDetailsScreen extends StatelessWidget {
                             JobTitleSection(
                               jobTitle: controller.getJobTitle(),
                               location: controller.getLocation(),
-                              salary: controller.getSalary(),
+                              salary: controller.isNotSystem==true?controller.salary_status!:controller.getSalary(),
                             ),
 
                             10.height,
@@ -127,6 +127,7 @@ class JobDetailsScreen extends StatelessWidget {
 
                             12.height,
 
+                            if(controller.isNotSystem==false)
                             CompanyInfoCard(
                               companyName: controller.getCompanyName(),
                               companyLogo: controller.getCompanyLogo().isNotEmpty
@@ -136,6 +137,25 @@ class JobDetailsScreen extends StatelessWidget {
                                 Get.toNamed(JobSeekerRoutes.companyOverview,arguments: controller.getRecuirterId());
                               },
                             ),
+                            if(controller.isNotSystem==true && controller.recruiter_company!="")
+                              CompanyInfoCard(
+                                companyName: controller.recruiter_company!,
+                                companyLogo: controller.getCompanyLogo().isNotEmpty
+                                    ? controller.getCompanyLogo()
+                                    : AppImages.companyLogo,
+                                onTap: () {
+                                  final url=controller.url;
+                                  if(url!=""){
+                                    Get.toNamed(JobSeekerRoutes.jobWebView,arguments: {
+                                      'url': url,
+                                      'title': controller.getJobTitle(),
+                                    });
+                                  }
+                                  else{
+                                    Get.snackbar("Error","Job URL not available");
+                                  }
+                                },
+                              ),
 
                             20.height,
                           ],
@@ -149,6 +169,7 @@ class JobDetailsScreen extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                         color: AppColors.primary,
                         bottom: 10,
+                        maxLines: 100,
                       ).start,
 
                       DescriptionText(
@@ -188,14 +209,67 @@ class JobDetailsScreen extends StatelessWidget {
                         16.height,
                       ],
 
+                      if (controller.responsibilities != null && controller.responsibilities!.isNotEmpty&&controller.isNotSystem==true) ...[
+                        16.height,
+                        CommonText(
+                          text: 'Responsibilities',
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                          bottom: 10,
+                        ).start,
+                        ...controller.responsibilities!.map((item) => Padding(
+                          padding: EdgeInsets.only(bottom: 6.h),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CommonText(text: "• ", fontSize: 14.sp, fontWeight: FontWeight.bold),
+                              CommonText(
+                                text: item,
+                                fontSize: 14.sp,
+                                color: AppColors.secondaryText,
+                                maxLines: 5,
+                              ),
+                            ],
+                          ),
+                        )).toList(),
+                      ],
+
+                      if (controller.benefits != null && controller.benefits!.isNotEmpty&&controller.isNotSystem==true) ...[
+                        16.height,
+                        CommonText(
+                          text: 'Benefits',
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                          bottom: 10,
+                        ).start,
+                        ...controller.benefits!.map((item) => Padding(
+                          padding: EdgeInsets.only(bottom: 6.h),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CommonText(text: "• ", fontSize: 14.sp, fontWeight: FontWeight.bold),
+                              CommonText(
+                                text: item,
+                                fontSize: 14.sp,
+                                color: AppColors.secondaryText,
+                                maxLines: 5,
+                              ),
+                            ],
+                          ),
+                        )).toList(),
+                      ],
+
+                       if (controller.getCategory().isNotEmpty) ...[
                       CommonText(
                         text: 'Category: ${controller.getCategory()}',
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w500,
                         color: AppColors.secondaryText,
                       ),
-
-                      24.height,
+                      ],
+                      16.height,
                     ],
                   ),
                 ),
@@ -208,7 +282,24 @@ class JobDetailsScreen extends StatelessWidget {
               decoration: BoxDecoration(color: AppColors.surfaceBackground),
               child: SafeArea(
                 top: false,
-                child: CommonButton(
+                child: controller.isNotSystem==true?
+                CommonButton(
+                    titleText: "Review and Apply",
+                  onTap: () {
+                      final url=controller.url;
+                      if(url!=""){
+                        Get.toNamed(JobSeekerRoutes.jobWebView,arguments: {
+                          'url': url,
+                          'title': controller.getJobTitle(),
+                        });
+                      }
+                      else{
+                        Get.snackbar("Error","Job URL not available");
+                      }
+                  },
+                )
+                    :
+                CommonButton(
                   titleText: 'Apply Now',
                   buttonRadius: 8,
                   onTap: () {

@@ -54,9 +54,10 @@ class AllJobCategoryScreen extends StatelessWidget {
                     imageSrc: category['image'] ?? AppIcons.education,
                     title: category['name'] ?? 'Unknown',
                     onTap: () {
-                      JobSeekerRoutes.goToCategoryJobList(
-                        category['name'] ?? 'Unknown',
-                      );
+                      Get.toNamed(JobSeekerRoutes.categoryDetails,arguments: {
+                        "categoryId": category['id'],
+                        "categoryName": category['name'],
+                      });
                     },
                     jobCount: category["jobs"], // You can update this with real job count from API
                     isJobCountVisible: true,
