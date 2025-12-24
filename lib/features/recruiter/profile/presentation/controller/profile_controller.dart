@@ -73,6 +73,7 @@ class RecruiterProfileController extends GetxController {
         profileImages.value = profileModel.data.image;
         subscription.value = profileModel.data.subscription;
         name.value = profileModel.data.name;
+        print("profile image${profileModel.data.image}");
 
       } else {
         Utils.errorSnackBar(response.statusCode, response.message);

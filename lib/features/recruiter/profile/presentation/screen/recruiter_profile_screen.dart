@@ -46,17 +46,27 @@ class RecruiterProfileScreen extends StatelessWidget {
                   children: [
                     /// User Profile Image here
                     Center(
-                      child: CircleAvatar(
-                        radius: 50.sp,
-                        backgroundColor: Colors.transparent,
-                        child: ClipOval(
-                          child: Obx(
-                            ()=> CommonImage(
-                              imageSrc: controller.profileImages.value,
-                              size: 100,
-                              defaultImage: AppImages.profile,
-                            ),
-                          ),
+                      child: ClipOval(
+                        child: Obx(
+                          ()=>Image.network(
+                            controller.profileImages.value,
+                            height: 100,
+                            width: 100,
+                            fit: BoxFit.cover,
+                            errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
+                              return Container(
+                                height: 100,
+                                width: 100,
+                                color: Colors.grey.shade200,
+                                child: const Icon(
+                                  Icons.person,
+                                  size: 40,
+                                  color: Colors.grey,
+                                ),
+                              );
+                            },
+                          )
+
                         ),
                       ),
                     ),

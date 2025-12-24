@@ -26,6 +26,7 @@ class RecruiterProfileData {
   final String role;
   final String email;
   final String image;
+  final String coverPhoto;
   final String status;
   final bool verified;
   final bool isSocialLogin;
@@ -51,6 +52,7 @@ class RecruiterProfileData {
     required this.role,
     required this.email,
     required this.image,
+    required this.coverPhoto,
     required this.status,
     required this.verified,
     required this.isSocialLogin,
@@ -81,6 +83,7 @@ class RecruiterProfileData {
       role: json['role'] ?? '',
       email: json['email'] ?? '',
       image: json['image'] ?? '',
+      coverPhoto: json['cover'] ?? '',
       status: json['status'] ?? '',
       verified: json['verified'] ?? false,
       isSocialLogin: json['isSocialLogin'] ?? false,

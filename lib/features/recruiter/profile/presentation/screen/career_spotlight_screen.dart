@@ -1,3 +1,6 @@
+// career_spotlight_screen.dart
+
+import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:embeyi/core/utils/constants/app_images.dart';
 import 'package:embeyi/features/recruiter/profile/presentation/screen/add_career_spotlight_screen.dart';
 import 'package:flutter/material.dart';
@@ -9,17 +12,24 @@ import 'package:embeyi/core/component/button/common_button.dart';
 import 'package:embeyi/core/component/image/common_image.dart';
 import 'package:get/get.dart';
 
+import '../../data/model/canrrer_spoitlignt_model.dart';
+import '../controller/spoitlight_controller.dart';
+// Import your controller and model
+// import 'package:embeyi/features/recruiter/profile/presentation/controller/career_spotlight_controller.dart';
+// import 'package:embeyi/features/recruiter/profile/data/models/career_spotlight_model.dart';
+
 class CareerSpotlightScreen extends StatelessWidget {
   const CareerSpotlightScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(CareerSpotlightController());
+
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: CommonAppbar(
         title: 'Career Spotlight',
         showLeading: true,
-
         backgroundColor: AppColors.white,
         textColor: AppColors.black,
         elevation: 0,
@@ -28,76 +38,98 @@ class CareerSpotlightScreen extends StatelessWidget {
         child: Column(
           children: [
             Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 20.h),
+              child: Obx(() {
+                if (controller.isLoading.value) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
 
-                      // Stats Cards Section
-                      Row(
+                return RefreshIndicator(
+                  onRefresh: controller.refreshSpotlights,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: _buildStatCard(
-                              count: '05',
-                              label: 'Active Ads',
-                              countColor: const Color(0xFF008F37),
-                              backgroundColor: const Color(0xFFE8F5ED),
-                              labelColor: Color(0xFF008F37),
-                            ),
+                          SizedBox(height: 20.h),
+
+                          // Stats Cards Section
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildStatCard(
+                                  count: controller.activeCount.value
+                                      .toString()
+                                      .padLeft(2, '0'),
+                                  label: 'Active Ads',
+                                  countColor: const Color(0xFF008F37),
+                                  backgroundColor: const Color(0xFFE8F5ED),
+                                  labelColor: const Color(0xFF008F37),
+                                ),
+                              ),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: _buildStatCard(
+                                  count: controller.pendingCount.value
+                                      .toString()
+                                      .padLeft(2, '0'),
+                                  label: 'Pending Approval',
+                                  countColor: const Color(0xFFFF8F27),
+                                  backgroundColor: const Color(0xFFFFF4E8),
+                                  labelColor: const Color(0xFFFF8F27),
+                                ),
+                              ),
+                            ],
                           ),
-                          SizedBox(width: 12.w),
-                          Expanded(
-                            child: _buildStatCard(
-                              count: '02',
-                              label: 'Pending Approval',
-                              countColor: const Color(0xFFFF8F27),
-                              backgroundColor: const Color(0xFFFFF4E8),
-                              labelColor: const Color(0xFFFF8F27),
-                            ),
+
+                          SizedBox(height: 24.h),
+
+                          // Recent Add Section
+                          CommonText(
+                            text: 'Recent Add',
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.black,
+                            textAlign: TextAlign.start,
                           ),
+
+                          SizedBox(height: 16.h),
+
+                          // Job Cards List
+                          if (controller.spotlights.isEmpty)
+                            Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 40.h),
+                                child: CommonText(
+                                  text: 'No spotlights available',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.secondaryText,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            )
+                          else
+                            ...controller.spotlights.map((spotlight) {
+                              return Padding(
+                                padding: EdgeInsets.only(bottom: 16.h),
+                                child: _buildJobCard(
+                                  spotlight: spotlight,
+                                  imageUrl: controller.getImageUrl(spotlight.coverImage),
+                                ),
+                              );
+                            }).toList(),
+
+                          SizedBox(height: 20.h),
                         ],
                       ),
-
-                      SizedBox(height: 24.h),
-
-                      // Recent Add Section
-                      CommonText(
-                        text: 'Recent Add',
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.black,
-                        textAlign: TextAlign.start,
-                      ),
-
-                      SizedBox(height: 16.h),
-
-                      // Job Cards
-                      _buildJobCard(
-                        title: 'Sr. UI/UX Designer',
-                        subtitle: 'Creative & Modern Designer',
-                        status: 'Active',
-                        statusColor: const Color(0xFF008F37),
-                        statusBgColor: const Color(0xFFE8F5ED),
-                      ),
-
-                      SizedBox(height: 16.h),
-
-                      _buildJobCard(
-                        title: 'Sr. UI/UX Designer',
-                        subtitle: 'Creative & Modern Designer',
-                        status: 'Pending',
-                        statusColor: const Color(0xFFFF8F27),
-                        statusBgColor: const Color(0xFFFFF4E8),
-                      ),
-
-                      SizedBox(height: 20.h),
-                    ],
+                    ),
                   ),
-                ),
-              ),
+                );
+              }),
             ),
 
             // Bottom Create Add Button
@@ -122,7 +154,6 @@ class CareerSpotlightScreen extends StatelessWidget {
                 buttonColor: AppColors.primaryColor,
                 isGradient: false,
                 onTap: () {
-                  // Handle create add action
                   Get.to(() => const AddCareerSpotlightScreen());
                 },
               ),
@@ -170,12 +201,19 @@ class CareerSpotlightScreen extends StatelessWidget {
   }
 
   Widget _buildJobCard({
-    required String title,
-    required String subtitle,
-    required String status,
-    required Color statusColor,
-    required Color statusBgColor,
+    required Spotlight spotlight,
+    required String imageUrl,
   }) {
+    // Determine status display
+    final bool isActive = spotlight.isActive;
+    final String statusText = isActive ? 'Active' : 'Pending';
+    final Color statusColor = isActive
+        ? const Color(0xFF008F37)
+        : const Color(0xFFFF8F27);
+    final Color statusBgColor = isActive
+        ? const Color(0xFFE8F5ED)
+        : const Color(0xFFFFF4E8);
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12.r),
@@ -195,10 +233,12 @@ class CareerSpotlightScreen extends StatelessWidget {
             SizedBox(
               height: 120.h,
               width: double.infinity,
-              child: CommonImage(
-                imageSrc: AppImages.ad,
-                fill: BoxFit.cover,
-                borderRadius: 0,
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.fill,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(Icons.error);
+                },
               ),
             ),
 
@@ -214,7 +254,7 @@ class CareerSpotlightScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         CommonText(
-                          text: title,
+                          text: spotlight.serviceType,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: AppColors.black,
@@ -222,7 +262,7 @@ class CareerSpotlightScreen extends StatelessWidget {
                         ),
                         SizedBox(height: 4.h),
                         CommonText(
-                          text: subtitle,
+                          text: spotlight.organizationName,
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
                           color: AppColors.secondaryText,
@@ -247,7 +287,7 @@ class CareerSpotlightScreen extends StatelessWidget {
                       ),
                     ),
                     child: CommonText(
-                      text: status,
+                      text: statusText,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: statusColor,

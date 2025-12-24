@@ -92,8 +92,9 @@ class CompanyNameSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        40.height, // Space for the logo overlap
+        60.height, // Space for the logo overlap
         CommonText(
           text: companyName,
           fontSize: 20.sp,

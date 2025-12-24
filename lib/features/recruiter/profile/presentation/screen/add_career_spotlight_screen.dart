@@ -1,84 +1,28 @@
-import 'package:embeyi/core/component/appbar/common_appbar.dart';
-import 'package:embeyi/core/component/button/common_button.dart';
-import 'package:embeyi/core/component/image/common_image.dart';
-import 'package:embeyi/core/component/text/common_text.dart';
-import 'package:embeyi/core/component/text_field/common_text_field.dart';
-import 'package:embeyi/core/utils/constants/app_colors.dart';
-import 'package:embeyi/core/utils/constants/app_icons.dart';
+// add_career_spotlight_screen.dart
+
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:embeyi/core/utils/constants/app_colors.dart';
+import 'package:embeyi/core/component/text/common_text.dart';
+import 'package:embeyi/core/component/appbar/common_appbar.dart';
+import 'package:embeyi/core/component/button/common_button.dart';
+import 'package:intl/intl.dart';
 
-class AddCareerSpotlightScreen extends StatefulWidget {
+import '../controller/add_career_spotlight_controller.dart';
+
+class AddCareerSpotlightScreen extends StatelessWidget {
   const AddCareerSpotlightScreen({super.key});
 
   @override
-  State<AddCareerSpotlightScreen> createState() =>
-      _AddCareerSpotlightScreenState();
-}
-
-class _AddCareerSpotlightScreenState extends State<AddCareerSpotlightScreen> {
-  final _formKey = GlobalKey<FormState>();
-
-  // Controllers
-  final TextEditingController _organizationNameController =
-      TextEditingController();
-  final TextEditingController _jobTitleController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-
-  // Dropdown values
-  String? _selectedJobType;
-  String? _selectedFocusArea;
-  String? _selectedJobRole;
-  String? _selectedLocation;
-  String? _selectedPlacementType;
-  String? _selectedMode;
-
-  // Date values
-  DateTime? _startDate;
-  DateTime? _endDate;
-
-  // Dropdown options
-  final List<String> _jobTypes = [
-    'Training Program',
-    'Hiring',
-    'Staffing',
-    'Career Coaching',
-    'Resume Service',
-  ];
-
-  final List<String> _focusAreas = [
-    'Cybersecurity',
-    'Data Engineering',
-    'Technology',
-    'Cloud',
-  ];
-
-  final List<String> _jobRoles = ['Onsite', 'In-Person', 'Hybrid'];
-
-  final List<String> _locations = ['Dhaka', 'Chittagong', 'Sylhet'];
-
-  final List<String> _placementTypes = [
-    'Tuition',
-    'Placement Fee',
-    'Free Trial',
-  ];
-
-  final List<String> _modes = ['Email', 'Phone', 'Website'];
-
-  @override
-  void dispose() {
-    _organizationNameController.dispose();
-    _jobTitleController.dispose();
-    _emailController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final controller = Get.put(AddCareerSpotlightController());
+
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: CommonAppbar(
-        title: 'Career Spotlight',
+        title: 'Add Career Spotlight',
         showLeading: true,
         backgroundColor: AppColors.white,
         textColor: AppColors.black,
@@ -89,228 +33,223 @@ class _AddCareerSpotlightScreenState extends State<AddCareerSpotlightScreen> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Cover Image Section
+                    _buildSectionTitle('Cover Image *'),
+                    SizedBox(height: 12.h),
+                    Obx(() => _buildImagePicker(context, controller)),
+                    SizedBox(height: 24.h),
+
+                    // Organization Name
+                    _buildSectionTitle('Organization Name *'),
+                    SizedBox(height: 12.h),
+                    _buildTextField(
+                      controller: controller.organizationNameController,
+                      hint: 'Enter organization name',
+                    ),
+                    SizedBox(height: 20.h),
+
+                    // Service Type
+                    _buildSectionTitle('Service Type *'),
+                    SizedBox(height: 12.h),
+                    Obx(() => _buildDropdown(
+                      value: controller.selectedServiceType.value,
+                      items: controller.serviceTypes,
+                      hint: 'Select service type',
+                      onChanged: (value) =>
+                      controller.selectedServiceType.value = value,
+                    )),
+                    SizedBox(height: 20.h),
+
+                    // Focus Area
+                    _buildSectionTitle('Focus Area *'),
+                    SizedBox(height: 12.h),
+                    Obx(() => _buildDropdown(
+                      value: controller.selectedFocusArea.value,
+                      items: controller.focusAreas,
+                      hint: 'Select focus area',
+                      onChanged: (value) =>
+                      controller.selectedFocusArea.value = value,
+                    )),
+                    SizedBox(height: 20.h),
+
+                    // Mode
+                    _buildSectionTitle('Mode *'),
+                    SizedBox(height: 12.h),
+                    Obx(() => _buildDropdown(
+                      value: controller.selectedMode.value,
+                      items: controller.modes,
+                      hint: 'Select mode',
+                      onChanged: (value) =>
+                      controller.selectedMode.value = value,
+                    )),
+                    SizedBox(height: 20.h),
+
+                    // Location
+                    _buildSectionTitle('Location *'),
+                    SizedBox(height: 12.h),
+                    _buildTextField(
+                      controller: controller.locationController,
+                      hint: 'Enter location (e.g., New York, USA)',
+                    ),
+                    SizedBox(height: 20.h),
+
+                    // Pricing
+                    _buildSectionTitle('Pricing *'),
+                    SizedBox(height: 12.h),
+                    _buildTextField(
+                      controller: controller.pricingController,
+                      hint: 'Enter pricing (e.g., Free Trial, \$500)',
+                    ),
+                    SizedBox(height: 20.h),
+
+                    // Date Range
+                    Row(
                       children: [
-                        SizedBox(height: 24.h),
-
-                        // Upload Cover Image Section
-                        _buildUploadCoverImageSection(),
-
-                        SizedBox(height: 24.h),
-
-                        // Organization Name
-                        _buildLabel('Organization Name'),
-                        SizedBox(height: 8.h),
-                        CommonTextField(
-                          controller: _organizationNameController,
-                          hintText: 'Example',
-                          fillColor: AppColors.white,
-                          borderColor: AppColors.borderColor,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionTitle('Start Date *'),
+                              SizedBox(height: 12.h),
+                              Obx(() => _buildDatePicker(
+                                context: context,
+                                date: controller.startDate.value,
+                                hint: 'Select start date',
+                                onTap: () => controller.selectStartDate(context),
+                              )),
+                            ],
+                          ),
                         ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Column(
 
-                        SizedBox(height: 16.h),
-
-                        // Which Type
-                        _buildLabel('Which Type'),
-                        SizedBox(height: 8.h),
-                        _buildDropdown(
-                          value: _selectedJobType,
-                          hint: 'Training Program',
-                          items: _jobTypes,
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedJobType = value;
-                            });
-                          },
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionTitle('End Date *'),
+                              SizedBox(height: 12.h),
+                              Obx(() => _buildDatePicker(
+                                context: context,
+                                date: controller.endDate.value,
+                                hint: 'Select end date',
+                                onTap: () => controller.selectEndDate(context),
+                              )),
+                            ],
+                          ),
                         ),
-
-                        SizedBox(height: 16.h),
-
-                        // Focus Area / Specialty
-                        _buildLabel('Focus Area / Specialty'),
-                        SizedBox(height: 8.h),
-                        _buildDropdown(
-                          value: _selectedFocusArea,
-                          hint: 'Cybersecurity',
-                          items: _focusAreas,
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedFocusArea = value;
-                            });
-                          },
-                        ),
-
-                        SizedBox(height: 16.h),
-
-                        // Job Role
-                        _buildLabel('Job Role'),
-                        SizedBox(height: 8.h),
-                        _buildDropdown(
-                          value: _selectedJobRole,
-                          hint: 'Onsite',
-                          items: _jobRoles,
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedJobRole = value;
-                            });
-                          },
-                        ),
-
-                        SizedBox(height: 16.h),
-
-                        // Location
-                        _buildLabel('Location'),
-                        SizedBox(height: 8.h),
-                        _buildDropdown(
-                          value: _selectedLocation,
-                          hint: 'Dhaka',
-                          items: _locations,
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedLocation = value;
-                            });
-                          },
-                        ),
-
-                        SizedBox(height: 16.h),
-
-                        // Placement Fee
-                        _buildLabel('Placement Fee'),
-                        SizedBox(height: 8.h),
-                        _buildDropdown(
-                          value: _selectedPlacementType,
-                          hint: 'Tuition',
-                          items: _placementTypes,
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedPlacementType = value;
-                            });
-                          },
-                        ),
-
-                        SizedBox(height: 16.h),
-
-                        // Start Date and End Date Row
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _buildLabel('Start Date'),
-                                  SizedBox(height: 8.h),
-                                  _buildDateField(
-                                    date: _startDate,
-                                    hint: '07 Jan 2025',
-                                    onTap: () => _selectDate(context, true),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(width: 12.w),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _buildLabel('End Date'),
-                                  SizedBox(height: 8.h),
-                                  _buildDateField(
-                                    date: _endDate,
-                                    hint: '15 Jan 2025',
-                                    onTap: () => _selectDate(context, false),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        SizedBox(height: 16.h),
-
-                        // Start Time and End Time Row
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _buildLabel('Start Time'),
-                                  SizedBox(height: 8.h),
-                                  _buildTimeField(
-                                    hint: '07 Jan 2025',
-                                    onTap: () => _selectTime(context, true),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(width: 12.w),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _buildLabel('End Time'),
-                                  SizedBox(height: 8.h),
-                                  _buildTimeField(
-                                    hint: '15 Jan 2025',
-                                    onTap: () => _selectTime(context, false),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        SizedBox(height: 16.h),
-
-                        // Email
-                        _buildLabel('Email'),
-                        SizedBox(height: 8.h),
-                        _buildDropdown(
-                          value: _selectedMode,
-                          hint: 'Email',
-                          items: _modes,
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedMode = value;
-                            });
-                          },
-                        ),
-
-                        SizedBox(height: 16.h),
-
-                        // Email Input
-                        CommonTextField(
-                          controller: _emailController,
-                          hintText: 'example@gmail.com',
-                          fillColor: AppColors.white,
-                          borderColor: AppColors.borderColor,
-                          keyboardType: TextInputType.emailAddress,
-                        ),
-
-                        SizedBox(height: 32.h),
                       ],
                     ),
-                  ),
+                    SizedBox(height: 20.h),
+
+                    // Time Range
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionTitle('Start Time *'),
+                              SizedBox(height: 12.h),
+                              _buildTextField(
+                                controller: controller.startTimeController,
+                                hint: 'HH:MM',
+                                readOnly: true,
+                                onTap: () => _selectTime(
+                                  context,
+                                  controller.startTimeController,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionTitle('End Time *'),
+                              SizedBox(height: 12.h),
+                              _buildTextField(
+                                controller: controller.endTimeController,
+                                hint: 'HH:MM',
+                                readOnly: true,
+                                onTap: () => _selectTime(
+                                  context,
+                                  controller.endTimeController,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20.h),
+
+                    // Contact Information
+                    _buildSectionTitle('Contact Information *'),
+                    SizedBox(height: 12.h),
+                    Obx(() => _buildDropdown(
+                      value: controller.selectedContactType.value,
+                      items: controller.contactTypes,
+                      hint: 'Select contact type',
+                      onChanged: (value) =>
+                      controller.selectedContactType.value = value,
+                    )),
+                    SizedBox(height: 12.h),
+                    Obx(() => _buildTextField(
+                      controller: controller.contactDetailsController,
+                      hint: controller.selectedContactType.value == 'email'
+                          ? 'Enter email address'
+                          : controller.selectedContactType.value == 'phone'
+                          ? 'Enter phone number'
+                          : 'Enter website URL',
+                      keyboardType:
+                      controller.selectedContactType.value == 'phone'
+                          ? TextInputType.phone
+                          : controller.selectedContactType.value ==
+                          'email'
+                          ? TextInputType.emailAddress
+                          : TextInputType.url,
+                    )),
+                    SizedBox(height: 30.h),
+                  ],
                 ),
               ),
             ),
 
-            // Continue Button
-            Padding(
-              padding: EdgeInsets.all(16.w),
-              child: CommonButton(
-                titleText: 'Continue',
-                onTap: () {
-                  if (_formKey.currentState!.validate()) {
-                    // Handle form submission
-                  }
-                },
+            // Submit Button
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
               ),
+              child: Obx(() => CommonButton(
+                titleText: controller.isLoading.value
+                    ? 'Submitting...'
+                    : 'Submit Spotlight',
+                titleSize: 18,
+                titleWeight: FontWeight.w600,
+                buttonHeight: 50.h,
+                buttonRadius: 8,
+                buttonColor: controller.isLoading.value
+                    ? AppColors.primaryColor.withOpacity(0.6)
+                    : AppColors.primaryColor,
+                isGradient: false,
+                onTap: controller.isLoading.value
+                    ? () {}
+                    : controller.submitSpotlight,
+              )),
             ),
           ],
         ),
@@ -318,95 +257,178 @@ class _AddCareerSpotlightScreenState extends State<AddCareerSpotlightScreen> {
     );
   }
 
-  Widget _buildLabel(String text) {
+  Widget _buildSectionTitle(String title) {
     return CommonText(
-      text: text,
-      fontSize: 14,
-      fontWeight: FontWeight.w500,
-      color: AppColors.primaryText,
-      textAlign: TextAlign.left,
+      text: title,
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+      color: AppColors.black,
+      textAlign: TextAlign.start,
     );
   }
 
-  Widget _buildUploadCoverImageSection() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-      decoration: ShapeDecoration(
-        shape: RoundedRectangleBorder(
-          side: BorderSide(width: 1, color: const Color(0xFF123499)),
-          borderRadius: BorderRadius.circular(8),
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hint,
+    bool readOnly = false,
+    VoidCallback? onTap,
+    TextInputType? keyboardType,
+  }) {
+    return TextField(
+      controller: controller,
+      readOnly: readOnly,
+      onTap: onTap,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(
+          color: AppColors.secondaryText,
+          fontSize: 14.sp,
         ),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CommonImage(imageSrc: AppIcons.upload2, size: 48.sp),
-          SizedBox(height: 12.h),
-          CommonText(
-            text: 'Upload Cover Image',
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: AppColors.primary,
-          ),
-        ],
+        filled: true,
+        fillColor: Colors.grey[50],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.r),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.r),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.r),
+          borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
+        ),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 16.w,
+          vertical: 14.h,
+        ),
       ),
     );
   }
 
   Widget _buildDropdown({
     required String? value,
-    required String hint,
     required List<String> items,
+    required String hint,
     required Function(String?) onChanged,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.white,
-        border: Border.all(color: AppColors.borderColor),
-        borderRadius: BorderRadius.circular(4.r),
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: Colors.grey[300]!),
       ),
-      child: DropdownButtonFormField<String>(
-        value: value,
-        decoration: InputDecoration(
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: 16.w,
-            vertical: 14.h,
-          ),
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          hintText: hint,
-          hintStyle: TextStyle(
-            fontSize: 14.sp,
-            color: AppColors.textFiledColor,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-        icon: Icon(
-          Icons.keyboard_arrow_down,
-          color: AppColors.primaryText,
-          size: 20.sp,
-        ),
-        items: items.map((String item) {
-          return DropdownMenuItem<String>(
-            value: item,
-            child: Text(
-              item,
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: AppColors.primaryText,
-                fontWeight: FontWeight.w400,
-              ),
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: value,
+          isExpanded: true,
+          hint: Text(
+            hint,
+            style: TextStyle(
+              color: AppColors.secondaryText,
+              fontSize: 14.sp,
             ),
-          );
-        }).toList(),
-        onChanged: onChanged,
+          ),
+          items: items.map((item) {
+            return DropdownMenuItem(
+              value: item,
+              child: Text(item),
+            );
+          }).toList(),
+          onChanged: onChanged,
+        ),
       ),
     );
   }
 
-  Widget _buildDateField({
+  Widget _buildImagePicker(
+      BuildContext context, AddCareerSpotlightController controller) {
+    if (controller.coverImage.value != null) {
+      return Stack(
+        children: [
+          Container(
+            height: 180.h,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: Colors.grey[300]!),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12.r),
+              child: Image.file(
+                controller.coverImage.value!,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 8,
+            right: 8,
+            child: GestureDetector(
+              onTap: controller.removeImage,
+              child: Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.close,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return GestureDetector(
+      onTap: () => controller.showImagePickerOptions(context),
+      child: Container(
+        height: 180.h,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: Colors.grey[300]!,
+            width: 2,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.add_photo_alternate_outlined,
+              size: 48.sp,
+              color: AppColors.primaryColor,
+            ),
+            SizedBox(height: 8.h),
+            CommonText(
+              text: 'Tap to upload cover image',
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.secondaryText,
+            ),
+            SizedBox(height: 4.h),
+            CommonText(
+              text: 'JPG, PNG (Max 5MB)',
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+              color: AppColors.secondaryText.withOpacity(0.7),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDatePicker({
+    required BuildContext context,
     required DateTime? date,
     required String hint,
     required VoidCallback onTap,
@@ -416,29 +438,26 @@ class _AddCareerSpotlightScreenState extends State<AddCareerSpotlightScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         decoration: BoxDecoration(
-          color: AppColors.white,
-          border: Border.all(color: AppColors.borderColor),
-          borderRadius: BorderRadius.circular(4.r),
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(color: Colors.grey[300]!),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               date != null
-                  ? '${date.day.toString().padLeft(2, '0')} ${_getMonthName(date.month)} ${date.year}'
+                  ? DateFormat('MMM dd, yyyy').format(date)
                   : hint,
               style: TextStyle(
+                color: date != null ? AppColors.black : AppColors.secondaryText,
                 fontSize: 14.sp,
-                color: date != null
-                    ? AppColors.primaryText
-                    : AppColors.textFiledColor,
-                fontWeight: FontWeight.w400,
               ),
             ),
             Icon(
-              Icons.calendar_today_outlined,
-              color: AppColors.primaryText,
-              size: 16.sp,
+              Icons.calendar_today,
+              size: 20.sp,
+              color: AppColors.secondaryText,
             ),
           ],
         ),
@@ -446,66 +465,10 @@ class _AddCareerSpotlightScreenState extends State<AddCareerSpotlightScreen> {
     );
   }
 
-  Widget _buildTimeField({required String hint, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          border: Border.all(color: AppColors.borderColor),
-          borderRadius: BorderRadius.circular(4.r),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              hint,
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: AppColors.textFiledColor,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-            Icon(Icons.access_time, color: AppColors.primaryText, size: 16.sp),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _selectDate(BuildContext context, bool isStartDate) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: AppColors.primaryColor,
-              onPrimary: AppColors.white,
-              onSurface: AppColors.black,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null) {
-      setState(() {
-        if (isStartDate) {
-          _startDate = picked;
-        } else {
-          _endDate = picked;
-        }
-      });
-    }
-  }
-
-  Future<void> _selectTime(BuildContext context, bool isStartTime) async {
+  Future<void> _selectTime(
+      BuildContext context,
+      TextEditingController controller,
+      ) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
@@ -514,8 +477,6 @@ class _AddCareerSpotlightScreenState extends State<AddCareerSpotlightScreen> {
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
               primary: AppColors.primaryColor,
-              onPrimary: AppColors.white,
-              onSurface: AppColors.black,
             ),
           ),
           child: child!,
@@ -524,25 +485,10 @@ class _AddCareerSpotlightScreenState extends State<AddCareerSpotlightScreen> {
     );
 
     if (picked != null) {
-      // Handle time selection
+      // Format time as HH:MM (24-hour format)
+      final hour = picked.hour.toString().padLeft(2, '0');
+      final minute = picked.minute.toString().padLeft(2, '0');
+      controller.text = '$hour:$minute';
     }
-  }
-
-  String _getMonthName(int month) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return months[month - 1];
   }
 }

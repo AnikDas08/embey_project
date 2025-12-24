@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../data/model/chat_list_model.dart';
@@ -9,83 +11,151 @@ import '../../../../../core/utils/app_utils.dart';
 import '../../../../../core/utils/enum/enum.dart';
 
 class RecruiterChatController extends GetxController {
-  /// Api status check here
+  /// Api status
   Status status = Status.completed;
 
-  /// Chat more Data Loading Bar
+  /// Load more indicator
   bool isMoreLoading = false;
 
-  /// page no here
+  /// Search controller
+  TextEditingController searchController = TextEditingController();
+
+  /// Page number
   int page = 1;
 
-  /// Chat List here
-  List chats = [];
+  /// Chat list
+  List<ChatModel> chats = [];
 
-  /// Chat Scroll Controller
+  /// Scroll controller
   ScrollController scrollController = ScrollController();
 
-  /// Chat Controller Instance create here
+  /// Search term
+  String searchTerm = '';
+
+  /// Instance
   static RecruiterChatController get instance =>
       Get.put(RecruiterChatController());
 
-  /// Chat More data Loading function
-  Future<void> moreChats() async {
+  /* ================= SEARCH ================= */
+
+  /// Search using API with searchTerm parameter
+  Timer? _debounce;
+
+  void searchByName(String query) {
+    searchTerm = query;
+    page = 1;
+
+    // Cancel previous debounce timer if typing continues
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+
+    // Start a new debounce timer
+    _debounce = Timer(const Duration(milliseconds: 1000), () {
+      getChatRepo();
+    });
+  }
+
+  /// Clear search
+  void clearSearch() {
+    searchController.clear();
+    searchTerm = '';
+    page = 1;
+    getChatRepo();
+  }
+
+  /* ================= PAGINATION ================= */
+
+  void moreChats() async {
     if (scrollController.position.pixels ==
         scrollController.position.maxScrollExtent) {
+      if (isMoreLoading) return;
+
       isMoreLoading = true;
       update();
-      await getChatRepo();
+
+      await getChatRepo(isLoadMore: true);
+
       isMoreLoading = false;
       update();
     }
   }
 
-  /// Chat data Loading function
-  Future<void> getChatRepo() async {
-    return;
-    if (page == 1) {
+  /* ================= API ================= */
+
+  Future<void> getChatRepo({bool isLoadMore = false}) async {
+    if (!isLoadMore) {
       status = Status.loading;
       update();
     }
 
-    var response = await ApiService.get("${ApiEndPoint.chats}?page=$page");
+    // Build URL with search term if present
+    String url = "${ApiEndPoint.chat}?page=$page";
+    if (searchTerm.isNotEmpty) {
+      url += "&searchTerm=$searchTerm";
+    }
+
+    final response = await ApiService.get(url);
 
     if (response.statusCode == 200) {
-      var data = response.data['chats'] ?? [];
+      final List data = response.data['data'] ?? [];
 
-      for (var item in data) {
-        chats.add(ChatModel.fromJson(item));
+      if (!isLoadMore) {
+        chats.clear();
+        page = 1;
       }
 
-      page = page + 1;
+      final newChats = data.map((e) => ChatModel.fromJson(e)).toList();
+      chats.addAll(newChats);
+
+      page++;
       status = Status.completed;
       update();
     } else {
-      Utils.errorSnackBar(response.statusCode.toString(), response.message);
       status = Status.error;
+      Utils.errorSnackBar(
+        response.statusCode.toString(),
+        response.message,
+      );
       update();
     }
   }
 
-  /// Chat data Update  Socket listener
-  listenChat() async {
-    SocketServices.on("update-chatlist::${LocalStorage.userId}", (data) {
-      page = 1;
-      chats.clear();
+  /* ================= SOCKET ================= */
 
-      for (var item in data) {
-        chats.add(ChatModel.fromJson(item));
-      }
+  void listenChat() {
+    SocketServices.on(
+      "update-chatlist::${LocalStorage.userId}",
+          (data) {
+        // Only update if not searching
+        if (searchTerm.isEmpty) {
+          page = 1;
+          chats.clear();
 
-      status = Status.completed;
-      update();
-    });
+          for (var item in data) {
+            chats.add(ChatModel.fromJson(item));
+          }
+
+          status = Status.completed;
+          update();
+        }
+      },
+    );
   }
 
-  /// Controller on Init¬
+  /* ================= LIFECYCLE ================= */
+
   @override
   void onInit() {
-    getChatRepo();
     super.onInit();
+    getChatRepo();
+    listenChat();
+    scrollController.addListener(moreChats);
+  }
+
+  @override
+  void onClose() {
+    searchController.dispose();
+    scrollController.dispose();
+    _debounce?.cancel();
+    super.onClose();
   }
 }

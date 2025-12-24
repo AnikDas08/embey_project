@@ -11,7 +11,7 @@ class NotificationItem extends StatelessWidget {
   final NotificationModel item;
 
   /// Get notification color based on type
-  Color _getNotificationColor() {
+  /*Color _getNotificationColor() {
     final type = item.type.toLowerCase();
     if (type.contains('job') || type.contains('alert')) {
       return const Color(0xFFFF8F27); // Orange for Job Alert
@@ -21,10 +21,10 @@ class NotificationItem extends StatelessWidget {
       return const Color(0xFF008F37); // Green for Message
     }
     return AppColors.primaryColor; // Default blue
-  }
+  }*/
 
   /// Get notification icon based on type
-  IconData _getNotificationIcon() {
+  /*IconData _getNotificationIcon() {
     final type = item.type.toLowerCase();
     if (type.contains('job') || type.contains('alert')) {
       return Icons.work_outline;
@@ -34,12 +34,12 @@ class NotificationItem extends StatelessWidget {
       return Icons.chat_bubble_outline;
     }
     return Icons.notifications_outlined;
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
-    final notificationColor = _getNotificationColor();
-    final notificationIcon = _getNotificationIcon();
+    //final notificationColor = _getNotificationColor();
+    //final notificationIcon = _getNotificationIcon();
 
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
@@ -68,8 +68,8 @@ class NotificationItem extends StatelessWidget {
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Icon(
-              notificationIcon,
-              color: notificationColor,
+              Icons.notifications,
+              color: AppColors.primaryColor,
               size: 24.sp,
             ),
           ),
@@ -80,18 +80,18 @@ class NotificationItem extends StatelessWidget {
               children: [
                 /// Notification Title
                 CommonText(
-                  text: item.type,
+                  text: item.title!,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   textAlign: TextAlign.start,
-                  color: notificationColor,
+                  color: AppColors.primaryText,
                   maxLines: 1,
                 ),
                 4.height,
 
                 /// Notification Message
                 CommonText(
-                  text: item.message,
+                  text: item.message!,
                   fontSize: 13,
                   fontWeight: FontWeight.w400,
                   maxLines: 3,
@@ -99,7 +99,7 @@ class NotificationItem extends StatelessWidget {
                   textAlign: TextAlign.start,
                 ),
 
-                /// Show "Apply Now!" link for job alerts
+                /*/// Show "Apply Now!" link for job alerts
                 if (item.type.toLowerCase().contains('job') ||
                     item.type.toLowerCase().contains('alert'))
                   Padding(
@@ -112,7 +112,7 @@ class NotificationItem extends StatelessWidget {
                       color: const Color(0xFF123499),
                       maxLines: 1,
                     ),
-                  ),
+                  ),*/
               ],
             ),
           ),

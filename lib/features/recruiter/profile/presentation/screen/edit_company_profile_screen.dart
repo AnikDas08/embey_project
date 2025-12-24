@@ -19,105 +19,183 @@ class EditCompanyProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.put(EditCompanyProfileController());
 
-    return Scaffold(
-      backgroundColor: AppColors.white,
-      appBar: CommonAppbar(
-        title: 'Edit Profile',
-        textColor: AppColors.black,
-        backgroundColor: AppColors.white,
-        showBackButton: true,
-        leading: const BackButton(color: AppColors.black),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Cover Photo Section with Logo
-                  _buildCoverPhotoSection(controller),
-
-                  50.height,
-
-                  // Form Fields
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+    return Container(
+      color: AppColors.white,
+      child: SafeArea(
+        child: Scaffold(
+          backgroundColor: AppColors.white,
+          appBar: CommonAppbar(
+            title: 'Edit Profile',
+            textColor: AppColors.black,
+            backgroundColor: AppColors.white,
+            showBackButton: true,
+            leading: const BackButton(color: AppColors.black),
+          ),
+          body: Obx(() {
+            // Show loading indicator while fetching profile data
+            if (controller.isLoadingProfile.value) {
+              return Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.primaryColor,
+                ),
+              );
+            }
+        
+            return Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Company Name Field
-                        CommonText(
-                          text: 'Company Name',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.black,
-                          textAlign: TextAlign.start,
+                        // Cover Photo Section with Logo
+                        _buildCoverPhotoSection(controller),
+        
+                        50.height,
+        
+                        // Form Fields
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16.w),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Company Name Field
+                              CommonText(
+                                text: 'Company Name',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.black,
+                                textAlign: TextAlign.start,
+                              ),
+                              8.height,
+                              CommonTextField(
+                                controller: controller.companyNameController,
+                                hintText: 'Enter company name',
+                                borderRadius: 8,
+                                fillColor: AppColors.white,
+                                borderColor: AppColors.borderColor,
+                              ),
+        
+                              16.height,
+        
+                              // Overview Field
+                              CommonText(
+                                text: 'Overview',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.black,
+                                textAlign: TextAlign.start,
+                              ),
+                              8.height,
+                              CommonTextField(
+                                controller: controller.overviewController,
+                                hintText: 'Enter company overview',
+                                maxLines: 4,
+                                borderRadius: 8,
+                                fillColor: AppColors.white,
+                                borderColor: AppColors.borderColor,
+                              ),
+        
+                              20.height,
+        
+                              // Gallery Section
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  CommonText(
+                                    text: 'Gallery',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                    color: AppColors.black,
+                                    textAlign: TextAlign.start,
+                                  ),
+                                  // Delete selected images button
+                                  Obx(() {
+                                    if (controller.selectedImageIndices.isEmpty) {
+                                      return const SizedBox.shrink();
+                                    }
+                                    return GestureDetector(
+                                      onTap: controller.deleteSelectedImages,
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 12.w,
+                                          vertical: 6.h,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.red.shade50,
+                                          borderRadius: BorderRadius.circular(6.r),
+                                          border: Border.all(
+                                            color: Colors.red,
+                                            width: 1.w,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.delete_outline,
+                                              size: 16.sp,
+                                              color: Colors.red,
+                                            ),
+                                            4.width,
+                                            CommonText(
+                                              text: 'Delete (${controller.selectedImageIndices.length})',
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.red,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ],
+                              ),
+                              12.height,
+        
+                              // Loading indicator for gallery
+                              Obx(() {
+                                if (controller.isLoadingImage.value) {
+                                  return Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(20.h),
+                                      child: CircularProgressIndicator(
+                                        color: AppColors.primaryColor,
+                                      ),
+                                    ),
+                                  );
+                                }
+                                return _buildGallerySection(controller);
+                              }),
+        
+                              20.height,
+                            ],
+                          ),
                         ),
-                        8.height,
-                        CommonTextField(
-                          controller: controller.companyNameController,
-                          hintText: 'Enter company name',
-                          borderRadius: 8,
-                          fillColor: AppColors.white,
-                          borderColor: AppColors.borderColor,
-                        ),
-
-                        16.height,
-
-                        // Overview Field
-                        CommonText(
-                          text: 'Overview',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.black,
-                          textAlign: TextAlign.start,
-                        ),
-                        8.height,
-                        CommonTextField(
-                          controller: controller.overviewController,
-                          hintText: 'Enter company overview',
-                          maxLines: 4,
-                          borderRadius: 8,
-                          fillColor: AppColors.white,
-                          borderColor: AppColors.borderColor,
-                          textInputAction: TextInputAction.newline,
-                        ),
-
-                        20.height,
-
-                        // Gallery Section
-                        CommonText(
-                          text: 'Gallary',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.black,
-                          textAlign: TextAlign.start,
-                        ),
-                        12.height,
-                        _buildGallerySection(controller),
-
-                        20.height,
                       ],
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-
-          // Update Button
-          Padding(
-            padding: EdgeInsets.all(16.w),
-            child: CommonButton(
-              titleText: 'Update',
-              onTap: controller.updateProfile,
-              buttonHeight: 48.h,
-              titleSize: 16,
-              titleWeight: FontWeight.w600,
-            ),
-          ),
-        ],
+                ),
+        
+                // Update Button
+                Padding(
+                  padding: EdgeInsets.all(16.w),
+                  child: Obx(() => CommonButton(
+                    titleText: controller.isLoadingUpdate.value
+                        ? 'Updating...'
+                        : 'Update',
+                    onTap: controller.isLoadingUpdate.value
+                        ? null
+                        : controller.updateProfile,
+                    buttonHeight: 48.h,
+                    titleSize: 16,
+                    titleWeight: FontWeight.w600,
+                  )),
+                ),
+              ],
+            );
+          }),
+        ),
       ),
     );
   }
@@ -127,29 +205,39 @@ class EditCompanyProfileScreen extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         // Cover Photo
-        Obx(
-          () => GestureDetector(
+        Obx(() {
+          final coverPath = controller.coverPhotoPath.value;
+          final isUrl = coverPath.startsWith('http');
+
+          return GestureDetector(
             onTap: controller.pickCoverPhoto,
             child: Container(
               width: double.infinity,
               height: 180.h,
               decoration: BoxDecoration(color: AppColors.filledColor),
-              child: controller.coverPhotoPath.value.isEmpty
+              child: coverPath.isEmpty
                   ? CommonImage(
-                      imageSrc: AppImages.imageBackground,
-                      fill: BoxFit.cover,
-                      height: 180.h,
-                      width: double.infinity,
-                    )
+                imageSrc: AppImages.imageBackground,
+                fill: BoxFit.cover,
+                height: 180.h,
+                width: double.infinity,
+              )
+                  : isUrl
+                  ? CommonImage(
+                imageSrc: coverPath,
+                fill: BoxFit.cover,
+                height: 180.h,
+                width: double.infinity,
+              )
                   : Image.file(
-                      File(controller.coverPhotoPath.value),
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: 180.h,
-                    ),
+                File(coverPath),
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: 180.h,
+              ),
             ),
-          ),
-        ),
+          );
+        }),
 
         // Edit Cover Photo Button
         Positioned(
@@ -173,6 +261,12 @@ class EditCompanyProfileScreen extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  Icon(
+                    Icons.edit,
+                    size: 14.sp,
+                    color: AppColors.primaryColor,
+                  ),
+                  4.width,
                   CommonText(
                     text: 'Edit Cover Photo',
                     fontSize: 10,
@@ -191,80 +285,83 @@ class EditCompanyProfileScreen extends StatelessWidget {
           right: 0,
           bottom: -40.h,
           child: Center(
-            child: Column(
-              children: [
-                Obx(
-                  () => GestureDetector(
+            child: Obx(() {
+              final logoPath = controller.companyLogoPath.value;
+              final isUrl = logoPath.startsWith('http');
+
+              return Stack(
+                children: [
+                  GestureDetector(
                     onTap: controller.pickCompanyLogo,
-                    child: Stack(
-                      children: [
-                        Container(
+                    child: Container(
+                      width: 80.w,
+                      height: 80.w,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.white,
+                        border: Border.all(
+                          color: AppColors.white,
+                          width: 3.w,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: logoPath.isEmpty
+                            ? CommonImage(
+                          imageSrc: AppImages.companyLogo,
+                          fill: BoxFit.cover,
                           width: 80.w,
                           height: 80.w,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.white,
-                            border: Border.all(
-                              color: AppColors.white,
-                              width: 3.w,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: ClipOval(
-                            child: controller.companyLogoPath.value.isEmpty
-                                ? CommonImage(
-                                    imageSrc: AppImages.companyLogo,
-                                    fill: BoxFit.cover,
-                                    width: 80.w,
-                                    height: 80.w,
-                                  )
-                                : Image.file(
-                                    File(controller.companyLogoPath.value),
-                                    fit: BoxFit.cover,
-                                    width: 80.w,
-                                    height: 80.w,
-                                  ),
-                          ),
+                        )
+                            : isUrl
+                            ? CommonImage(
+                          imageSrc: logoPath,
+                          fill: BoxFit.cover,
+                          width: 80.w,
+                          height: 80.w,
+                        )
+                            : Image.file(
+                          File(logoPath),
+                          fit: BoxFit.cover,
+                          width: 80.w,
+                          height: 80.w,
                         ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: GestureDetector(
-                            onTap: controller.pickCompanyLogo,
-                            child: Container(
-                              width: 24.w,
-                              height: 24.w,
-                              decoration: BoxDecoration(
-                                color: AppColors.white,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppColors.primaryColor,
-                                  width: 1.5.w,
-                                ),
-                              ),
-                              child: Icon(
-                                Icons.camera_alt,
-                                size: 16.sp,
-                                color: AppColors.primaryColor,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-                8.height,
-
-                // // Camera Icon
-              ],
-            ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: GestureDetector(
+                      onTap: controller.pickCompanyLogo,
+                      child: Container(
+                        width: 24.w,
+                        height: 24.w,
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.primaryColor,
+                            width: 1.5.w,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.camera_alt,
+                          size: 16.sp,
+                          color: AppColors.primaryColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }),
           ),
         ),
       ],
@@ -273,7 +370,7 @@ class EditCompanyProfileScreen extends StatelessWidget {
 
   Widget _buildGallerySection(EditCompanyProfileController controller) {
     return Obx(
-      () => GridView.builder(
+          () => GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -294,44 +391,41 @@ class EditCompanyProfileScreen extends StatelessWidget {
   }
 
   Widget _buildAddImageButton(EditCompanyProfileController controller) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        GestureDetector(
-          onTap: controller.addGalleryImage,
-          child: Container(
-            width: Get.width * 0.7,
-            height: Get.width * 0.2,
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(8.r),
-              border: Border.all(color: AppColors.borderColor, width: 1.w),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.add, size: 32.sp, color: AppColors.borderColor),
-                8.height,
-                CommonText(
-                  text: 'Add Image',
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.secondaryText,
-                ),
-              ],
-            ),
-          ),
+    return GestureDetector(
+      onTap: controller.addGalleryImage,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(color: AppColors.borderColor, width: 1.w),
         ),
-      ],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add, size: 24.sp, color: AppColors.borderColor),
+            4.height,
+            CommonText(
+              text: 'Add',
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+              color: AppColors.secondaryText,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildGalleryImageItem(
-    EditCompanyProfileController controller,
-    int index,
-  ) {
-    return Obx(
-      () => GestureDetector(
+      EditCompanyProfileController controller,
+      int index,
+      ) {
+    return Obx(() {
+      final imagePath = controller.galleryImages[index];
+      final isUrl = imagePath.startsWith('http');
+      final isSelected = controller.isImageSelected(index);
+
+      return GestureDetector(
         onTap: () => controller.toggleImageSelection(index),
         child: Stack(
           children: [
@@ -339,7 +433,7 @@ class EditCompanyProfileScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8.r),
                 border: Border.all(
-                  color: controller.isImageSelected(index)
+                  color: isSelected
                       ? AppColors.primaryColor
                       : AppColors.borderColor,
                   width: 2.w,
@@ -347,41 +441,59 @@ class EditCompanyProfileScreen extends StatelessWidget {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(6.r),
-                child: controller.galleryImages[index].startsWith('/')
-                    ? Image.file(
-                        File(controller.galleryImages[index]),
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: double.infinity,
-                      )
-                    : CommonImage(
-                        imageSrc: controller.galleryImages[index],
-                        fill: BoxFit.cover,
-                      ),
+                child: isUrl
+                    ? CommonImage(
+                  imageSrc: imagePath,
+                  fill: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                )
+                    : Image.file(
+                  File(imagePath),
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                ),
               ),
             ),
-            // Selection Badge
-            if (controller.isImageSelected(index))
-              Positioned(
-                top: 8.h,
-                right: 8.w,
+
+            // Selection overlay
+            if (isSelected)
+              Positioned.fill(
                 child: Container(
-                  width: 12.w,
-                  height: 12.w,
                   decoration: BoxDecoration(
-                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(6.r),
+                    color: AppColors.primaryColor.withOpacity(0.3),
+                  ),
+                ),
+              ),
+
+            // Selection Badge
+            if (isSelected)
+              Positioned(
+                top: 4.h,
+                right: 4.w,
+                child: Container(
+                  width: 20.w,
+                  height: 20.w,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryColor,
                     shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.white,
+                      width: 2.w,
+                    ),
                   ),
                   child: Icon(
-                    Icons.close,
-                    size: 8.sp,
-                    color: AppColors.primaryColor,
+                    Icons.check,
+                    size: 12.sp,
+                    color: AppColors.white,
                   ),
                 ),
               ),
           ],
         ),
-      ),
-    );
+      );
+    });
   }
 }
