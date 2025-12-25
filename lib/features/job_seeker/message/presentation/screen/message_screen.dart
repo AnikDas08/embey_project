@@ -12,14 +12,14 @@ import 'package:get/get.dart';
 import '../controller/message_controller.dart';
 import '../widgets/chat_bubble_message.dart';
 
-class MessageScreen extends StatefulWidget {
-  const MessageScreen({super.key});
+class JobSeekerMessageScreen extends StatefulWidget {
+  const JobSeekerMessageScreen({super.key});
 
   @override
-  State<MessageScreen> createState() => _MessageScreenState();
+  State<JobSeekerMessageScreen> createState() => _MessageScreenState();
 }
 
-class _MessageScreenState extends State<MessageScreen> {
+class _MessageScreenState extends State<JobSeekerMessageScreen> {
   String chatId = Get.arguments?['chatId'] ?? "123545521";
   String name = Get.arguments?['name'] ?? "Mehdi Hassan";
   String image = Get.arguments?['image'] ?? AppImages.profile;

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../../core/services/api/api_service.dart';
+import '../../../home/presentation/controller/home_controller.dart';
 import '../../data/model/notification_model.dart';
 import '../../repository/notification_repository.dart';
 
@@ -63,6 +65,23 @@ class RecruiterNotificationsController extends GetxController {
     update();
   }
 
+  readNotification()async{
+    try{
+      final response = await ApiService.patch(
+          "notification",
+          header: {
+            "Content-Type": "application/json",
+          }
+      );
+      if(response.statusCode==200){
+        Get.find<RecruiterHomeController>().readNotification();
+      }
+    }
+    catch(e){
+
+    }
+  }
+
   /// Notification Controller Instance create here
   static RecruiterNotificationsController get instance =>
       Get.put(RecruiterNotificationsController());
@@ -72,6 +91,7 @@ class RecruiterNotificationsController extends GetxController {
   void onInit() {
     getNotificationsRepo();
     moreNotification();
+    readNotification();
     super.onInit();
   }
 }

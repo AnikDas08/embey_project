@@ -18,8 +18,8 @@ class HomeController extends GetxController {
   RxList<String> bannerImages = <String>[].obs;
   final RxList<Map<String, dynamic>> categories = <Map<String, dynamic>>[].obs;
 
-  // Initialize as empty list instead of null
-  List<JobPost>? jobPost = [];
+  // ✅ CRITICAL FIX: Changed from List<JobPost>? to RxList
+  RxList<JobPost> jobPost = <JobPost>[].obs;
   RxBool isLoadingJobs = false.obs;
 
   // Filter parameters
@@ -27,10 +27,12 @@ class HomeController extends GetxController {
   RxString selectedCategory = ''.obs;
   RxInt minSalary = 0.obs;
   RxInt maxSalary = 100000.obs;
-  RxList<String> selectedJobTypes = <String>[].obs; // FULL_TIME, PART_TIME
-  RxList<String> selectedJobLevels = <String>[].obs; // ENTRY_LEVEL, MID_LEVEL
-  RxString selectedExperienceLevel = ''.obs; // 0-1yrs, 1-3yrs
-  String categoryId="";
+  RxList<String> selectedJobTypes = <String>[].obs;
+  RxList<String> selectedJobLevels = <String>[].obs;
+  RxString selectedExperienceLevel = ''.obs;
+  String categoryId = "";
+  RxBool isNotification = false.obs;
+  RxBool autoApplHere = false.obs;
 
   @override
   void onInit() {
@@ -39,6 +41,7 @@ class HomeController extends GetxController {
     getBanner();
     fetchCategories();
     getPost();
+    readNotification();
   }
 
   @override
@@ -46,10 +49,7 @@ class HomeController extends GetxController {
     super.onClose();
   }
 
-  // --- Profile, Banner, and Category Methods (No Change) ---
-
   Future<void> getProfile() async {
-    update();
     try {
       final response = await ApiService.get(
           ApiEndPoint.user,
@@ -61,6 +61,7 @@ class HomeController extends GetxController {
         name.value = response.data["data"]["name"] ?? "";
         image.value = response.data["data"]["image"] ?? "";
         designation.value = response.data["data"]["designation"] ?? "No Designation Selected";
+        autoApplHere.value = response.data["data"]["isAutoApply"] ?? false;
         print("imageurl 😂😂😂😂: ${image.value}");
       } else {
         Utils.errorSnackBar(response.statusCode, response.message);
@@ -68,11 +69,9 @@ class HomeController extends GetxController {
     } catch (e) {
       Utils.errorSnackBar(0, e.toString());
     }
-    update();
   }
 
   Future<void> getBanner() async {
-    update();
     try {
       final response = await ApiService.get(
           ApiEndPoint.banner,
@@ -96,7 +95,24 @@ class HomeController extends GetxController {
     } catch (e) {
       Utils.errorSnackBar(0, e.toString());
     }
-    update();
+  }
+
+  Future<void> readNotification() async {
+    try {
+      final response = await ApiService.get(
+          "notification",
+          header: {
+            "Content-Type": "application/json",
+          }
+      );
+      if (response.statusCode == 200) {
+        final data = response.data['data'];
+        final count = data["unreadCount"];
+        isNotification.value = count != 0;
+      }
+    } catch (e) {
+      // Handle error silently
+    }
   }
 
   Future<void> fetchCategories() async {
@@ -121,8 +137,6 @@ class HomeController extends GetxController {
             "image": item['image'] ?? "assets/images/noImage.png",
           };
         }).toList();
-
-        update();
       } else {
         Get.snackbar(
           "Error",
@@ -143,18 +157,32 @@ class HomeController extends GetxController {
     }
   }
 
-  // --- Filter Helper (No Change) ---
+  Future<void> toggleAutoApply(bool value) async {
+    autoApplHere.value = value;
 
-  // Build query parameters for filter
+    try {
+      final response = await ApiService.post(
+          "user/auto-apply",
+          header: {"Authorization": "Bearer ${LocalStorage.token}"}
+      );
+
+      if (response.statusCode == 200) {
+        Get.snackbar("Success", "Auto Apply ${value ? 'Enabled' : 'Disabled'}");
+      } else {
+        Get.snackbar("Error", "Auto Apply ${value ? 'Enabled' : 'Disabled'}");
+      }
+    } catch (e) {
+      Utils.errorSnackBar(0, e.toString());
+    }
+  }
+
   String _buildQueryParams() {
     List<String> params = [];
 
-    // Search term
     if (searchTerm.value.isNotEmpty) {
       params.add('searchTerm=${Uri.encodeComponent(searchTerm.value)}');
     }
 
-    // Salary range
     if (minSalary.value > 0) {
       params.add('minPrice=${minSalary.value}');
     }
@@ -162,22 +190,18 @@ class HomeController extends GetxController {
       params.add('maxPrice=${maxSalary.value}');
     }
 
-    // Category
     if (selectedCategory.value.isNotEmpty) {
       params.add('category=${selectedCategory.value}');
     }
 
-    // Job types (multiple)
     if (selectedJobTypes.isNotEmpty) {
       params.add('job_type=${selectedJobTypes.join(',')}');
     }
 
-    // Job levels (multiple)
     if (selectedJobLevels.isNotEmpty) {
       params.add('job_level=${selectedJobLevels.join(',')}');
     }
 
-    // Experience level
     if (selectedExperienceLevel.value.isNotEmpty) {
       params.add('experience_level=${selectedExperienceLevel.value}');
     }
@@ -185,17 +209,12 @@ class HomeController extends GetxController {
     return params.isEmpty ? '' : '?${params.join('&')}';
   }
 
-  // --- Core getPost Method (Corrected) ---
-
   Future<void> getPost({bool useFilter = false}) async {
     isLoadingJobs.value = true;
-    update();
 
     try {
       String endpoint;
 
-      // ✅ FIX: Construct the endpoint by appending the query parameters
-      // directly to the base API path to avoid the 404.
       if (useFilter) {
         endpoint = '${ApiEndPoint.job_post}${_buildQueryParams()}';
       } else {
@@ -215,7 +234,6 @@ class HomeController extends GetxController {
       print("Response Data: ${response.data}");
 
       if (response.statusCode == 200) {
-        // Parse the response
         final jobPostResponse = JobPostResponse.fromJson(response.data);
 
         print("Parsed Success: ${jobPostResponse.success}");
@@ -223,49 +241,37 @@ class HomeController extends GetxController {
         print("Data is null? ${jobPostResponse.data == null}");
         print("Data length: ${jobPostResponse.data?.length ?? 0}");
 
-        // Safely assign data
+        // ✅ CRITICAL FIX: Use .value assignment for RxList
         if (jobPostResponse.data != null && jobPostResponse.data!.isNotEmpty) {
-          jobPost = jobPostResponse.data;
-          print("✅ Job posts assigned: ${jobPost?.length} items");
+          jobPost.value = jobPostResponse.data!;
+          print("✅ Job posts assigned: ${jobPost.length} items");
 
-          // Print first job details for debugging
-          if (jobPost!.isNotEmpty) {
-            final firstJob = jobPost![0];
+          if (jobPost.isNotEmpty) {
+            final firstJob = jobPost[0];
             print("First Job Title: ${firstJob.title}");
             print("First Job Location: ${firstJob.location}");
             print("First Job Salary: ${firstJob.minSalary} - ${firstJob.maxSalary}");
           }
         } else {
-          jobPost = [];
+          jobPost.clear();
           print("⚠️ No jobs found in response");
-          Get.snackbar(
-            "No Results",
-            "No jobs found matching your criteria",
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.orange,
-            colorText: Colors.white,
-          );
         }
       } else {
         Utils.errorSnackBar(response.statusCode, response.message);
-        jobPost = [];
+        jobPost.clear();
         print("❌ Error response: ${response.statusCode}");
       }
     } catch (e, stackTrace) {
       print("❌ Exception in getPost: $e");
       print("Stack trace: $stackTrace");
       Utils.errorSnackBar(0, "Failed to load jobs: ${e.toString()}");
-      jobPost = [];
+      jobPost.clear();
     } finally {
       isLoadingJobs.value = false;
-      update();
       print("============ END JOB POST RESPONSE ============");
     }
   }
 
-  // --- Filter and Action Methods (No Change) ---
-
-  // Apply filters from bottom sheet
   void applyFilters({
     String? search,
     String? category,
@@ -275,7 +281,6 @@ class HomeController extends GetxController {
     List<String>? jobLevels,
     String? experienceLevel,
   }) {
-    // Update filter values
     if (search != null) searchTerm.value = search;
     if (category != null) selectedCategory.value = category;
     if (minPrice != null) minSalary.value = minPrice;
@@ -284,11 +289,9 @@ class HomeController extends GetxController {
     if (jobLevels != null) selectedJobLevels.value = jobLevels;
     if (experienceLevel != null) selectedExperienceLevel.value = experienceLevel;
 
-    // Fetch jobs with filters
     getPost(useFilter: true);
   }
 
-  // Clear all filters
   void clearFilters() {
     searchTerm.value = '';
     selectedCategory.value = '';
@@ -298,11 +301,9 @@ class HomeController extends GetxController {
     selectedJobLevels.clear();
     selectedExperienceLevel.value = '';
 
-    // Fetch jobs without filters
     getPost(useFilter: false);
   }
 
-  // Search jobs by term
   void searchJobs(String term) {
     searchTerm.value = term;
     if (term.isNotEmpty) {
@@ -312,26 +313,24 @@ class HomeController extends GetxController {
     }
   }
 
-  // Method to toggle favorite
   Future<void> toggleFavorite(String jobId) async {
     if (jobId.isEmpty) return;
 
-    // 1. Find the index and get a reference to the job object
-    final index = jobPost?.indexWhere((job) => job.id == jobId);
-    if (index == null || index == -1) {
+    // ✅ FIX: Updated to work with RxList
+    final index = jobPost.indexWhere((job) => job.id == jobId);
+    if (index == -1) {
       print("Error: Job ID not found in the list.");
       return;
     }
 
-    final job = jobPost![index];
+    final job = jobPost[index];
     final isCurrentlySaved = job.isFavourite ?? false;
 
-    // 2. Optimistic Update: Change the state immediately and update the UI
+    // Optimistic Update
     job.isFavourite = !isCurrentlySaved;
-    update();
+    jobPost.refresh(); // Trigger RxList update
 
     try {
-      // 3. Perform the asynchronous API call
       final response = await ApiService.post(
           ApiEndPoint.favourite,
           body: {
@@ -341,31 +340,22 @@ class HomeController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        // Success: Optimistic state holds. Show success snackbar.
-        Get.snackbar(
-          "Success",
-          isCurrentlySaved ? "Job removed from favorites" : "Job marked as favorite",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 2),
-        );
+        // Success - optimistic state holds
       } else {
-        // 4. API Failure: Revert the local state and update the UI
+        // Revert on failure
         job.isFavourite = isCurrentlySaved;
-        update();
+        jobPost.refresh();
         Utils.errorSnackBar(response.statusCode, response.message);
       }
     } catch (e) {
-      // 5. Exception: Revert the local state and update the UI
+      // Revert on exception
       job.isFavourite = isCurrentlySaved;
-      update();
+      jobPost.refresh();
       Utils.errorSnackBar(0, "Failed to toggle favorite: ${e.toString()}");
     }
   }
 
-  // Method to refresh jobs
   Future<void> refreshJobs() async {
-    await getPost(useFilter: false);
+    await getPost();
   }
 }

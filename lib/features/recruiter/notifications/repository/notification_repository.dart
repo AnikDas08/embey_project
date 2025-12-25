@@ -4,11 +4,12 @@ import '../data/model/notification_model.dart';
 
 Future<List<NotificationModel>> notificationRepository(int page) async {
   var response = await ApiService.get(
-    "${ApiEndPoint.notifications}?page=$page",
+    "notification?page=$page",
   );
 
   if (response.statusCode == 200) {
-    var notificationList = response.data['data'] ?? [];
+    // Access the nested 'data' array inside response.data['data']
+    var notificationList = response.data['data']['data'] ?? [];
 
     List<NotificationModel> list = [];
 

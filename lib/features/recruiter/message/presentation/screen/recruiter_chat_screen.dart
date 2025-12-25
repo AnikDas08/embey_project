@@ -30,17 +30,15 @@ class RecruiterChatListScreen extends StatelessWidget {
       body: GetBuilder<RecruiterChatController>(
         builder: (controller) {
           switch (controller.status) {
-          /// Loading
+            /// Loading
             case Status.loading:
               return const CommonLoader();
 
-          /// Error
+            /// Error
             case Status.error:
-              return ErrorScreen(
-                onTap: () => controller.getChatRepo(),
-              );
+              return ErrorScreen(onTap: () => controller.getChatRepo());
 
-          /// Completed
+            /// Completed
             case Status.completed:
               return Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -54,11 +52,11 @@ class RecruiterChatListScreen extends StatelessWidget {
                         prefixIcon: const Icon(Icons.search),
                         suffixIcon: controller.searchController.text.isNotEmpty
                             ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            controller.clearSearch();
-                          },
-                        )
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  controller.clearSearch();
+                                },
+                              )
                             : null,
                         hintText: AppString.search,
                         borderRadius: 10,
@@ -84,13 +82,13 @@ class RecruiterChatListScreen extends StatelessWidget {
                           ),
                         ),
                       )
-
                     /// Chat List
                     else
                       Expanded(
                         child: ListView.builder(
                           controller: controller.scrollController,
-                          itemCount: controller.chats.length +
+                          itemCount:
+                              controller.chats.length +
                               (controller.isMoreLoading ? 1 : 0),
                           padding: EdgeInsets.only(top: 16.h),
                           itemBuilder: (context, index) {
@@ -105,16 +103,21 @@ class RecruiterChatListScreen extends StatelessWidget {
 
                             final ChatModel item = controller.chats[index];
 
-                            return GestureDetector(
-                              onTap: () => Get.toNamed(
-                                RecruiterRoutes.message,
-                                parameters: {
-                                  "chatId": item.id,
-                                  "name": item.participant.name,
-                                  "image": ApiEndPoint.imageUrl +
-                                      item.participant.image,
-                                },
-                              ),
+                            return InkWell(
+                              onTap: () {
+                                print("item ${item.id}");
+                                Get.toNamed(
+                                  RecruiterRoutes.message,
+                                  parameters: {
+                                    "chatId": item.id,
+                                    "name": item.participant.name,
+                                    "image":
+                                        ApiEndPoint.imageUrl +
+                                        item.participant.image,
+                                  },
+                                );
+                              },
+
                               child: ChatListItem(item: item),
                             );
                           },

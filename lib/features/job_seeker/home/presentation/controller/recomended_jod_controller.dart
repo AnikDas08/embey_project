@@ -29,12 +29,14 @@ class RecomendedJodController extends GetxController {
   RxInt maxSalary = 100000.obs;
   RxList<String> selectedJobTypes = <String>[].obs; // FULL_TIME, PART_TIME
   RxList<String> selectedJobLevels = <String>[].obs; // ENTRY_LEVEL, MID_LEVEL
-  RxString selectedExperienceLevel = ''.obs; // 0-1yrs, 1-3yrs
+  RxString selectedExperienceLevel = ''.obs; // 0-1yrs, 1-3yr
+  RxBool autoApplHere=false.obs;
 
   @override
   void onInit() {
     super.onInit();
     getPost();
+    getProfile();
   }
 
   @override
@@ -90,6 +92,50 @@ class RecomendedJodController extends GetxController {
   }
 
   // --- Core getPost Method (Corrected) ---
+
+  Future<void> getProfile() async {
+    update();
+    try {
+      final response = await ApiService.get(
+          ApiEndPoint.user,
+          header: {"Authorization": "Bearer ${LocalStorage.token}"}
+      );
+      if (response.statusCode == 200) {
+        final profileModel = ProfileModel.fromJson(response.data);
+        profileData = profileModel.data;
+        autoApplHere.value=response.data["data"]["isAutoApply"] ?? false;
+        print("imageurl 😂😂😂😂: ${image.value}");
+      } else {
+        Utils.errorSnackBar(response.statusCode, response.message);
+      }
+    } catch (e) {
+      Utils.errorSnackBar(0, e.toString());
+    }
+    update();
+  }
+
+
+  Future<void> toggleAutoApply(bool value) async {
+    // Optimistic update
+    autoApplHere.value = value;
+
+    try {
+      // Replace with your actual API endpoint for auto-apply
+      final response = await ApiService.post(
+          "user/auto-apply", // Example endpoint
+          header: {"Authorization": "Bearer ${LocalStorage.token}"}
+      );
+
+      if (response.statusCode == 200) {
+        Get.snackbar("Success", "Auto Apply ${value ? 'Enabled' : 'Disabled'}");
+      } else {
+        Get.snackbar("Error", "Auto Apply ${value ? 'Enabled' : 'Disabled'}");
+      }
+    } catch (e) {
+      //autoApplHere.value = !value;
+      Utils.errorSnackBar(0, e.toString());
+    }
+  }
 
   Future<void> getPost({bool useFilter = false}) async {
     isLoadingJobs.value = true;

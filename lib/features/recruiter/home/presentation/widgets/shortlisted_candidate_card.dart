@@ -45,6 +45,7 @@ class ShortlistedCandidateCard extends StatelessWidget {
           ],
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,6 +100,17 @@ class ShortlistedCandidateCard extends StatelessWidget {
                         ),
                       ),
 
+                      8.height,
+                      CommonText(
+                        text: description,
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.secondaryText,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.left,
+                      ),
+
                       // Description
                     ],
                   ),
@@ -114,16 +126,6 @@ class ShortlistedCandidateCard extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-            8.height,
-            CommonText(
-              text: description,
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w400,
-              color: AppColors.secondaryText,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.justify,
             ),
           ],
         ),

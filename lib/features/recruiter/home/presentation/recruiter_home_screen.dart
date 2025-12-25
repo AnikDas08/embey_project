@@ -58,18 +58,15 @@ class RecruiterHomeScreen extends StatelessWidget {
         children: [
           // Logo
           Obx(() {
-            String image=controller.companyImage.value.startsWith("http")?
+            /*String image=controller.companyImage.value.startsWith("http")?
             controller.companyImage.value:
-            ApiEndPoint.imageUrl+controller.companyName.value;
-            return CircleAvatar(
-              radius: 32.r,
-              backgroundColor: AppColors.white,
-              child: ClipOval(
-                child: controller.companyImage.value.isNotEmpty
-                    ? CommonImage(
-                    imageSrc: image, size: 64.sp)
-                    : CommonImage(imageSrc: AppImages.logo, size: 64.sp),
-              ),
+            ApiEndPoint.imageUrl+controller.companyImage.value;*/
+            //print("image 🤣🤣🤣🤣$image");
+            return ClipOval(
+              child: controller.companyImage.value.isNotEmpty
+                  ? CommonImage(
+                  imageSrc: ApiEndPoint.imageUrl+controller.companyImage.value, size: 64.sp)
+                  : CommonImage(imageSrc: AppImages.logo, size: 64.sp),
             );
           }
           ),
@@ -111,12 +108,14 @@ class RecruiterHomeScreen extends StatelessWidget {
             },
           ),
           8.width,
-          _buildActionIcon(
-            AppIcons.notification,
-            hasNotification: true,
-            onTap: () {
-              RecruiterRoutes.goToNotifications();
-            },
+          Obx(
+            () => _buildActionIcon(
+              AppIcons.notification,
+              hasNotification: controller.notificationCount.value,
+              onTap: () {
+                RecruiterRoutes.goToNotifications();
+              },
+            ),
           ),
         ],
       ),

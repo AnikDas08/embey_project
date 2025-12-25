@@ -57,7 +57,26 @@ class AllRecommendedJobScreen extends StatelessWidget {
               child: Column(
                 children: [
                   // This widget stays
-                  AutoApply(),
+                  /*SliverToBoxAdapter(
+                      child: Obx(() => AutoApply(
+                        isEnabled: controller.autoApplHere.value,
+                        onToggle: (newValue) {
+                          // Call the method in your controller
+                          controller.toggleAutoApply(newValue);
+                        },
+                      )),
+                  ),*/
+
+                  Obx(
+                    () => AutoApply(
+                        isEnabled: controller.autoApplHere.value,
+                        onToggle: (newValue){
+                          controller.toggleAutoApply(newValue);
+                        }
+                    ),
+                  ),
+
+
 
                   // Use the one and only ListView.builder for the job list
                   ListView.builder(

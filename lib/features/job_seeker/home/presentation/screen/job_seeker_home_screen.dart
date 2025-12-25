@@ -3,18 +3,16 @@ import 'package:embeyi/core/component/bottom_shit/filder_bottom_shit.dart';
 import 'package:embeyi/core/component/card/job_card.dart';
 import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:embeyi/core/config/route/job_seeker_routes.dart';
+import 'package:embeyi/core/config/route/recruiter_routes.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
-import 'package:embeyi/core/utils/constants/app_icons.dart';
-import 'package:embeyi/core/utils/constants/app_images.dart';
 import 'package:embeyi/core/utils/extensions/extension.dart';
-import 'package:embeyi/features/job_seeker/home/data/model/job_post.dart';
-import 'package:embeyi/features/job_seeker/home/presentation/screen/category_details.dart';
-import 'package:embeyi/features/job_seeker/home/presentation/widgets/auto_apply.dart';
+import 'package:embeyi/features/job_seeker/notifications/presentation/screen/job_seeker_notifications_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../controller/home_controller.dart';
 import '../widgets/home_widgets.dart';
+import '../widgets/auto_apply.dart';
 
 class JobSeekerHomeScreen extends StatelessWidget {
   JobSeekerHomeScreen({super.key});
@@ -27,201 +25,168 @@ class JobSeekerHomeScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // Fixed Header Section (won't scroll)
-            GetBuilder<HomeController>(
-                builder: (controller) {
-                  return Container(
-                    color: AppColors.background,
-                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-                    child: HomeHeader(
-                      profileImage: controller.image.value,
-                      userName: controller.name.value,
-                      userRole: controller.designation.value,
-                      onNotificationTap: () {
-                        JobSeekerRoutes.goToNotifications();
-                      },
-                      onMessageTap: () {
-                        JobSeekerRoutes.goToChat();
-                      },
-                      onProfileTap: () {
-                        JobSeekerRoutes.goToProfile();
-                      },
-                    ),
-                  );
-                }
-            ),
+            // Fixed Header Section (Static)
+            Obx(() {
+              return Container(
+                color: AppColors.background,
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+                child: HomeHeader(
+                  profileImage: controller.image.value,
+                  userName: controller.name.value,
+                  userRole: controller.designation.value,
+                  hasNotification: controller.isNotification.value,
+                  onMessageTap: () => RecruiterRoutes.goToChat(),
+                  onNotificationTap: () => Get.to(() => JobSeekerNotificationScreen()),
+                  onProfileTap: () => JobSeekerRoutes.goToProfile(),
+                ),
+              );
+            }),
 
-            // Scrollable Content
+            // Scrollable Content wrapped with RefreshIndicator
             Expanded(
-              child: CustomScrollView(
-                slivers: [
-                  // Search Bar Section
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
-                      child: HomeSearchBar(
-                        onFilterTap: () {
-                          Get.bottomSheet(
-                            isScrollControlled: true,
-                            FilterBottomSheet(
-                              onApply: () {
-                                // Filter applied, list will update automatically
-                              },
-                              onClose: () {
-                                Get.back();
-                              },
-                            ),
-                          );
-                        },
-                        onChanged: (value) {
-                          // Search as user types (with debounce in production)
-                          controller.searchJobs(value);
-                        },
-                      ),
-                    ),
-                  ),
-
-                  SliverToBoxAdapter(child: 20.height),
-
-                  // Hero Banner Section
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
-                      child: HeroBanner(
-                        onTap: () {},
-                      ),
-                    ),
-                  ),
-
-                  SliverToBoxAdapter(child: 24.height),
-
-                  // Job Category Section Header
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
-                      child: SectionHeader(
-                        title: 'Job Category',
-                        onSeeAllTap: () {
-                          JobSeekerRoutes.goToAllJobCategory();
-                        },
-                      ),
-                    ),
-                  ),
-
-                  SliverToBoxAdapter(child: 16.height),
-
-                  // Job Category Grid
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10.w),
-                      child: Obx(() {
-                        final categoriesList = controller.categories;
-
-                        if (categoriesList.isEmpty) {
-                          return Container(
-                            height: 100.h,
-                            alignment: Alignment.center,
-                            child: const CircularProgressIndicator(),
-                          );
-                        }
-
-                        return GridView.count(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          crossAxisCount: 4,
-                          mainAxisSpacing: 10.h,
-                          crossAxisSpacing: 10.w,
-                          childAspectRatio: 1,
-                          children: categoriesList.map((category) {
-                            final categoryId = category["id"];
-                            return JobCategoryCard(
-                              imageSrc: category['image'] ?? "",
-                              title: category['name'],
-                              onTap: () {
-                                print("category id 😂😂$categoryId");
-                                Get.toNamed(JobSeekerRoutes.categoryDetails,arguments: {
-                                  "categoryId": categoryId,
-                                  "categoryName": category['name'],
-                                });
-                              },
-                              isJobCountVisible: false,
+              child: RefreshIndicator(
+                color: AppColors.primary,
+                onRefresh: () async {
+                  // Triggers all data fetching methods in parallel
+                  await Future.wait([
+                    controller.refreshJobs(),
+                    controller.getProfile(),
+                    controller.getBanner(),
+                    controller.fetchCategories(),
+                  ]);
+                },
+                child: CustomScrollView(
+                  // Force physics so pull-to-refresh works even with empty lists
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    // Search Bar
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        child: HomeSearchBar(
+                          onFilterTap: () {
+                            Get.bottomSheet(
+                              isScrollControlled: true,
+                              FilterBottomSheet(
+                                onApply: () {},
+                                onClose: () => Get.back(),
+                              ),
                             );
-                          }).toList(),
-                        );
-                      }),
-                    ),
-                  ),
-
-                  SliverToBoxAdapter(child: 24.height),
-
-                  // Recommended Job Section Header
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
-                      child: SectionHeader(
-                        title: 'Recommended Job',
-                        onSeeAllTap: () {
-                          JobSeekerRoutes.goToAllRecommendedJob();
-                        },
+                          },
+                          onChanged: (value) => controller.searchJobs(value),
+                        ),
                       ),
                     ),
-                  ),
 
-                  SliverToBoxAdapter(child: 16.height),
+                    SliverToBoxAdapter(child: 20.height),
 
-                  SliverToBoxAdapter(child: AutoApply()),
+                    // Hero Banner
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        child: HeroBanner(onTap: () {}),
+                      ),
+                    ),
 
-                  // ✅ WRAP THE RECOMMENDED JOB LIST WITH GetBuilder
-                  SliverToBoxAdapter(
-                    child: GetBuilder<HomeController>(
-                      builder: (controller) {
-                        // Add debug prints
-                        print("🔍 Building job list");
-                        print("🔍 jobPost is null? ${controller.jobPost == null}");
-                        print("🔍 jobPost length: ${controller.jobPost?.length ?? 0}");
+                    SliverToBoxAdapter(child: 24.height),
 
-                        // Check if data is loading
-                        if (controller.isLoadingJobs.value) {
-                          return Container(
+                    // Job Category Header
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        child: SectionHeader(
+                          title: 'Job Category',
+                          onSeeAllTap: () => JobSeekerRoutes.goToAllJobCategory(),
+                        ),
+                      ),
+                    ),
+
+                    SliverToBoxAdapter(child: 16.height),
+
+                    // Job Category Grid
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w),
+                        child: Obx(() {
+                          final categoriesList = controller.categories;
+                          if (categoriesList.isEmpty && controller.isLoadingJobs.value) {
+                            return SizedBox(
+                              height: 150.h,
+                              child: const Center(child: CircularProgressIndicator()),
+                            );
+                          }
+                          if (categoriesList.isEmpty) {
+                            return SizedBox(
+                              height: 100.h,
+                              child: Center(
+                                child: Text(
+                                  'No categories available',
+                                  style: TextStyle(fontSize: 14.sp, color: Colors.grey),
+                                ),
+                              ),
+                            );
+                          }
+                          return GridView.count(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            crossAxisCount: 4,
+                            mainAxisSpacing: 10.h,
+                            crossAxisSpacing: 10.w,
+                            children: categoriesList.map((category) {
+                              return JobCategoryCard(
+                                imageSrc: category['image'] ?? "",
+                                title: category['name'],
+                                onTap: () {
+                                  Get.toNamed(JobSeekerRoutes.categoryDetails, arguments: {
+                                    "categoryId": category["id"],
+                                    "categoryName": category['name'],
+                                  });
+                                },
+                                isJobCountVisible: false,
+                              );
+                            }).toList(),
+                          );
+                        }),
+                      ),
+                    ),
+
+                    SliverToBoxAdapter(child: 24.height),
+
+                    // Recommended Job Header
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        child: SectionHeader(
+                          title: 'Recommended Job',
+                          onSeeAllTap: () => JobSeekerRoutes.goToAllRecommendedJob(),
+                        ),
+                      ),
+                    ),
+
+                    SliverToBoxAdapter(child: 16.height),
+
+                    // Auto Apply Toggle
+                    SliverToBoxAdapter(
+                      child: Obx(() => AutoApply(
+                        isEnabled: controller.autoApplHere.value,
+                        onToggle: (value) => controller.toggleAutoApply(value),
+                      )),
+                    ),
+
+                    // Recommended Job List - ✅ FIXED: Now uses Obx properly with RxList
+                    SliverToBoxAdapter(
+                      child: Obx(() {
+                        // Check loading state and empty list
+                        if (controller.isLoadingJobs.value && controller.jobPost.isEmpty) {
+                          return SizedBox(
                             height: 200.h,
-                            alignment: Alignment.center,
-                            child: const CircularProgressIndicator(),
+                            child: const Center(child: CircularProgressIndicator()),
                           );
                         }
 
-                        // Check if data is empty or null
-                        if (controller.jobPost == null || controller.jobPost!.isEmpty) {
-                          return Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 50.h),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.work_off_outlined,
-                                  size: 64.sp,
-                                  color: AppColors.secondaryText,
-                                ),
-                                16.height,
-                                Text(
-                                  'No jobs available',
-                                  style: TextStyle(
-                                    color: AppColors.secondaryText,
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                8.height,
-                                Text(
-                                  'Check back later for new opportunities',
-                                  style: TextStyle(
-                                    color: AppColors.secondaryText,
-                                    fontSize: 12.sp,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
+                        // Check if list is empty after loading
+                        if (controller.jobPost.isEmpty) {
+                          return _buildEmptyState();
                         }
 
                         // Display job list
@@ -230,110 +195,85 @@ class JobSeekerHomeScreen extends StatelessWidget {
                           child: ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount: controller.jobPost!.length,
+                            itemCount: controller.jobPost.length,
                             itemBuilder: (context, index) {
-                              final jobPost = controller.jobPost![index];
+                              final jobPost = controller.jobPost[index];
 
-                              // --- 1. Pass data safely using null-coalescing (??) ---
-
-                              // Calculate salary range safely (use 0 as fallback for null min/max)
-                              final minSalary = jobPost.minSalary ?? 0;
-                              final maxSalary = jobPost.maxSalary ?? 0;
-                              final salaryRange = '\$$minSalary - \$$maxSalary/month';
-
-                              // Get location safely
-                              final location = jobPost.location ?? 'Location not specified';
-                              final favourite=jobPost.isFavourite;
-
-                              // Get job and recruiter titles safely
-                              final jobTitle = jobPost.title ?? 'No Title Specified';
-                              // Assuming recruiter contains the name of the company/recruiter
-                              final companyName = jobPost.recruiter ?? 'Company N/A';
-
-                              // Format deadline date
-                              String timePosted = '01 Dec 25'; // Default fallback date
-                              if (jobPost.deadline != null) {
-                                try {
-                                  final deadline = jobPost.deadline!;
-                                  timePosted = '${deadline.day.toString().padLeft(2, '0')} ${_getMonthName(deadline.month)} ${deadline.year.toString().substring(2)}';
-                                } catch (e) {
-                                  print("Error formatting date: $e");
-                                }
-                              }
-
-                              // Determine job properties safely
+                              // Formatting logic
+                              final salaryRange = '\$${jobPost.minSalary ?? 0} - \$${jobPost.maxSalary ?? 0}/month';
                               final jobType = jobPost.jobType?.toUpperCase();
-                              final isFullTime = jobType == 'FULL_TIME';
-                              final isFavoutie = jobPost.isFavourite;
-                              final isRemote = jobType == 'REMOTE';
 
-                              final thumbnail = jobPost.thumbnail ?? '';
-                              String companyLogo;
-
-                              if (thumbnail.isEmpty) {
-                                companyLogo = 'assets/images/noImage.png'; // Fallback for empty
-                              } else if (thumbnail.startsWith('http')) {
-                                companyLogo = thumbnail; // Use direct URL
-                              } else {
-                                companyLogo = ApiEndPoint.imageUrl + thumbnail; // Prepend base URL for local paths
-                              }
-
+                              String companyLogo = jobPost.thumbnail?.isEmpty ?? true
+                                  ? 'assets/images/noImage.png'
+                                  : (jobPost.thumbnail!.startsWith('http')
+                                  ? jobPost.thumbnail!
+                                  : ApiEndPoint.imageUrl + jobPost.thumbnail!);
 
                               return Padding(
                                 padding: EdgeInsets.only(bottom: 16.h),
                                 child: JobCard(
-                                  companyName: companyName, // Safely passed
-                                  location: location,       // Safely passed
-                                  jobTitle: jobTitle,       // Safely passed
-                                  salaryRange: salaryRange, // Safely passed
-                                  timePosted: timePosted,   // Safely passed
-                                  isFullTime: isFullTime,   // Safely passed (bool)
-                                  companyLogo: companyLogo, // Safely passed
-                                  showFavoriteButton: true,
-                                  isSaved: false, // Must be determined by API data, using false as default
-                                  isRemote: isRemote,       // Safely passed (bool)
-                                  isFavorite: isFavoutie,
+                                  companyName: jobPost.recruiter ?? 'Company N/A',
+                                  location: jobPost.location ?? 'Remote',
+                                  jobTitle: jobPost.title ?? 'No Title',
+                                  salaryRange: salaryRange,
+                                  timePosted: jobPost.deadline != null
+                                      ? '${jobPost.deadline!.day} ${_getMonthName(jobPost.deadline!.month)}'
+                                      : 'N/A',
+                                  isFullTime: jobType == 'FULL_TIME',
+                                  companyLogo: companyLogo,
+                                  isFavorite: jobPost.isFavourite ?? false,
+                                  isRemote: jobType == 'REMOTE',
                                   onTap: () {
-                                    // Check if ID is available before navigating
-                                    if (jobPost.id != null && jobPost.id!.isNotEmpty) {
-                                      print("Job tapped: ${jobPost.id}");
-                                      Get.toNamed(JobSeekerRoutes.jobDetails,arguments: jobPost.id);
+                                    if (jobPost.id != null) {
+                                      Get.toNamed(JobSeekerRoutes.jobDetails, arguments: jobPost.id);
                                     }
                                   },
                                   onFavoriteTap: () {
-                                    // Check if ID is available before toggling favorite
-                                    final jobId = jobPost.id;
-                                    if (jobId != null && jobId.isNotEmpty) {
-                                      controller.toggleFavorite(jobId);
-                                    }
+                                    if (jobPost.id != null) controller.toggleFavorite(jobPost.id!);
                                   },
                                 ),
                               );
                             },
                           ),
                         );
-                      },
+                      }),
                     ),
-                  ),
 
-                  SliverToBoxAdapter(child: 20.height),
-                ],
+                    SliverToBoxAdapter(child: 20.height),
+                  ],
+                ),
               ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        child: const CommonBottomNavBar(currentIndex: 0),
+      bottomNavigationBar: const SafeArea(child: CommonBottomNavBar(currentIndex: 0)),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 50.h),
+      child: Column(
+        children: [
+          Icon(Icons.work_off_outlined, size: 64.sp, color: Colors.grey),
+          16.height,
+          Text(
+            'No jobs available',
+            style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+          ),
+          8.height,
+          Text(
+            'Pull down to refresh',
+            style: TextStyle(fontSize: 12.sp, color: Colors.grey),
+          ),
+        ],
       ),
     );
   }
 
   String _getMonthName(int month) {
-    const months = [
-      '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
+    const months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return month >= 1 && month <= 12 ? months[month] : 'Jan';
   }
 }

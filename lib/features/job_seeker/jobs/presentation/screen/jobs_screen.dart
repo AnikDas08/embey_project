@@ -45,7 +45,22 @@ class JobsScreen extends StatelessWidget {
           ),
 
           // Auto Apply Widget
-          AutoApply(),
+          /*SliverToBoxAdapter(
+            child: Obx(() => AutoApply(
+              isEnabled: controller.autoApplHere.value,
+              onToggle: (newValue) {
+                // Call the method in your controller
+                controller.toggleAutoApply(newValue);
+              },
+            )),
+          ),*/
+
+          Obx(
+          () =>   AutoApply(
+                  isEnabled: controller.autoApplHere.value,
+                  onToggle: (newValue){
+                    controller.toggleAutoApply(newValue);
+                  })),
 
           // Job List - Scrollable
           Expanded(

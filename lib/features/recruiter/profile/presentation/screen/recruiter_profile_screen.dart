@@ -13,6 +13,7 @@ import '../../../../../core/component/bottom_nav_bar/common_bottom_bar.dart';
 import '../../../../../core/component/image/common_image.dart';
 import '../../../../../core/component/other_widgets/item.dart';
 import '../../../../../core/component/text/common_text.dart';
+import '../../../../../core/config/api/api_end_point.dart';
 import '../../../../../core/utils/constants/app_images.dart';
 import '../../../../../core/utils/constants/app_string.dart';
 import '../../../../job_seeker/profile/presentation/controller/profile_controller.dart';
@@ -49,7 +50,7 @@ class RecruiterProfileScreen extends StatelessWidget {
                       child: ClipOval(
                         child: Obx(
                           ()=>Image.network(
-                            controller.profileImages.value,
+                            ApiEndPoint.imageUrl+controller.profileImages.value,
                             height: 100,
                             width: 100,
                             fit: BoxFit.cover,

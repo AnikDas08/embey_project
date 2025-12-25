@@ -1,77 +1,81 @@
-class Sender {
-  final String id;
-  final String fullName;
-  final String image;
-
-  Sender({
-    required this.id,
-    required this.fullName,
-    required this.image,
-  });
-
-  factory Sender.fromJson(Map<String, dynamic> json) {
-    return Sender(
-      id: json['_id']  ?? '',
-      fullName: json['fullName']  ?? '',
-      image: json['image']  ?? '',
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      '_id': id,
-      'fullName': fullName,
-      'image': image,
-    };
-  }
-}
-
 class MessageModel {
-  final String id;
-  final String chat;
-  final String message;
-  final String type;
-  final Sender sender;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final int version;
+  String id;
+  String chatId;
+  String sender;
+  String text;
+  List<String> image;
+  List<String> seenBy;
+  List<String> docs;
+  String type; // 'text', 'image', 'doc', 'zoom-link'
+  DateTime createdAt;
+  DateTime updatedAt;
+  bool seen;
+  String? senderImage;
+  String? senderName;
 
   MessageModel({
     required this.id,
-    required this.chat,
-    required this.message,
-    required this.type,
+    required this.chatId,
     required this.sender,
+    required this.text,
+    required this.image,
+    required this.seenBy,
+    required this.docs,
+    required this.type,
     required this.createdAt,
     required this.updatedAt,
-    required this.version,
+    required this.seen,
+    this.senderImage,
+    this.senderName,
   });
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
     return MessageModel(
       id: json['_id'] ?? '',
-      chat: json['chat'] ?? '',
-      message: json['message'] ?? '',
-      type: json['type'] as String? ?? 'general',
-      sender: Sender.fromJson(json['sender'] ?? {}),
-      createdAt:
-          DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
-      updatedAt:
-          DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
-      version: json['__v'] ?? 0,
+      chatId: json['chatId'] ?? '',
+      sender: json['sender'] is String
+          ? json['sender']
+          : (json['sender']?['_id'] ?? ''),
+      text: json['text'] ?? '',
+      image: json['image'] != null
+          ? List<String>.from(json['image'])
+          : [],
+      seenBy: json['seenBy'] != null
+          ? List<String>.from(json['seenBy'])
+          : [],
+      docs: json['docs'] != null
+          ? List<String>.from(json['docs'])
+          : [],
+      type: json['type'] ?? 'text',
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : DateTime.now(),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'])
+          : DateTime.now(),
+      seen: json['seen'] ?? false,
+      senderImage: json['sender'] is Map
+          ? json['sender']['image']
+          : null,
+      senderName: json['sender'] is Map
+          ? json['sender']['name']
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       '_id': id,
-      'chat': chat,
-      'message': message,
+      'chatId': chatId,
+      'sender': sender,
+      'text': text,
+      'image': image,
+      'seenBy': seenBy,
+      'docs': docs,
       'type': type,
-      'sender': sender.toJson(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
-      '__v': version,
+      'seen': seen,
     };
   }
 }

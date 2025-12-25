@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../../../core/component/other_widgets/common_loader.dart';
 import '../../../../../core/component/other_widgets/no_data.dart';
 import '../../../../../core/component/text/common_text.dart';
+import '../../../../recruiter/notifications/data/model/notification_model.dart';
 import '../controller/notifications_controller.dart';
 import '../../data/model/notification_model.dart';
 import '../widgets/notification_item.dart';
@@ -23,7 +24,10 @@ class JobSeekerNotificationScreen extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppColors.black),
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            color: AppColors.black,
+          ),
           onPressed: () => Get.back(),
         ),
         title: CommonText(
@@ -38,36 +42,36 @@ class JobSeekerNotificationScreen extends StatelessWidget {
       body: GetBuilder<NotificationsController>(
         builder: (controller) {
           return controller.isLoading
-              /// Loading bar here
+          /// Loading bar here
               ? const CommonLoader()
               : controller.notifications.isEmpty
-              ///  data is Empty then show default Data
+          ///  data is Empty then show default Data
               ? const NoData()
-              /// show all Notifications here
+          /// show all Notifications here
               : ListView.builder(
-                  controller: controller.scrollController,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 20.w,
-                    vertical: 16.h,
-                  ),
-                  itemCount: controller.isLoadingMore
-                      ? controller.notifications.length + 1
-                      : controller.notifications.length,
-                  physics: const BouncingScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    ///  Notification More Data Loading Bar
-                    if (index >= controller.notifications.length) {
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        child: CommonLoader(size: 40, strokeWidth: 2),
-                      );
-                    }
-                    NotificationModel item = controller.notifications[index];
-
-                    ///  Notification card item
-                    return NotificationItem(item: item);
-                  },
+            controller: controller.scrollController,
+            padding: EdgeInsets.symmetric(
+              horizontal: 20.w,
+              vertical: 16.h,
+            ),
+            itemCount: controller.isLoadingMore
+                ? controller.notifications.length + 1
+                : controller.notifications.length,
+            physics: const BouncingScrollPhysics(),
+            itemBuilder: (context, index) {
+              ///  Notification More Data Loading Bar
+              if (index >= controller.notifications.length) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: CommonLoader(size: 40, strokeWidth: 2),
                 );
+              }
+              NotificationModel item = controller.notifications[index];
+
+              ///  Notification card item
+              return NotificationItem(item: item);
+            },
+          );
         },
       ),
     );

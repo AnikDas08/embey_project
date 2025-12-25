@@ -11,6 +11,7 @@ import 'package:intl/intl.dart';
 import '../../../../../core/config/api/api_end_point.dart';
 import '../../../../../core/services/api/api_service.dart';
 import '../../../../../core/utils/constants/app_colors.dart';
+import '../screen/webview_screen.dart';
 
 class AddCareerSpotlightController extends GetxController {
   final ImagePicker _picker = ImagePicker();
@@ -411,20 +412,22 @@ class AddCareerSpotlightController extends GetxController {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        SuccessDialog.show(message: "Your payment was successful. Please wait for admin approval before your",buttonText: "Done",);
-        Get.snackbar(
-          'Success',
-          response.data['message'] ?? 'Career spotlight created successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
+        String stripeUrl = response.data['data'] ?? "";
 
-        // Clear form
-        clearForm();
+        if (stripeUrl.isNotEmpty) {
+          // 2. Navigate to your WebView screen and WAIT for the result
+          // Pass the URL via arguments
+          final paymentResult = await Get.to(()=>PaymentWebViewScreen(),arguments: stripeUrl);
 
-        // Navigate back with success result
-        Get.back(result: true);
+          // 3. Only show the success dialog if the WebView returns 'true'
+          if (paymentResult == true) {
+            SuccessDialog.show(
+              message: "Your payment was successful. Please wait for admin approval.",
+              buttonText: "Done",
+            );
+            clearForm();
+          }
+        }
       } else {
         Get.snackbar(
           'Error',

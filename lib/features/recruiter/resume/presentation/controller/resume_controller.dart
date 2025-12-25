@@ -1,5 +1,6 @@
 import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:embeyi/core/utils/app_utils.dart';
+import 'package:embeyi/features/recruiter/message/presentation/screen/recruiter_chat_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
@@ -7,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 
+import '../../../../../core/config/route/recruiter_routes.dart';
 import '../../../../../core/services/api/api_service.dart';
 
 class RecruiterResumeController extends GetxController {
@@ -17,6 +19,7 @@ class RecruiterResumeController extends GetxController {
   final RxString applicationStatus = ''.obs;
   final RxBool isDownloading = false.obs;
   final RxDouble downloadProgress = 0.0.obs;
+  String candidateId="";
 
   // Button visibility flags
   final RxBool showShortlistButton = false.obs;
@@ -60,6 +63,8 @@ class RecruiterResumeController extends GetxController {
       if (response.statusCode == 200) {
         final data = response.data["data"];
 
+        candidateId=data["user"]["_id"];
+        print("ksdjfkldjfksdl 🤣🤣🤣🤣$candidateId");
         // Get resume
         final resume = data["resume"];
         print("resume: $resume");
@@ -290,6 +295,27 @@ class RecruiterResumeController extends GetxController {
     } finally {
       isDownloading.value = false;
       downloadProgress.value = 0.0;
+    }
+  }
+
+  Future<void> goToChat() async {
+    if (applicationId.value.isEmpty) {
+      Utils.errorSnackBar("Error", "Candidate information not found");
+      return;
+    }
+
+    try {
+      // Show a small loading overlay if needed
+      final response = await ApiService.post(
+        'chat/${candidateId}', // POST chat/candidateID
+        body: {},
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        Get.to(()=>RecruiterChatListScreen());
+      }
+    } catch (e) {
+      Utils.errorSnackBar("Error", "Could not initiate chat");
     }
   }
 }

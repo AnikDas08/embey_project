@@ -60,7 +60,7 @@ class SuccessDialog {
                 fontWeight: FontWeight.w400,
                 color: AppColors.secondaryText,
                 textAlign: TextAlign.center,
-                maxLines: 2,
+                maxLines: 4,
               ),
               SizedBox(height: 32.h),
 

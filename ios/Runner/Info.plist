@@ -17,6 +17,11 @@
     <key>LSSupportsOpeningDocumentsInPlace</key>
     <true/>
 	<key>CFBundleName</key>
+	<key>LSApplicationQueriesSchemes</key>
+    <array>
+      <string>https</string>
+      <string>http</string>
+    </array>
 	<string>embeyi</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>

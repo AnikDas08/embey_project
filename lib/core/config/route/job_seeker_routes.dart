@@ -71,12 +71,8 @@ class JobSeekerRoutes {
   // Job Seeker Routes List
   static List<GetPage> routes = [
     GetPage(name: home, page: () => JobSeekerHomeScreen()),
-    GetPage(
-      name: notifications,
-      page: () => const JobSeekerNotificationScreen(),
-    ),
     GetPage(name: chat, page: () => const JobSeekerChatListScreen()),
-    GetPage(name: message, page: () => const MessageScreen()),
+    GetPage(name: message, page: () => const JobSeekerMessageScreen()),
     GetPage(name: profile, page: () => const JobSeekerProfileScreen()),
     GetPage(name: editProfile, page: () => JobSeekerEditProfile()),
     GetPage(

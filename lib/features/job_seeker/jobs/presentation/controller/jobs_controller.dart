@@ -30,12 +30,14 @@ class JobController extends GetxController {
   RxList<String> selectedJobTypes = <String>[].obs; // FULL_TIME, PART_TIME, etc.
   RxList<String> selectedJobLevels = <String>[].obs; // ENTRY_LEVEL, MID_LEVEL, etc.
   RxString selectedExperienceLevel = ''.obs; // 0-1yrs, 1-3yrs, etc.
+  RxBool autoApplHere=false.obs;
 
   @override
   void onInit() {
     super.onInit();
     getCategories(); // ✅ Fetch categories first
     getPost();
+    getProfile();
   }
 
   @override
@@ -119,6 +121,28 @@ class JobController extends GetxController {
     return params.isEmpty ? '' : '?${params.join('&')}';
   }
 
+
+  Future<void> getProfile() async {
+    update();
+    try {
+      final response = await ApiService.get(
+          ApiEndPoint.user,
+          header: {"Authorization": "Bearer ${LocalStorage.token}"}
+      );
+      if (response.statusCode == 200) {
+        final profileModel = ProfileModel.fromJson(response.data);
+        profileData = profileModel.data;
+        autoApplHere.value=response.data["data"]["isAutoApply"] ?? false;
+        print("imageurl 😂😂😂😂: ${image.value}");
+      } else {
+        Utils.errorSnackBar(response.statusCode, response.message);
+      }
+    } catch (e) {
+      Utils.errorSnackBar(0, e.toString());
+    }
+    update();
+  }
+
   // --- Get Posts ---
   Future<void> getPost() async {
     isLoadingJobs.value = true;
@@ -175,6 +199,28 @@ class JobController extends GetxController {
       isLoadingJobs.value = false;
       update();
       print("============ END JOB POST RESPONSE ============");
+    }
+  }
+
+  Future<void> toggleAutoApply(bool value) async {
+    // Optimistic update
+    autoApplHere.value = value;
+
+    try {
+      // Replace with your actual API endpoint for auto-apply
+      final response = await ApiService.post(
+          "user/auto-apply", // Example endpoint
+          header: {"Authorization": "Bearer ${LocalStorage.token}"}
+      );
+
+      if (response.statusCode == 200) {
+        Get.snackbar("Success", "Auto Apply ${value ? 'Enabled' : 'Disabled'}");
+      } else {
+        Get.snackbar("Error", "Auto Apply ${value ? 'Enabled' : 'Disabled'}");
+      }
+    } catch (e) {
+      //autoApplHere.value = !value;
+      Utils.errorSnackBar(0, e.toString());
     }
   }
 

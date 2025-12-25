@@ -16,12 +16,14 @@ class RecruiterHomeController extends GetxController {
   final RxString companyAddress = ''.obs;
   final RxBool isLoadingJobs = false.obs;
   final RxBool isLoadingProfile = false.obs;
+  final RxBool notificationCount = false.obs;
 
   @override
   void onInit() {
     super.onInit();
     getProfile();
     getJobs();
+    readNotification();
   }
 
   Future<void> getProfile() async {
@@ -48,6 +50,30 @@ class RecruiterHomeController extends GetxController {
     }
     isLoadingProfile.value = false;
     update();
+  }
+
+  Future<void> readNotification()async{
+    try{
+      final response = await ApiService.get(
+          "notification",
+          header: {
+            "Content-Type": "application/json",
+          }
+      );
+      if(response.statusCode==200){
+        final data = response.data['data'];
+        final count=data["unreadCount"];
+        if(count!=0){
+          notificationCount.value=true;
+        }
+        else{
+          notificationCount.value=false;
+        }
+      }
+    }
+    catch(e){
+
+    }
   }
 
   Future<void> getJobs() async {

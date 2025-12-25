@@ -279,14 +279,7 @@ class ResumeScreen extends StatelessWidget {
                 CommonButton(
                   titleText: 'Message',
                   onTap: () {
-                    Get.toNamed(
-                      RecruiterRoutes.message,
-                      arguments: {
-                        'chatId': '1234567890',
-                        'name': 'John Doe',
-                        'image': AppImages.profile,
-                      },
-                    );
+                    controller.goToChat();
                   },
                   buttonColor: AppColors.transparent,
                   titleColor: AppColors.primary,

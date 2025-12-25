@@ -79,7 +79,7 @@ class NotificationResponse {
     this.data,
   });
 
-  factory NotificationResponse.fromJson(Map<dynamic, dynamic> json) {
+  factory NotificationResponse.fromJson(Map<String, dynamic> json) {
     return NotificationResponse(
       success: json['success'],
       message: json['message'],

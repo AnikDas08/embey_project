@@ -2,6 +2,7 @@ import 'package:embeyi/core/component/image/common_image.dart';
 import 'package:embeyi/core/component/text/common_text.dart';
 import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:embeyi/core/config/route/job_seeker_routes.dart';
+import 'package:embeyi/core/config/route/recruiter_routes.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/core/utils/constants/app_icons.dart';
 import 'package:embeyi/core/utils/extensions/extension.dart';
@@ -10,11 +11,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import '../../../notifications/presentation/screen/job_seeker_notifications_screen.dart';
+
 // Home Header Widget
 class HomeHeader extends StatelessWidget {
   final String profileImage;
   final String userName;
   final String userRole;
+  final bool hasNotification;
   final VoidCallback? onNotificationTap;
   final VoidCallback? onMessageTap;
   final VoidCallback? onProfileTap;
@@ -27,6 +31,7 @@ class HomeHeader extends StatelessWidget {
     this.onNotificationTap,
     this.onMessageTap,
     this.onProfileTap,
+    required this.hasNotification,
   });
 
   @override
@@ -97,15 +102,15 @@ class HomeHeader extends StatelessWidget {
           AppIcons.chat,
           hasNotification: false,
           onTap: () {
-            JobSeekerRoutes.goToChat();
+            RecruiterRoutes.goToChat();
           },
         ),
         8.width,
         _buildActionIcon(
           AppIcons.notification,
-          hasNotification: true,
+          hasNotification: hasNotification,
           onTap: () {
-            JobSeekerRoutes.goToNotifications();
+            Get.to(()=>JobSeekerNotificationScreen());
           },
         ),
       ],

@@ -38,9 +38,9 @@ class ChatModel {
       id: json['_id'] ?? '',
       participant: Participant.fromJson(json['participants'] ?? {}),
       status: json['status'] ?? false,
-      lastMessage: json['lastMessage'] != null
+      lastMessage: (json['lastMessage'] != null && json['lastMessage'] != "")
           ? LastMessage.fromJson(json['lastMessage'])
-          : null,
+          : LastMessage(id: '', sender: '', text: '', createdAt: DateTime.now()),
     );
   }
 }

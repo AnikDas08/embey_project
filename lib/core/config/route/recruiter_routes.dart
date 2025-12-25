@@ -1,5 +1,4 @@
 import 'package:embeyi/features/recruiter/job_post/presentation/screen/edit_job_post_screen.dart';
-import 'package:embeyi/features/recruiter/message/presentation/screen/message_screen.dart';
 import 'package:embeyi/features/recruiter/resume/presentation/screen/resume_screen.dart';
 import 'package:embeyi/features/recruiter/home/presentation/screen/active_job_post_screen.dart';
 import 'package:embeyi/features/recruiter/home/presentation/screen/all_job_post_screen.dart';
@@ -22,6 +21,7 @@ import 'package:get/get.dart';
 
 // Recruiter imports
 import '../../../features/recruiter/home/presentation/recruiter_home_screen.dart';
+import '../../../features/recruiter/message/presentation/screen/message_screen.dart';
 import '../../../features/recruiter/message/presentation/screen/recruiter_chat_screen.dart';
 import '../../../features/recruiter/notifications/presentation/screen/recruiter_notifications_screen.dart';
 import '../../../features/recruiter/profile/presentation/screen/recruiter_profile_screen.dart';
@@ -65,7 +65,7 @@ class RecruiterRoutes {
   static const String shortJobListed = "/short_job_listed_screen.dart";
   static const String interviewJob = "/interview_job_screen.dart";
   static const String resume = "/resume_screen.dart";
-  static const String message = "/message_screen.dart";
+  static const String message = "/message";
   // Recruiter Routes List
   static List<GetPage> routes = [
     GetPage(name: home, page: () => RecruiterHomeScreen()),
