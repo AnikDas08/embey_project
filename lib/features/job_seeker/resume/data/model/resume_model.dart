@@ -51,6 +51,8 @@ class Resume {
   final String id;
   final String resumeName;
   final String user;
+  final bool? is_external_resume;
+  final String? pdf; // Added for PDF URL
   final PersonalInfo personalInfo;
   final List<Education> educations;
   final List<WorkExperience> workExperiences;
@@ -65,6 +67,8 @@ class Resume {
     required this.user,
     required this.personalInfo,
     required this.educations,
+    this.is_external_resume,
+    this.pdf, // Added parameter
     required this.workExperiences,
     required this.skills,
     required this.coreFeatures,
@@ -78,6 +82,8 @@ class Resume {
       resumeName: json['resume_name'] ?? '',
       user: json['user'] ?? '',
       personalInfo: PersonalInfo.fromJson(json['personalInfo'] ?? {}),
+      is_external_resume: json['is_external_resume'],
+      pdf: json['pdf'], // Added parsing
       educations: (json['educations'] as List?)
           ?.map((e) => Education.fromJson(e))
           .toList() ??

@@ -15,6 +15,7 @@ class JobCard extends StatelessWidget {
   final bool isFullTime;
   final String companyLogo;
   final String? totalapply;
+  final String job_board;
   final bool isApplied;
   final bool isSaved;
   final bool showFavoriteButton;
@@ -32,6 +33,7 @@ class JobCard extends StatelessWidget {
     this.timePosted,
     required this.isFullTime,
     required this.companyLogo,
+    this.job_board="",
     this.totalapply,
     this.isApplied = false,
     this.isSaved = false,
@@ -150,6 +152,31 @@ class JobCard extends StatelessWidget {
         fontSize: 13.sp,
         fontWeight: FontWeight.w500,
       ),
+    );
+  }
+  Widget _jobFind() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Text(
+          "Job From: ",
+          style: TextStyle(
+            color: AppColors.black,
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Flexible(
+          child: Text(
+            job_board,
+            style: TextStyle(
+              color: AppColors.secondaryButton,
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ]
     );
   }
 

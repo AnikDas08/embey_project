@@ -182,6 +182,10 @@ class CreateJobPostController extends GetxController {
         Get.back(result: true);
         Get.snackbar('Success', 'Post Re-create successfully', backgroundColor: Colors.green, colorText: Colors.white);
       }
+      else
+        {
+          Get.snackbar("Error", response.message.toString());
+        }
     } catch (e) {
       Get.snackbar('Error', e.toString());
     } finally {

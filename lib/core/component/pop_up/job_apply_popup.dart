@@ -1,12 +1,15 @@
 import 'package:embeyi/core/component/button/common_button.dart';
 import 'package:embeyi/core/component/image/common_image.dart';
+import 'package:embeyi/core/component/pop_up/success_dialog.dart';
 import 'package:embeyi/core/component/text/common_text.dart';
 import 'package:embeyi/core/component/text_field/common_text_field.dart';
 import 'package:embeyi/core/services/api/api_service.dart';
+import 'package:embeyi/core/utils/app_utils.dart';
 import 'package:embeyi/core/utils/constants/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../utils/constants/app_colors.dart';
@@ -273,19 +276,54 @@ class _JobApplyPopupState extends State<JobApplyPopup> {
   }
 
   void _submitApplication() async {
-    final response = await ApiService.post(
-      "application",
-      body: {
-        "post": widget.postId,
-        "title": widget.jobTitle,
-        "year_of_experience": _experienceController.text,
-        "resume": _resumeFilePath,
-        "doc": _coverLetterFilePath,
-      },
-    );
-    if (response.statusCode == 200) {
-      Navigator.pop(context);
-      widget.onApply?.call();
+    // Validation
+    if (_resumeFilePath == null) {
+      Utils.errorSnackBar("Error", "Please upload your resume");
+      return;
+    }
+
+    if (_experienceController.text.isEmpty) {
+      Utils.errorSnackBar("Error", "Please enter years of experience");
+      return;
+    }
+
+    try {
+      // Prepare files list
+      List<Map<String, String>> files = [
+        {
+          'name': 'resume',
+          'image': _resumeFilePath!,
+        },
+      ];
+
+      // Add cover letter if exists
+      if (_coverLetterFilePath != null) {
+        files.add({
+          'name': 'doc',
+          'image': _coverLetterFilePath!,
+        });
+      }
+
+      final response = await ApiService.multipartImage(
+        "application",
+        method: "POST",
+        body: {
+          "post": widget.postId,
+          "title": widget.jobTitle,
+          "year_of_experience": _experienceController.text,
+        },
+        files: files,
+      );
+
+      if (response.statusCode == 200) {
+        Utils.successSnackBar("Success", "Application submitted successfully");
+        Navigator.pop(context);
+        widget.onApply?.call();
+      } else {
+        Utils.errorSnackBar("Error", response.message.toString());
+      }
+    } catch (e) {
+      Utils.errorSnackBar("Error", e.toString());
     }
   }
 

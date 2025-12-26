@@ -152,7 +152,6 @@ class PersonalInfoController extends GetxController {
         "resumeName":resumeNameController.text,
       };
       final updateData={
-        "personalInfo": {
           "full_name": fullNameController.text,
           "email": emailController.text,
           "phone": phoneController.text,
@@ -163,7 +162,6 @@ class PersonalInfoController extends GetxController {
           "open_to_work": openToWorkStatusController.text,
           "summury": summaryController.text,
           "address": addressController.text
-        }
       };
       Get.to(()=>CoreSkillsScreen(),arguments: {
         "resumeId": "".toString(),

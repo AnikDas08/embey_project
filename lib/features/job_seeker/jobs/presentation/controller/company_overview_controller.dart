@@ -1,5 +1,6 @@
 // lib/features/company/controllers/company_overview_controller.dart
 
+import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:embeyi/features/job_seeker/jobs/data/model/company_jobitem_model.dart';
 import 'package:get/get.dart';
 import '../../../../../core/services/api/api_service.dart';
@@ -38,15 +39,17 @@ class CompanyOverviewController extends GetxController {
   }
 
   // Getter methods for easy access
-  String get companyName => companyData.value?.data?.user?.name ?? 'Company Name';
+  String get companyName => companyData.value!.data.user.name ?? 'Company Name';
 
-  String get companyImage => companyData.value?.data?.user?.image ?? '';
+  String get companyImage => companyData.value?.data.user.cover ?? '';
 
-  String get companyLogo => companyData.value?.data?.user?.image ?? '';
+  String get companyLogo => companyData.value?.data.user.image ?? '';
+  String get overviewDescription => companyData.value?.data.user.overview ?? '';
+  String get  aboutDescription=> companyData.value?.data?.user?.aboutUs ?? '';
 
   String get tagline => companyData.value?.data?.user?.role ?? 'Recruiter';
 
-  String get overviewDescription {
+  /*String get overviewDescription {
     final user = companyData.value?.data?.user;
     if (user == null) return '';
 
@@ -56,23 +59,21 @@ class CompanyOverviewController extends GetxController {
         'Verified: ${user.verified == true ? 'Yes' : 'No'}\n\n'
         'Email: ${user.email ?? 'Not provided'}\n'
         'Member since: ${_formatDate(user.createdAt)}';
-  }
+  }*/
 
   List<String> get galleryImages {
     final gallery = companyData.value?.data?.gallery;
     if (gallery == null || gallery.isEmpty) return [];
 
-    // Prepend base URL if needed (adjust based on your API)
-    const baseUrl = 'YOUR_BASE_URL'; // Replace with your actual base URL, e.g., 'https://api.yourapp.com'
 
     return gallery.map((img) {
       if (img.startsWith('http')) return img;
       // Assuming your API returns relative paths like "/image/..."
-      return '$baseUrl$img';
+      return '${ApiEndPoint.imageUrl}$img';
     }).toList();
   }
 
-  String get aboutDescription {
+  /*String get aboutDescription {
     final user = companyData.value?.data?.user;
     if (user == null) return '';
 
@@ -83,13 +84,12 @@ class CompanyOverviewController extends GetxController {
         'Skills: ${user.skills?.isNotEmpty == true ? user.skills!.join(', ') : 'Not specified'}\n'
         'Education: ${user.educations?.length ?? 0} entries\n'
         'Work Experience: ${user.workExperiences?.length ?? 0} entries';
-  }
+  }*/
 
   List<CompanyJobItemdata> get companyJobs {
     final jobs = companyData.value?.data?.recentJobs;
     if (jobs == null || jobs.isEmpty) return [];
 
-    const baseUrl = 'YOUR_BASE_URL'; // Replace with your actual base URL
 
     return jobs.map((job) {
       // Handle thumbnail URL
@@ -98,7 +98,7 @@ class CompanyOverviewController extends GetxController {
         if (job.thumbnail!.startsWith('http')) {
           thumbnailUrl = job.thumbnail;
         } else {
-          thumbnailUrl = '$baseUrl${job.thumbnail}';
+          thumbnailUrl = '${ApiEndPoint.imageUrl}${job.thumbnail}';
         }
       }
 

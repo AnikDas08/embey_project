@@ -1,3 +1,5 @@
+import 'package:get/get.dart';
+
 class RecruiterProfileModel {
   final bool success;
   final String message;

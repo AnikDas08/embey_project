@@ -185,6 +185,7 @@ final List<ProfileItemData> profileItems = [
     imageSrc: AppIcons.history3,
     title: 'Payment History',
     onTap: () {
+      //ProfileController().showPaymentHistoryPopUp();
       ProfileController().showPaymentHistoryPopUp();
     },
   ),

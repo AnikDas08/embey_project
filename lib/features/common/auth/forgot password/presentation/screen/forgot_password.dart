@@ -31,76 +31,76 @@ class ForgotPasswordScreen extends StatelessWidget {
         ),
 
         /// body section
-        body: Column(
-          children: [
-            const CommonText(
-              text: AppString.forgotPassword,
-              fontSize: 30,
-              bottom: 20,
-              color: AppColors.white,
-            ),
-            SingleChildScrollView(
-              child: Container(
-                height: MediaQuery.of(context).size.height - 190.h,
-                padding: EdgeInsets.all(20.w),
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30.r),
-                    topRight: Radius.circular(30.r),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              const CommonText(
+                text: AppString.forgotPassword,
+                fontSize: 30,
+                bottom: 20,
+                color: AppColors.white,
+              ),
+              Container(
+                  height: MediaQuery.of(context).size.height - 190.h,
+                  padding: EdgeInsets.all(20.w),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30.r),
+                      topRight: Radius.circular(30.r),
+                    ),
                   ),
-                ),
-                child: Form(
-                  key: formKey,
-                  child: Column(
-                    children: [
-                      40.height,
-                      Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: CommonImage(imageSrc: AppIcons.forgotPassword),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: const CommonText(
-                          text:
-                              "Enter your registered email to get password reset instructions",
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      children: [
+                        40.height,
+                        Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: CommonImage(imageSrc: AppIcons.forgotPassword),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: const CommonText(
+                            text:
+                                "Enter your registered email to get password reset instructions",
+                            bottom: 8,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            maxLines: 2,
+                          ).center,
+                        ),
+          
+                        /// forget password take email for reset Password
+                        const CommonText(
+                          text: AppString.email,
                           bottom: 8,
+                          top: 10,
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
-                          maxLines: 2,
-                        ).center,
-                      ),
-
-                      /// forget password take email for reset Password
-                      const CommonText(
-                        text: AppString.email,
-                        bottom: 8,
-                        top: 10,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                      ).start,
-                      CommonTextField(
-                        controller: controller.emailController,
-
-                        hintText: AppString.email,
-                        validator: OtherHelper.emailValidator,
-                      ),
-                      20.height,
-                      CommonButton(
-                        titleText: AppString.continues,
-                        isLoading: controller.isLoadingEmail,
-                        onTap: () {
-                          if (formKey.currentState!.validate()) {
-                            controller.forgotPasswordRepo();
-                          }
-                        },
-                      ),
-                    ],
+                        ).start,
+                        CommonTextField(
+                          controller: controller.emailController,
+          
+                          hintText: AppString.email,
+                          validator: OtherHelper.emailValidator,
+                        ),
+                        20.height,
+                        CommonButton(
+                          titleText: AppString.continues,
+                          isLoading: controller.isLoadingEmail,
+                          onTap: () {
+                            if (formKey.currentState!.validate()) {
+                              controller.forgotPasswordRepo();
+                            }
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
 
         /// Bottom Navigation Bar Section

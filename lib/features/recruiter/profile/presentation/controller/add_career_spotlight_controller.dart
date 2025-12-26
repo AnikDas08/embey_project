@@ -49,10 +49,31 @@ class AddCareerSpotlightController extends GetxController {
 
   final focusAreas = [
     'Digital Marketing',
-    'Data Engineering',
-    'Cybersecurity',
     'Software Development',
+    'Mobile App Development',
+    'Web Development',
+    'Data Engineering',
+    'Data Science & Analytics',
+    'Artificial Intelligence & Machine Learning',
+    'Cybersecurity',
+    'Cloud Computing & DevOps',
     'UI/UX Design',
+    'Graphic & Creative Design',
+    'Quality Assurance & Testing',
+    'IT Support & Networking',
+    'Product & Project Management',
+    'Blockchain & Web3''Healthcare & Medical Services',
+    'Clinical Research',
+    'Public Health',
+    'Nursing & Patient Care',
+    'Medical Laboratory & Diagnostics',
+    'Pharmacy & Pharmaceuticals',
+    'Health Informatics',
+    'Medical Imaging & Radiology',
+    'Mental Health & Psychology',
+    'Telemedicine & Digital Health',
+    'Healthcare Administration & Management',
+    'Medical Devices & Biomedical Engineering',
   ];
 
   final modes = [

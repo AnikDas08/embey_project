@@ -1,3 +1,4 @@
+import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:embeyi/core/utils/constants/app_images.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,8 +13,6 @@ import 'package:embeyi/core/utils/extensions/extension.dart';
 
 import '../../data/model/interview_details.dart';
 import '../controller/complete_interview_controller.dart';
-// Import your controller here
-// import 'complete_interview_details_controller.dart';
 
 class CompleteInterviewDetailsScreen extends StatelessWidget {
   const CompleteInterviewDetailsScreen({super.key});
@@ -79,10 +78,16 @@ class CompleteInterviewDetailsScreen extends StatelessWidget {
                 16.height,
                 _buildInterviewerCard(controller, data),
                 16.height,
+                if (data.feedback != null && data.feedback!.isNotEmpty)
+                  _buildFeedbackSection(controller, data),
+                if (data.feedback != null && data.feedback!.isNotEmpty)
+                  16.height,
+                _buildHiringStatusSection(controller, data),
+                16.height,
                 _buildTimelineSection(controller, data),
                 16.height,
                 _buildResumeSection(controller, data),
-                16.height,
+                24.height,
                 _buildMessageButton(controller),
               ],
             ),
@@ -226,7 +231,7 @@ class CompleteInterviewDetailsScreen extends StatelessWidget {
             child: ClipOval(
               child: data.user.image.isNotEmpty
                   ? Image.network(
-                '${controller.baseUrl}${data.user.image}',
+                ApiEndPoint.imageUrl + "${data.user.image}",
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return CommonImage(
@@ -282,6 +287,118 @@ class CompleteInterviewDetailsScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildFeedbackSection(
+      CompleteInterviewDetailsController controller, ApplicationData data) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: ShapeDecoration(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        shadows: [
+          BoxShadow(
+            color: Color(0x19000000),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CommonText(
+            text: 'Feedback',
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w600,
+            color: AppColors.black,
+            textAlign: TextAlign.left,
+          ),
+          8.height,
+          CommonText(
+            text: data.feedback ?? '',
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w400,
+            color: AppColors.secondaryText,
+            textAlign: TextAlign.left,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHiringStatusSection(
+      CompleteInterviewDetailsController controller, ApplicationData data) {
+    final status = data.hiringStatus ?? '';
+    Color statusColor;
+    String statusLabel;
+
+    switch (status.toLowerCase()) {
+      case 'hired':
+        statusColor = Colors.green;
+        statusLabel = 'Hired';
+        break;
+      case 'rejected':
+        statusColor = Colors.red;
+        statusLabel = 'Rejected';
+        break;
+      case 'shortlisted':
+        statusColor = Colors.blue;
+        statusLabel = 'Shortlisted';
+        break;
+      case 'on hold':
+        statusColor = Colors.orange;
+        statusLabel = 'On Hold';
+        break;
+      default:
+        statusColor = AppColors.secondaryText;
+        statusLabel = status;
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: ShapeDecoration(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        shadows: [
+          BoxShadow(
+            color: Color(0x19000000),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          CommonText(
+            text: 'Hiring Status: ',
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w600,
+            color: AppColors.black,
+            textAlign: TextAlign.left,
+          ),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+            decoration: BoxDecoration(
+              color: statusColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: statusColor),
+            ),
+            child: CommonText(
+              text: statusLabel,
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              color: statusColor,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTimelineSection(
       CompleteInterviewDetailsController controller, ApplicationData data) {
     return Container(
@@ -304,7 +421,7 @@ class CompleteInterviewDetailsScreen extends StatelessWidget {
         children: [
           CommonText(
             text: 'Timeline',
-            fontSize: 16,
+            fontSize: 16.sp,
             fontWeight: FontWeight.w700,
             color: AppColors.black,
             textAlign: TextAlign.left,
@@ -313,6 +430,8 @@ class CompleteInterviewDetailsScreen extends StatelessWidget {
           ...data.history.asMap().entries.map((entry) {
             final index = entry.key;
             final history = entry.value;
+            final isLast = index == data.history.length - 1;
+
             return Column(
               children: [
                 if (index > 0) 16.height,
@@ -321,7 +440,7 @@ class CompleteInterviewDetailsScreen extends StatelessWidget {
                   title: history.title,
                   date: controller.getFormattedDate(history.date),
                   description: history.description,
-                  isRejected: history.title.toLowerCase() == 'rejected',
+                  isLast: isLast,
                 ),
               ],
             );
@@ -336,29 +455,70 @@ class CompleteInterviewDetailsScreen extends StatelessWidget {
     required String title,
     required String date,
     required String description,
-    required bool isRejected,
+    required bool isLast,
   }) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 10.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CommonText(
-            text: title,
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-            color: AppColors.black,
-            textAlign: TextAlign.left,
+    // Determine color based on title
+    Color statusColor = AppColors.primaryColor;
+    if (title.toLowerCase() == 'rejected') {
+      statusColor = Colors.red;
+    } else if (title.toLowerCase() == 'hired' || title.toLowerCase() == 'shortlisted') {
+      statusColor = Colors.green;
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          children: [
+            Container(
+              width: 12.w,
+              height: 12.h,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: statusColor,
+              ),
+            ),
+            if (!isLast)
+              Container(
+                width: 2.w,
+                height: 40.h,
+                color: AppColors.borderColor,
+              ),
+          ],
+        ),
+        12.width,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CommonText(
+                text: title,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w600,
+                color: AppColors.black,
+                textAlign: TextAlign.left,
+              ),
+              4.height,
+              CommonText(
+                text: date,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w400,
+                color: AppColors.secondaryText,
+              ),
+              if (description.isNotEmpty) ...[
+                4.height,
+                CommonText(
+                  text: description,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.secondaryText,
+                  textAlign: TextAlign.left,
+                ),
+              ],
+            ],
           ),
-          4.height,
-          CommonText(
-            text: date,
-            fontSize: 12.sp,
-            fontWeight: FontWeight.w400,
-            color: isRejected ? AppColors.red : AppColors.secondaryText,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

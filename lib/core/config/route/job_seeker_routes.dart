@@ -119,7 +119,7 @@ class JobSeekerRoutes {
     ),
     GetPage(
       name: allRecommendedJob,
-      page: () => const AllRecommendedJobScreen(),
+      page: () => AllRecommendedJobScreen(),
     ),
     GetPage(name: allJobCategory, page: () => const AllJobCategoryScreen()),
     GetPage(name: categoryDetails, page: () => CategoryDetails()),

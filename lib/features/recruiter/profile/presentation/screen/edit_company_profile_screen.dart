@@ -280,29 +280,31 @@ class EditCompanyProfileScreen extends StatelessWidget {
         ),
 
         // Company Logo
+        // Company Logo
         Positioned(
           left: 0,
           right: 0,
           bottom: -40.h,
           child: Center(
-            child: Obx(() {
-              final logoPath = controller.companyLogoPath.value;
-              final isUrl = logoPath.startsWith('http');
-
-              return Stack(
+            child: GestureDetector(
+              // Wrap the WHOLE logo area in ONE detector
+              onTap: controller.pickCompanyLogo,
+              behavior: HitTestBehavior.opaque, // Ensures the whole area is tappable
+              child: Stack(
+                alignment: Alignment.center,
                 children: [
-                  GestureDetector(
-                    onTap: controller.pickCompanyLogo,
-                    child: Container(
+                  // Logo Image
+                  Obx(() {
+                    final logoPath = controller.companyLogoPath.value;
+                    final isUrl = logoPath.startsWith('http');
+
+                    return Container(
                       width: 80.w,
                       height: 80.w,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: AppColors.white,
-                        border: Border.all(
-                          color: AppColors.white,
-                          width: 3.w,
-                        ),
+                        border: Border.all(color: AppColors.white, width: 3.w),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.1),
@@ -333,35 +335,34 @@ class EditCompanyProfileScreen extends StatelessWidget {
                           height: 80.w,
                         ),
                       ),
-                    ),
-                  ),
+                    );
+                  }),
+
+                  // Camera Icon (Purely Visual now)
                   Positioned(
                     bottom: 0,
                     right: 0,
-                    child: GestureDetector(
-                      onTap: controller.pickCompanyLogo,
-                      child: Container(
-                        width: 24.w,
-                        height: 24.w,
-                        decoration: BoxDecoration(
-                          color: AppColors.white,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppColors.primaryColor,
-                            width: 1.5.w,
-                          ),
-                        ),
-                        child: Icon(
-                          Icons.camera_alt,
-                          size: 16.sp,
+                    child: Container(
+                      width: 24.w,
+                      height: 24.w,
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        shape: BoxShape.circle,
+                        border: Border.all(
                           color: AppColors.primaryColor,
+                          width: 1.5.w,
                         ),
+                      ),
+                      child: Icon(
+                        Icons.camera_alt,
+                        size: 14.sp,
+                        color: AppColors.primaryColor,
                       ),
                     ),
                   ),
                 ],
-              );
-            }),
+              ),
+            ),
           ),
         ),
       ],

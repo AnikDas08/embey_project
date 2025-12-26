@@ -59,7 +59,7 @@ class ChatBubbleMessage extends StatelessWidget {
               isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
                 /// Show name for received messages
-                if (!isMe)
+                /*if (!isMe)
                   Padding(
                     padding: EdgeInsets.only(left: 4.w, bottom: 4.h),
                     child: CommonText(
@@ -69,7 +69,7 @@ class ChatBubbleMessage extends StatelessWidget {
                       color: AppColors.black,
                       textAlign: TextAlign.left,
                     ),
-                  ),
+                  ),*/
 
                 /// Message content based on type
                 _buildMessageContent(context),

@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../data/model/application_details_models.dart';
 import '../controller/application_details_controller.dart';
 import '../widgets/history_widgets.dart';
@@ -148,43 +149,56 @@ class AppliedDetails extends StatelessWidget {
                     ),
                   ),
 
-                  24.height,
-
-                  // Rejection Reason Section (if rejected)
-                  if (controller.isRejected && detail.rejectionReason != null)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CommonText(
-                          text: 'Rejection Reason',
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.red,
-                        ),
-                        8.height,
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: ShapeDecoration(
-                            color: const Color(0xFFFEEEEE),
-                            shape: RoundedRectangleBorder(
-                              side: const BorderSide(
-                                width: 1,
-                                color: Color(0xFFFF5900),
-                              ),
-                              borderRadius: BorderRadius.circular(8),
+                  // Rejection Reason Section (if rejected) - Now under attachments
+                  if (controller.isRejected)
+                    Padding(
+                      padding: EdgeInsets.only(top: 24.h),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: ShapeDecoration(
+                          color: const Color(0xFFFEEEEE),
+                          shape: RoundedRectangleBorder(
+                            side: const BorderSide(
+                              width: 1,
+                              color: Color(0xFFFF5900),
                             ),
-                          ),
-                          child: CommonText(
-                            text: detail.rejectionReason!,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: AppColors.black,
-                            maxLines: 100,
-                            textAlign: TextAlign.justify,
+                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                      ],
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.info_outline,
+                                  color: AppColors.red,
+                                  size: 20.sp,
+                                ),
+                                8.width,
+                                CommonText(
+                                  text: 'Rejection Reason',
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.red,
+                                ),
+                              ],
+                            ),
+                            12.height,
+                            CommonText(
+                              text: detail.rejectionReason??"No Reject Reason",
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.black,
+                              maxLines: 100,
+                              textAlign: TextAlign.justify,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
+
+                  24.height,
                 ],
               ),
             ),
@@ -220,6 +234,36 @@ class AppliedDetails extends StatelessWidget {
     );
   }
 
+  // Updated method to handle PDF opening
+  Future<void> _openDocument(String fileUrl, String fileName) async {
+    try {
+      final Uri url = Uri.parse(fileUrl);
+
+      if (await canLaunchUrl(url)) {
+        await launchUrl(
+          url,
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        Get.snackbar(
+          'Error',
+          'Could not open $fileName',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withOpacity(0.1),
+          colorText: Colors.red,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to open document: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.1),
+        colorText: Colors.red,
+      );
+    }
+  }
+
   Widget _buildAttachments(
       AppliedDetailsController controller,
       String resume,
@@ -236,11 +280,9 @@ class AppliedDetails extends StatelessWidget {
           fileSize: '---',
           fileUrl: controller.getDocumentUrl(resume),
           onTap: () {
-            // Handle file open - you can implement file viewer here
-            Get.snackbar(
-              'Info',
-              'Opening ${controller.getFileName(resume)}',
-              snackPosition: SnackPosition.BOTTOM,
+            _openDocument(
+              controller.getDocumentUrl(resume),
+              controller.getFileName(resume),
             );
           },
         ),
@@ -257,11 +299,9 @@ class AppliedDetails extends StatelessWidget {
             fileSize: '---',
             fileUrl: controller.getDocumentUrl(doc),
             onTap: () {
-              // Handle file open
-              Get.snackbar(
-                'Info',
-                'Opening ${controller.getFileName(doc)}',
-                snackPosition: SnackPosition.BOTTOM,
+              _openDocument(
+                controller.getDocumentUrl(doc),
+                controller.getFileName(doc),
               );
             },
           ),

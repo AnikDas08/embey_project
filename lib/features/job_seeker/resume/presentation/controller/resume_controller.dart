@@ -4,6 +4,8 @@ import 'package:embeyi/core/services/storage/storage_services.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:convert';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 
 import '../../data/model/resume_model.dart';
 
@@ -12,11 +14,24 @@ class ResumeController extends GetxController {
   var isLoading = false.obs;
   var isLoadingDetails = false.obs;
   var isUpdating = false.obs;
+  var isLoadingMore = false.obs; // For pagination loading
+  var isexternal = false;
 
   // Data
   var resumes = <Resume>[].obs;
   var currentResume = Rxn<Resume>();
   var errorMessage = ''.obs;
+
+  // Pagination variables
+  var currentPage = 1.obs;
+  var totalPages = 1.obs;
+  var totalItems = 0.obs;
+  var hasMoreData = true.obs;
+  final int pageLimit = 10;
+
+  // PDF Upload states
+  var selectedPdfFile = Rxn<File>();
+  var selectedFileName = ''.obs;
 
   // Text Controllers for Personal Info
   final resumeNameController = TextEditingController();
@@ -30,11 +45,26 @@ class ResumeController extends GetxController {
   final clearancesController = TextEditingController();
   final openToWorkStatusController = TextEditingController();
   final summaryController = TextEditingController();
+  TextEditingController resumeNameTextController = TextEditingController();
+
+  // ScrollController for detecting scroll end
+  final ScrollController scrollController = ScrollController();
 
   @override
   void onInit() {
     super.onInit();
     fetchResumes();
+
+    // Add scroll listener for pagination
+    scrollController.addListener(() {
+      if (scrollController.position.pixels >=
+          scrollController.position.maxScrollExtent) {
+        // When user scrolls near bottom, load more
+        if (!isLoadingMore.value && hasMoreData.value) {
+          loadMoreResumes();
+        }
+      }
+    });
   }
 
   @override
@@ -51,29 +81,123 @@ class ResumeController extends GetxController {
     clearancesController.dispose();
     openToWorkStatusController.dispose();
     summaryController.dispose();
+    resumeNameTextController.dispose();
+    scrollController.dispose();
     super.onClose();
   }
 
-  // Fetch all resumes
-  Future<void> fetchResumes() async {
+  // Pick PDF File
+  Future<void> pickPDF() async {
     try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        selectedPdfFile.value = File(result.files.single.path!);
+        selectedFileName.value = result.files.single.name;
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to pick PDF: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  // Clear PDF Selection
+  void clearPdfSelection() {
+    selectedPdfFile.value = null;
+    selectedFileName.value = '';
+    resumeNameTextController.clear();
+  }
+
+  // Fetch resumes with pagination (initial load or refresh)
+  Future<void> fetchResumes({bool isRefresh = false}) async {
+    try {
+      // Reset pagination on refresh
+      if (isRefresh) {
+        currentPage.value = 1;
+      }
+
       isLoading.value = true;
       errorMessage.value = '';
 
       final response = await ApiService.get(
-        ApiEndPoint.resumeData,
+        "${ApiEndPoint.resumeData}?page=${currentPage.value}&limit=$pageLimit",
       );
 
       if (response.statusCode == 200) {
         final data = response.data;
+
+        // Parse pagination info
+        if (data['pagination'] != null) {
+          totalPages.value = data['pagination']['totalPage'] ?? 1;
+          totalItems.value = data['pagination']['total'] ?? 0;
+          hasMoreData.value = currentPage.value < totalPages.value;
+        }
+
+        // Parse resume data
         final resumeResponse = ResumeResponse.fromJson(data);
-        resumes.value = resumeResponse.data;
-        print("resume ❤️❤️❤️❤️❤️ $resumes");
+
+        // Replace list on refresh, append on load more
+        if (isRefresh || currentPage.value == 1) {
+          resumes.value = resumeResponse.data;
+        } else {
+          resumes.addAll(resumeResponse.data);
+        }
+
+        print("resumes loaded: ${resumes.length}/${totalItems.value}");
       }
     } catch (e) {
       errorMessage.value = 'Failed to load resumes: $e';
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  // Load more resumes (pagination)
+  Future<void> loadMoreResumes() async {
+    if (isLoadingMore.value || !hasMoreData.value) return;
+
+    try {
+      isLoadingMore.value = true;
+      currentPage.value++;
+
+      final response = await ApiService.get(
+        "${ApiEndPoint.resumeData}?page=${currentPage.value}&limit=$pageLimit",
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+
+        // Update pagination info
+        if (data['pagination'] != null) {
+          totalPages.value = data['pagination']['totalPage'] ?? 1;
+          hasMoreData.value = currentPage.value < totalPages.value;
+        }
+
+        // Add new resumes to list
+        final resumeResponse = ResumeResponse.fromJson(data);
+        resumes.addAll(resumeResponse.data);
+
+        print("loaded more resumes: ${resumes.length}/${totalItems.value}");
+      }
+    } catch (e) {
+      currentPage.value--; // Revert page if error
+      Get.snackbar(
+        'Error',
+        'Failed to load more resumes',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoadingMore.value = false;
     }
   }
 
@@ -83,14 +207,13 @@ class ResumeController extends GetxController {
       isLoadingDetails.value = true;
       errorMessage.value = '';
 
-      final response = await ApiService.get(
-          "resume/$resumeId"
-      );
+      final response = await ApiService.get("resume/$resumeId");
 
       if (response.statusCode == 200) {
         final data = response.data;
         final resume = Resume.fromJson(data["data"]);
         currentResume.value = resume;
+        isexternal = resume.is_external_resume ?? false;
         _populateFields(resume);
       } else {
         throw Exception('Failed to load resume');
@@ -99,6 +222,66 @@ class ResumeController extends GetxController {
       _showError('Failed to load resume data: $e');
     } finally {
       isLoadingDetails.value = false;
+    }
+  }
+
+  // Post External Resume (Upload PDF)
+  Future<void> postExternalResume() async {
+    if (resumeNameTextController.text.trim().isEmpty) {
+      _showValidationError('Please enter resume name');
+      return;
+    }
+
+    if (selectedPdfFile.value == null) {
+      _showValidationError('Please select a PDF file');
+      return;
+    }
+
+    try {
+      isUpdating.value = true;
+      errorMessage.value = '';
+
+      var body = {
+        "name": resumeNameTextController.text.trim(),
+      };
+
+      final response = await ApiService.multipartImage(
+        "resume/external-resume",
+        body: body,
+        method: "POST",
+        files: [
+          {
+            "name": "resume",
+            "image": selectedPdfFile.value!.path,
+          }
+        ],
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        Get.back();
+        Get.snackbar(
+          'Success',
+          'Resume uploaded successfully',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 2),
+        );
+
+        clearPdfSelection();
+        await fetchResumes(isRefresh: true);
+
+        if (Get.isDialogOpen ?? false) {
+          Get.back();
+        }
+      } else {
+        throw Exception('Failed to upload resume');
+      }
+    } catch (e) {
+      _showError('Failed to upload resume: $e');
+      rethrow;
+    } finally {
+      isUpdating.value = false;
     }
   }
 
@@ -119,8 +302,6 @@ class ResumeController extends GetxController {
 
   // Update personal information
   Future<void> updatePersonalInfo(String resumeId) async {
-    //if (!_validateFields()) return;
-
     try {
       isUpdating.value = true;
 
@@ -140,10 +321,8 @@ class ResumeController extends GetxController {
         }
       };
 
-      final response = await ApiService.patch(
-          "resume/$resumeId",
-          body: updateData
-      );
+      final response =
+      await ApiService.patch("resume/$resumeId", body: updateData);
 
       if (response.statusCode == 200) {
         Get.snackbar(
@@ -155,8 +334,7 @@ class ResumeController extends GetxController {
           duration: const Duration(seconds: 2),
         );
 
-        // Refresh resume list
-        await fetchResumes();
+        await fetchResumes(isRefresh: true);
         Get.back();
       } else {
         final errorData = json.decode(response.message);
@@ -169,13 +347,10 @@ class ResumeController extends GetxController {
     }
   }
 
-
-
   Future<void> createPersonalInfo() async {
     try {
       isUpdating.value = true;
 
-      // Hardcoded test data - exact copy from Postman
       final updateData = {
         "resume_name": resumeNameController.text,
         "personalInfo": {
@@ -200,7 +375,21 @@ class ResumeController extends GetxController {
         },
       );
 
-      // ... rest of the code
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        Get.snackbar(
+          'Success',
+          'Resume created successfully',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 2),
+        );
+
+        await fetchResumes(isRefresh: true);
+        Get.back();
+      } else {
+        throw Exception('Failed to create resume');
+      }
     } catch (e) {
       _showError('Failed to create resume: $e');
     } finally {
@@ -211,12 +400,11 @@ class ResumeController extends GetxController {
   // Delete resume
   Future<void> deleteResume(String resumeId) async {
     try {
-      final response = await ApiService.delete(
-          ApiEndPoint.resumeData + "/" + resumeId
-      );
+      final response =
+      await ApiService.delete(ApiEndPoint.resumeData + "/" + resumeId);
 
       if (response.statusCode == 200) {
-        await fetchResumes();
+        await fetchResumes(isRefresh: true);
         Get.snackbar(
           'Success',
           'Resume deleted successfully',

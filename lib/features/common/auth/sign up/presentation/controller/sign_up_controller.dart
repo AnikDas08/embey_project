@@ -54,7 +54,7 @@ class SignUpController extends GetxController {
     text: kDebugMode ? '1865965581' : '',
   );
   TextEditingController otpController = TextEditingController(
-    text: kDebugMode ? '123456' : '',
+    text: kDebugMode ? '' : '',
   );
 
   @override

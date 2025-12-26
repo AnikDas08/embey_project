@@ -17,6 +17,8 @@ class AutoApply extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final HomeController controller = Get.find<HomeController>();
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
@@ -35,34 +37,57 @@ class AutoApply extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CommonText(
-                text: 'Auto Apply',
-                fontSize: 14.sp,
-                fontWeight: FontWeight.bold,
-              ),
-              CommonText(
-                text: 'Let the AI apply for you',
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w400,
-                color: AppColors.secondaryText,
-              ),
-            ],
-          ),
-          // Using Transform.scale to make the switch look cleaner
-          Transform.scale(
-            scale: 0.8,
-            child: Switch(
-              value: isEnabled,
-              activeColor: AppColors.white,
-              activeTrackColor: AppColors.primaryColor,
-              inactiveThumbColor: AppColors.white,
-              inactiveTrackColor: Colors.grey.shade300,
-              onChanged: onToggle,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CommonText(
+                  text: 'Auto Apply',
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+                CommonText(
+                  text: 'Let the AI apply for you',
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.secondaryText,
+                ),
+              ],
             ),
           ),
+          // Show loading indicator or switch
+          Obx(() {
+            if (controller.isLoadingAutoApply.value) {
+              return SizedBox(
+                width: 40.w,
+                height: 24.h,
+                child: Center(
+                  child: SizedBox(
+                    width: 20.w,
+                    height: 20.h,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.primaryColor,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            return Transform.scale(
+              scale: 0.8,
+              child: Switch(
+                value: isEnabled,
+                activeColor: AppColors.white,
+                activeTrackColor: AppColors.primaryColor,
+                inactiveThumbColor: AppColors.white,
+                inactiveTrackColor: Colors.grey.shade300,
+                onChanged: onToggle,
+              ),
+            );
+          }),
         ],
       ),
     );

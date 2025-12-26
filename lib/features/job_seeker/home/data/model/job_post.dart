@@ -88,6 +88,7 @@ class JobPost {
   final num? minSalary;
   final num? maxSalary;
   final String? location;
+  final String? jobsBoard;
   bool? isFavourite;
   bool? isApplied;
   final List<String>? requiredSkills;
@@ -114,6 +115,7 @@ class JobPost {
     this.deadline,
     this.isDeleted,
     this.createdAt,
+    this.jobsBoard,
     this.updatedAt,
     this.isFavourite,
     this.isApplied,
@@ -147,6 +149,7 @@ class JobPost {
       // Use the helper to extract the category name string (handles nested object or string)
       category: _extractNestedName(json['category']),
       jobType: json['job_type'] as String?,
+      jobsBoard: json['job_board'] as String?,
       jobLevel: json['job_level'] as String?,
       experienceLevel: json['experience_level'] as String?,
       minSalary: json['min_salary'] as num?,

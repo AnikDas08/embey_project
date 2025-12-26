@@ -23,6 +23,7 @@ class AllJobCategoryController extends GetxController{
     fetchCategories();
   }
 
+
   Future<void> fetchCategories() async {
     try {
       final response = await ApiService.get(

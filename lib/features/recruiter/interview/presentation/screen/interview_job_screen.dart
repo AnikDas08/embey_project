@@ -138,8 +138,8 @@ class InterviewJobScreen extends StatelessWidget {
               color: AppColors.black,
             ),
           ),
-          4.width,
-          Icon(Icons.keyboard_arrow_down, size: 20.sp, color: AppColors.black),
+          /*4.width,
+          Icon(Icons.keyboard_arrow_down, size: 20.sp, color: AppColors.black),*/
         ],
       ),
     );

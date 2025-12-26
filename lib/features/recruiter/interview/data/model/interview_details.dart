@@ -1,4 +1,4 @@
-// application_details_model.dart
+// interview_details.dart
 
 class ApplicationInterview {
   final bool success;
@@ -18,6 +18,14 @@ class ApplicationInterview {
       data: ApplicationData.fromJson(json['data'] ?? {}),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'success': success,
+      'message': message,
+      'data': data.toJson(),
+    };
+  }
 }
 
 class ApplicationData {
@@ -31,14 +39,18 @@ class ApplicationData {
   final List<String> otherDocuments;
   final String status;
   final bool isInterviewCompleted;
-  final int jobMatch;
   final String interviewStatus;
-  final String hiringStatus;
+  final String? hiringStatus;
+  final bool userDeleted;
+  final bool recruiterDeleted;
+  final bool isAutoApplied;
   final List<History> history;
-  final String? rejectedReason;
-  final InterviewDetails? interviewDetails;
   final String createdAt;
   final String updatedAt;
+  final int jobMatch;
+  final InterviewDetails? interviewDetails;
+  final String? feedback;
+  final int remainingDays;
 
   ApplicationData({
     required this.id,
@@ -51,14 +63,18 @@ class ApplicationData {
     required this.otherDocuments,
     required this.status,
     required this.isInterviewCompleted,
-    required this.jobMatch,
     required this.interviewStatus,
-    required this.hiringStatus,
+    this.hiringStatus,
+    required this.userDeleted,
+    required this.recruiterDeleted,
+    required this.isAutoApplied,
     required this.history,
-    this.rejectedReason,
-    this.interviewDetails,
     required this.createdAt,
     required this.updatedAt,
+    required this.jobMatch,
+    this.interviewDetails,
+    this.feedback,
+    required this.remainingDays,
   });
 
   factory ApplicationData.fromJson(Map<String, dynamic> json) {
@@ -68,25 +84,57 @@ class ApplicationData {
       post: Post.fromJson(json['post'] ?? {}),
       recruiter: Recruiter.fromJson(json['recruiter'] ?? {}),
       title: json['title'] ?? '',
-      yearOfExperience: json['year_of_experience'] ?? '',
+      yearOfExperience: json['year_of_experience']?.toString() ?? '',
       resume: json['resume'] ?? '',
-      otherDocuments: List<String>.from(json['other_documents'] ?? []),
+      otherDocuments: (json['other_documents'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList() ?? [],
       status: json['status'] ?? '',
       isInterviewCompleted: json['isInterviewCompleted'] ?? false,
-      jobMatch: json['jobMatch'] ?? 0,
       interviewStatus: json['inteviewStatus'] ?? '',
-      hiringStatus: json['hiringStatus'] ?? '',
-      history: (json['history'] as List?)
+      hiringStatus: json['hiringStatus'],
+      userDeleted: json['user_deleted'] ?? false,
+      recruiterDeleted: json['reqruiter_deleted'] ?? false,
+      isAutoApplied: json['isAutoApplied'] ?? false,
+      history: (json['history'] as List<dynamic>?)
           ?.map((e) => History.fromJson(e))
-          .toList() ??
-          [],
-      rejectedReason: json['rejectedReason'],
+          .toList() ?? [],
+      createdAt: json['createdAt'] ?? '',
+      updatedAt: json['updatedAt'] ?? '',
+      jobMatch: json['jobMatch'] ?? 0,
       interviewDetails: json['interviewDetails'] != null
           ? InterviewDetails.fromJson(json['interviewDetails'])
           : null,
-      createdAt: json['createdAt'] ?? '',
-      updatedAt: json['updatedAt'] ?? '',
+      feedback: json['feedback'],
+      remainingDays: json['remainingDays'] ?? 0,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'user': user.toJson(),
+      'post': post.toJson(),
+      'recruiter': recruiter.toJson(),
+      'title': title,
+      'year_of_experience': yearOfExperience,
+      'resume': resume,
+      'other_documents': otherDocuments,
+      'status': status,
+      'isInterviewCompleted': isInterviewCompleted,
+      'inteviewStatus': interviewStatus,
+      'hiringStatus': hiringStatus,
+      'user_deleted': userDeleted,
+      'reqruiter_deleted': recruiterDeleted,
+      'isAutoApplied': isAutoApplied,
+      'history': history.map((e) => e.toJson()).toList(),
+      'createdAt': createdAt,
+      'updatedAt': updatedAt,
+      'jobMatch': jobMatch,
+      'interviewDetails': interviewDetails?.toJson(),
+      'feedback': feedback,
+      'remainingDays': remainingDays,
+    };
   }
 }
 
@@ -113,6 +161,16 @@ class User {
       image: json['image'] ?? '',
       bio: json['bio'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'name': name,
+      'email': email,
+      'image': image,
+      'bio': bio,
+    };
   }
 }
 
@@ -154,9 +212,27 @@ class Post {
       minSalary: json['min_salary'] ?? 0,
       maxSalary: json['max_salary'] ?? 0,
       location: json['location'] ?? '',
-      requiredSkills: List<String>.from(json['required_skills'] ?? []),
+      requiredSkills: (json['required_skills'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList() ?? [],
       deadline: json['deadline'] ?? '',
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'thumbnail': thumbnail,
+      'title': title,
+      'description': description,
+      'job_type': jobType,
+      'job_level': jobLevel,
+      'min_salary': minSalary,
+      'max_salary': maxSalary,
+      'location': location,
+      'required_skills': requiredSkills,
+      'deadline': deadline,
+    };
   }
 }
 
@@ -181,6 +257,15 @@ class Recruiter {
       image: json['image'] ?? '',
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'name': name,
+      'email': email,
+      'image': image,
+    };
+  }
 }
 
 class History {
@@ -204,6 +289,15 @@ class History {
       date: json['date'] ?? '',
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'title': title,
+      'description': description,
+      'date': date,
+    };
+  }
 }
 
 class InterviewDetails {
@@ -223,5 +317,13 @@ class InterviewDetails {
       time: json['time'] ?? '',
       interviewType: json['interview_type'] ?? '',
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'date': date,
+      'time': time,
+      'interview_type': interviewType,
+    };
   }
 }

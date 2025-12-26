@@ -1,9 +1,12 @@
+import 'package:embeyi/core/component/image/common_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:embeyi/core/component/button/common_button.dart';
 import 'package:embeyi/core/component/text/common_text.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
+
+import '../../utils/constants/app_icons.dart';
 
 class SuccessDialog {
   /// Shows a reusable success dialog with customizable content
@@ -25,24 +28,7 @@ class SuccessDialog {
             mainAxisSize: MainAxisSize.min,
             children: [
               // Icon with circular background
-              Container(
-                width: 80.w,
-                height: 80.h,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    begin: Alignment(-0.9, 0),
-                    end: Alignment(1.0, 0),
-                    colors: [AppColors.primaryColor, AppColors.gradientColor2],
-                    stops: [0.0, 1.0],
-                  ),
-                ),
-                child: Icon(
-                  icon ?? Icons.check,
-                  color: AppColors.white,
-                  size: 40.sp,
-                ),
-              ),
+              CommonImage(imageSrc: "assets/images/success.png", width: 120.w, height: 120.h),
               SizedBox(height: 24.h),
               CommonText(
                 text: 'Congratulations!',

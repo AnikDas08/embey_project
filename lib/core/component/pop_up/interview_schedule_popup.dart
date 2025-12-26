@@ -68,75 +68,77 @@ class _InterviewSchedulePopupState extends State<InterviewSchedulePopup> {
         ),
         child: Padding(
           padding: EdgeInsets.all(24.w),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header with title and close button
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: CommonText(
-                      text: 'Interview Schedule',
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.black,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => Get.back(),
-                    child: Container(
-                      padding: EdgeInsets.all(8.w),
-                      child: Icon(
-                        Icons.close,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header with title and close button
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: CommonText(
+                        text: 'Interview Schedule',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
                         color: AppColors.black,
-                        size: 20.sp,
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                  ),
-                ],
-              ),
-
-              SizedBox(height: 24.h),
-
-              // Date Input Field
-              _buildLabel('Date'),
-              SizedBox(height: 8.h),
-              _buildDateField(),
-
-              SizedBox(height: 20.h),
-
-              // Time Input Field
-              _buildLabel('Time'),
-              SizedBox(height: 8.h),
-              _buildTimeField(),
-
-              SizedBox(height: 20.h),
-
-              // Interview Type Selection
-              _buildLabel('Interview Type'),
-              SizedBox(height: 12.h),
-              _buildInterviewTypeSelection(),
-
-              SizedBox(height: 20.h),
-
-              // Note Text Area
-              _buildLabel('Note'),
-              SizedBox(height: 8.h),
-              _buildNoteField(),
-
-              SizedBox(height: 24.h),
-
-              // Submit Button
-              CommonButton(
-                titleText: 'Submit',
-                buttonHeight: 52,
-                buttonRadius: 12,
-                onTap: _onSubmit,
-              ),
-            ],
+                    GestureDetector(
+                      onTap: () => Get.back(),
+                      child: Container(
+                        padding: EdgeInsets.all(8.w),
+                        child: Icon(
+                          Icons.close,
+                          color: AppColors.black,
+                          size: 20.sp,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+            
+                SizedBox(height: 24.h),
+            
+                // Date Input Field
+                _buildLabel('Date'),
+                SizedBox(height: 8.h),
+                _buildDateField(),
+            
+                SizedBox(height: 20.h),
+            
+                // Time Input Field
+                _buildLabel('Time'),
+                SizedBox(height: 8.h),
+                _buildTimeField(),
+            
+                SizedBox(height: 20.h),
+            
+                // Interview Type Selection
+                _buildLabel('Interview Type'),
+                SizedBox(height: 12.h),
+                _buildInterviewTypeSelection(),
+            
+                SizedBox(height: 20.h),
+            
+                // Note Text Area
+                _buildLabel('Note'),
+                SizedBox(height: 8.h),
+                _buildNoteField(),
+            
+                SizedBox(height: 24.h),
+            
+                // Submit Button
+                CommonButton(
+                  titleText: 'Submit',
+                  buttonHeight: 52,
+                  buttonRadius: 12,
+                  onTap: _onSubmit,
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -24,10 +24,17 @@ class JobPostScreen extends StatelessWidget {
         children: [
           _buildTabBar(controller),
           Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.all(16.r),
-                child: _buildJobsList(controller),
+            child: RefreshIndicator(
+              color: AppColors.primaryColor,
+              onRefresh: () async {
+                await controller.getJobs();
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Padding(
+                  padding: EdgeInsets.all(16.r),
+                  child: _buildJobsList(controller),
+                ),
               ),
             ),
           ),
@@ -44,7 +51,6 @@ class JobPostScreen extends StatelessWidget {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
-
       leading: IconButton(
         icon: Icon(Icons.arrow_back, color: AppColors.black, size: 24.sp),
         onPressed: () => Get.back(),
@@ -66,7 +72,7 @@ class JobPostScreen extends StatelessWidget {
       color: Colors.white,
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       child: Obx(
-        () => Row(
+            () => Row(
           children: [
             Expanded(
               child: _buildTabButton(
@@ -163,7 +169,7 @@ class JobPostScreen extends StatelessWidget {
               candidateCount: job.totalApplications,
               deadline: job.formattedDeadline,
               thumbnailImage: job.thumbnail,
-              userImages: job.userImages, // Pass the list here
+              userImages: job.userImages,
               onTap: () {
                 Get.toNamed(RecruiterRoutes.jobCardDetails, arguments: {
                   "postId": job.id,

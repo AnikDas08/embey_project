@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:embeyi/core/utils/constants/app_images.dart';
 
 import '../../../../../core/services/api/api_service.dart';
+import '../../../../../core/utils/app_utils.dart';
 import '../../../home/data/model/application_model.dart';
 
 class ShortJobListedController extends GetxController {
@@ -18,43 +19,6 @@ class ShortJobListedController extends GetxController {
   void onInit() {
     super.onInit();
     shortlistedMatch();
-  }
-
-  void _loadShortlistedCandidates() {
-    shortlistedCandidates.value = [
-      {
-        'name': 'Kathryn Murphy',
-        'jobTitle': 'Sr. UI/UX Designer',
-        'experience': '5 Years Experience',
-        'description':
-            'A Dedicated And Reliable Professional With Strong Teamwork And Problem Solving Skills, Committed To Delivering Quality Results On Time',
-        'profileImage': AppImages.profile,
-      },
-      {
-        'name': 'Esther Howard',
-        'jobTitle': 'Sr. UI/UX Designer',
-        'experience': '5 Years Experience',
-        'description':
-            'A Dedicated And Reliable Professional With Strong Teamwork And Problem Solving Skills, Committed To Delivering Quality Results On Time',
-        'profileImage': AppImages.profile,
-      },
-      {
-        'name': 'Jane Cooper',
-        'jobTitle': 'Sr. UI/UX Designer',
-        'experience': '5 Years Experience',
-        'description':
-            'A Dedicated And Reliable Professional With Strong Teamwork And Problem Solving Skills, Committed To Delivering Quality Results On Time',
-        'profileImage': AppImages.profile,
-      },
-      {
-        'name': 'Theresa Webb',
-        'jobTitle': 'Sr. UI/UX Designer',
-        'experience': '5 Years Experience',
-        'description':
-            'A Dedicated And Reliable Professional With Strong Teamwork And Problem Solving Skills, Committed To Delivering Quality Results On Time',
-        'profileImage': AppImages.profile,
-      },
-    ];
   }
 
   Future<void> shortlistedMatch() async {
@@ -86,14 +50,19 @@ class ShortJobListedController extends GetxController {
     }
   }
 
-  void deleteCandidate(String index) {
-    /*final candidateName = shortlistedCandidates[index]['name'];
-    shortlistedCandidates.removeAt(index);
-    Get.snackbar(
-      'Removed',
-      '$candidateName has been removed from shortlist',
-      snackPosition: SnackPosition.BOTTOM,
-    );*/
+  Future<void> deletePost(String postId)async{
+    try{
+      final response=await ApiService.delete(
+          "application/$postId"
+      );
+      if(response.statusCode==200){
+        Utils.successSnackBar("Success", "Successful delete post");
+        Get.offAllNamed(RecruiterRoutes.home);
+      }
+    }
+    catch(e){
+      Utils.errorSnackBar("Error", e.toString());
+    }
   }
 
   void viewCandidateProfile(String candidateIds) {

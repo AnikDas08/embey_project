@@ -41,28 +41,28 @@ class _VerifyScreenState extends State<VerifyScreen> {
       ),
 
       /// Body Section
-      body: Column(
-        children: [
-          GetBuilder<ForgetPasswordController>(
-            builder: (controller) => Column(
-              children: [
-                const CommonText(
-                  text: AppString.otpVerification,
-                  fontSize: 30,
-                  bottom: 20,
-                  color: AppColors.white,
-                ),
-                Container(
-                  height: MediaQuery.of(context).size.height - 190.h,
-                  padding: EdgeInsets.all(20.w),
-                  decoration: BoxDecoration(
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            GetBuilder<ForgetPasswordController>(
+              builder: (controller) => Column(
+                children: [
+                  const CommonText(
+                    text: AppString.otpVerification,
+                    fontSize: 30,
+                    bottom: 20,
                     color: AppColors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30.r),
-                      topRight: Radius.circular(30.r),
-                    ),
                   ),
-                  child: SingleChildScrollView(
+                  Container(
+                    height: MediaQuery.of(context).size.height - 190.h,
+                    padding: EdgeInsets.all(20.w),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30.r),
+                        topRight: Radius.circular(30.r),
+                      ),
+                    ),
                     child: Form(
                       key: formKey,
                       child: Column(
@@ -72,7 +72,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
                             padding: const EdgeInsets.all(20.0),
                             child: CommonImage(imageSrc: AppIcons.otp),
                           ),
-
+                    
                           /// instruction how to get OTP
                           Center(
                             child: CommonText(
@@ -84,43 +84,55 @@ class _VerifyScreenState extends State<VerifyScreen> {
                               maxLines: 2,
                             ),
                           ),
-
+                    
                           /// OTP Filed here
                           Flexible(
                             flex: 0,
                             child: PinCodeTextField(
                               controller: controller.otpController,
-                              validator: (value) {
-                                if (value != null && value.length == 6) {
-                                  return null;
-                                } else {
-                                  return AppString.otpIsInValid;
-                                }
-                              },
                               autoDisposeControllers: false,
-                              cursorColor: AppColors.black,
+                              cursorColor: AppColors.primaryColor,
                               appContext: (context),
                               autoFocus: true,
+                              // Change length to 4
+                              length: 4,
+                              keyboardType: TextInputType.number,
+                              autovalidateMode: AutovalidateMode.onUserInteraction,
+                              enableActiveFill: true,
+
+                              // Center the fields
+                              mainAxisAlignment: MainAxisAlignment.center,
+
                               pinTheme: PinTheme(
                                 shape: PinCodeFieldShape.box,
-                                borderRadius: BorderRadius.circular(8),
-                                fieldHeight: 60.h,
-                                fieldWidth: 60.w,
+                                borderRadius: BorderRadius.circular(12.r),
+                                fieldHeight: 50.h,
+                                // You can increase fieldWidth slightly for 4 boxes
+                                fieldWidth: 55.w,
+                                fieldOuterPadding: EdgeInsets.symmetric(horizontal: 10.w),
                                 activeFillColor: AppColors.transparent,
                                 selectedFillColor: AppColors.transparent,
                                 inactiveFillColor: AppColors.transparent,
                                 borderWidth: 0.5.w,
                                 selectedColor: AppColors.primaryColor,
                                 activeColor: AppColors.primaryColor,
-                                inactiveColor: AppColors.secondaryText,
+                                inactiveColor: AppColors.black,
                               ),
-                              length: 6,
-                              keyboardType: TextInputType.number,
-                              autovalidateMode: AutovalidateMode.disabled,
-                              enableActiveFill: true,
+
+                              validator: (value) {
+                                // Update validation to check for 4 digits
+                                if (value != null && value.length == 4) {
+                                  return null;
+                                } else {
+                                  return "Please enter a 4-digit code";
+                                }
+                              },
+                              onChanged: (value) {
+                                // Logic for value change
+                              },
                             ),
                           ),
-
+                    
                           /// Resent OTP or show Timer
                           /*GestureDetector(
                             onTap: controller.time == '00:00'
@@ -138,7 +150,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
                               fontSize: 18,
                             ),
                           ),*/
-
+                    
                           ///  Submit Button here
                           CommonButton(
                             titleText: AppString.verify,
@@ -153,11 +165,11 @@ class _VerifyScreenState extends State<VerifyScreen> {
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

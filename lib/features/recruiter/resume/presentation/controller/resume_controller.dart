@@ -7,6 +7,7 @@ import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
+import 'package:open_file/open_file.dart';
 
 import '../../../../../core/config/route/recruiter_routes.dart';
 import '../../../../../core/services/api/api_service.dart';
@@ -64,7 +65,8 @@ class RecruiterResumeController extends GetxController {
         final data = response.data["data"];
 
         candidateId=data["user"]["_id"];
-        print("ksdjfkldjfksdl 🤣🤣🤣🤣$candidateId");
+        print("candidateId: $candidateId");
+
         // Get resume
         final resume = data["resume"];
         print("resume: $resume");
@@ -73,6 +75,7 @@ class RecruiterResumeController extends GetxController {
           resumeUrl.value = resume.startsWith('http')
               ? resume
               : '${ApiEndPoint.imageUrl}$resume';
+          print("Full resume URL: ${resumeUrl.value}");
         }
 
         // Get status and update button visibility
@@ -82,6 +85,7 @@ class RecruiterResumeController extends GetxController {
         updateButtonVisibility(status);
       }
     } catch (e) {
+      print("Error fetching application details: $e");
       Utils.errorSnackBar("Error", "Failed to fetch resume: $e");
     } finally {
       isLoading.value = false;
@@ -162,8 +166,11 @@ class RecruiterResumeController extends GetxController {
         // Refresh the data
         fetchApplicationDetails();
       }
+      else{
+        Utils.errorSnackBar("Error", response.data["message"].toString());
+      }
     } catch (e) {
-      Utils.errorSnackBar("Error", "Failed to schedule interview");
+      Utils.errorSnackBar("Error", e.toString());
     }
   }
 
@@ -243,18 +250,22 @@ class RecruiterResumeController extends GetxController {
     }
 
     try {
-      // Request storage permission
-      var status = await Permission.storage.request();
-      if (Platform.isAndroid && await Permission.manageExternalStorage.isDenied) {
-        status = await Permission.manageExternalStorage.request();
-      }
+      print("📥 Starting download for: ${resumeUrl.value}");
 
-      if (!status.isGranted) {
-        Utils.errorSnackBar(
-          "Permission Denied",
-          "Storage permission is required to download files",
-        );
-        return;
+      // Request permissions
+      if (Platform.isAndroid) {
+        var status = await Permission.storage.request();
+        if (status.isDenied) {
+          status = await Permission.manageExternalStorage.request();
+        }
+
+        if (status.isDenied || status.isPermanentlyDenied) {
+          Utils.errorSnackBar(
+            "Permission Denied",
+            "Please enable storage permission in settings",
+          );
+          return;
+        }
       }
 
       isDownloading.value = true;
@@ -262,36 +273,70 @@ class RecruiterResumeController extends GetxController {
 
       // Get download directory
       Directory? directory;
+      String savePath;
+
       if (Platform.isAndroid) {
+        // Save to Downloads folder
         directory = Directory('/storage/emulated/0/Download');
         if (!await directory.exists()) {
-          directory = await getExternalStorageDirectory();
+          await directory.create(recursive: true);
         }
+
+        // Generate unique filename
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        final fileName = 'Resume_$timestamp.pdf';
+        savePath = '${directory.path}/$fileName';
       } else {
+        // iOS - save to app documents
         directory = await getApplicationDocumentsDirectory();
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        final fileName = 'Resume_$timestamp.pdf';
+        savePath = '${directory.path}/$fileName';
       }
 
-      // Generate file name
-      final fileName = 'resume_${DateTime.now().millisecondsSinceEpoch}.pdf';
-      final filePath = '${directory!.path}/$fileName';
+      print("💾 Saving to: $savePath");
 
       // Download file
-      await Dio().download(
+      final dio = Dio();
+      await dio.download(
         resumeUrl.value,
-        filePath,
+        savePath,
         onReceiveProgress: (received, total) {
           if (total != -1) {
             downloadProgress.value = received / total;
+            print("📊 Progress: ${(downloadProgress.value * 100).toStringAsFixed(0)}%");
           }
         },
       );
 
-      Utils.successSnackBar(
-        "Success",
-        "Resume downloaded successfully",
-      );
+      print("✅ Download complete!");
+
+      // Verify file exists
+      final file = File(savePath);
+      if (await file.exists()) {
+        final fileSize = await file.length();
+        print("📄 File size: ${(fileSize / 1024).toStringAsFixed(2)} KB");
+
+        // Show success message
+        Utils.successSnackBar(
+            "Success",
+            "Resume downloaded successfully!"
+        );
+
+        // Automatically open the file with system file opener
+        final result = await OpenFile.open(savePath);
+        print("Open file result: ${result.message}");
+
+        if (result.type != ResultType.done) {
+          Utils.errorSnackBar("Error", "Could not open file: ${result.message}");
+        }
+      } else {
+        throw Exception("File was not saved properly");
+      }
+
     } catch (e) {
-      Utils.errorSnackBar("Error", "Failed to download resume");
+      print("❌ Download error: $e");
+      Utils.errorSnackBar("Download Failed", e.toString());
     } finally {
       isDownloading.value = false;
       downloadProgress.value = 0.0;
@@ -299,22 +344,28 @@ class RecruiterResumeController extends GetxController {
   }
 
   Future<void> goToChat() async {
-    if (applicationId.value.isEmpty) {
+    if (candidateId.isEmpty) {
       Utils.errorSnackBar("Error", "Candidate information not found");
       return;
     }
 
     try {
-      // Show a small loading overlay if needed
+      print("💬 Initiating chat with candidate: $candidateId");
+
       final response = await ApiService.post(
-        'chat/${candidateId}', // POST chat/candidateID
+        'chat/$candidateId',
         body: {},
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        Get.to(()=>RecruiterChatListScreen());
+        print("✅ Chat created successfully");
+        Get.to(() => RecruiterChatListScreen());
+      } else {
+        print("❌ Chat API failed: ${response.statusCode}");
+        Utils.errorSnackBar("Error", "Could not initiate chat");
       }
     } catch (e) {
+      print("❌ Chat error: $e");
       Utils.errorSnackBar("Error", "Could not initiate chat");
     }
   }
