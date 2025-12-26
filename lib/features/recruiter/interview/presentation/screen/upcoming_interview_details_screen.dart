@@ -419,9 +419,251 @@ class UpcomingInterviewDetailsScreen extends StatelessWidget {
           buttonColor: AppColors.transparent,
           isGradient: false,
           borderColor: AppColors.primary,
-          onTap: () => controller.onMessageTap(),
+          onTap: () => controller.goToChat(),
+        ),
+
+        12.height,
+        CommonButton(
+          titleText: 'Overview',
+          titleSize: 16,
+          titleWeight: FontWeight.w600,
+          buttonHeight: 50.h,
+          buttonRadius: 8.r,
+          titleColor: AppColors.primaryColor,
+          buttonColor: AppColors.transparent,
+          isGradient: false,
+          borderColor: Colors.green,
+          onTap: () => _showFeedbackPopup(controller),
         ),
       ],
     ));
+  }
+
+  void _showFeedbackPopup(UpcomingInterviewDetailsController controller) {
+    controller.showPopup(); // Reset values
+
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Feedback',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    onPressed: () => Get.back(),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // Type Here TextField
+              const Text(
+                'Type Here',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: controller.feedbackController,
+                maxLines: 4,
+                decoration: InputDecoration(
+                  hintText: 'Enter your feedback...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.grey),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.grey),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.blue),
+                  ),
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Status Section
+              const Text(
+                'Status',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Status Options
+              Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatusRadio(
+                          controller,
+                          'Short Listed',
+                          'shortlisted',
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildStatusRadio(
+                          controller,
+                          'On Hold',
+                          'on hold',
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatusRadio(
+                          controller,
+                          'Hiring',
+                          'hired',
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildStatusRadio(
+                          controller,
+                          'Reject',
+                          'rejected',
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Submit Button
+              Obx(() => SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: controller.isSubmitting.value
+                      ? null
+                      : () => controller.submitFeedback(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF123499),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    disabledBackgroundColor: Colors.grey,
+                  ),
+                  child: controller.isSubmitting.value
+                      ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                      : const Text(
+                    'Submit',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusRadio(
+      UpcomingInterviewDetailsController controller,
+      String label,
+      String value,
+      ) {
+    return GestureDetector(
+      onTap: () => controller.selectedStatus.value = value,
+      child: Obx(() => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: controller.selectedStatus.value == value
+                ? const Color(0xFF123499)
+                : Colors.grey.shade300,
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 18,
+              height: 18,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: controller.selectedStatus.value == value
+                      ? const Color(0xFF123499)
+                      : Colors.grey.shade400,
+                  width: 2,
+                ),
+              ),
+              child: controller.selectedStatus.value == value
+                  ? Center(
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFF123499),
+                  ),
+                ),
+              )
+                  : null,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: controller.selectedStatus.value == value
+                      ? Colors.black87
+                      : Colors.black54,
+                ),
+              ),
+            ),
+          ],
+        ),
+      )),
+    );
   }
 }

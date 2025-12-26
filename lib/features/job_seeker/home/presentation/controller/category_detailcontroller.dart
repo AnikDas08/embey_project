@@ -232,14 +232,14 @@ class CategoryDetailController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        Get.snackbar(
+       /* Get.snackbar(
           "Success",
           isCurrentlySaved ? "Job removed from favorites" : "Job marked as favorite",
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.green,
           colorText: Colors.white,
           duration: const Duration(seconds: 2),
-        );
+        );*/
       } else {
         // Revert on failure
         job.isFavourite = isCurrentlySaved;

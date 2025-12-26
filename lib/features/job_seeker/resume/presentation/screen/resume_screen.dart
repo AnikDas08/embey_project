@@ -2,6 +2,7 @@ import 'package:embeyi/core/component/image/common_image.dart';
 import 'package:embeyi/core/config/route/job_seeker_routes.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/core/utils/constants/app_icons.dart';
+import 'package:embeyi/features/job_seeker/resume/presentation/controller/resume_controller.dart';
 import 'package:embeyi/features/job_seeker/resume/presentation/screen/add_resume_screen.dart';
 import 'package:embeyi/features/job_seeker/resume/presentation/screen/view_resume_screen.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,6 @@ import 'package:get/get.dart';
 import '../../../../../../core/component/text/common_text.dart';
 import '../../../../../../core/utils/extensions/extension.dart';
 import '../../data/model/resume_model.dart';
-import '../controller/resume_controller.dart';
 import 'edit_resume_screen.dart';
 
 class ResumeScreen extends StatelessWidget {

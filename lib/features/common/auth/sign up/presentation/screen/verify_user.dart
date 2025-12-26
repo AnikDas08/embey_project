@@ -87,14 +87,25 @@ class _VerifyUserState extends State<VerifyUser> {
                           child: PinCodeTextField(
                             controller: controller.otpController,
                             autoDisposeControllers: false,
-                            cursorColor: AppColors.primaryColor, // Ensure this matches your AppColors name
+                            cursorColor: AppColors.primaryColor,
                             appContext: (context),
                             autoFocus: true,
+                            // Change length to 4
+                            length: 4,
+                            keyboardType: TextInputType.number,
+                            autovalidateMode: AutovalidateMode.onUserInteraction,
+                            enableActiveFill: true,
+
+                            // Center the fields
+                            mainAxisAlignment: MainAxisAlignment.center,
+
                             pinTheme: PinTheme(
                               shape: PinCodeFieldShape.box,
-                              borderRadius: BorderRadius.circular(12.r), // Reduced radius for better fit
-                              fieldHeight: 50.h, // Slightly reduced height
-                              fieldWidth: 45.w,  // Reduced width so 6 fields fit comfortably
+                              borderRadius: BorderRadius.circular(12.r),
+                              fieldHeight: 50.h,
+                              // You can increase fieldWidth slightly for 4 boxes
+                              fieldWidth: 55.w,
+                              fieldOuterPadding: EdgeInsets.symmetric(horizontal: 10.w),
                               activeFillColor: AppColors.transparent,
                               selectedFillColor: AppColors.transparent,
                               inactiveFillColor: AppColors.transparent,
@@ -103,20 +114,17 @@ class _VerifyUserState extends State<VerifyUser> {
                               activeColor: AppColors.primaryColor,
                               inactiveColor: AppColors.black,
                             ),
-                            length: 6, // Changed from 4 to 6
-                            keyboardType: TextInputType.number,
-                            autovalidateMode: AutovalidateMode.onUserInteraction,
-                            enableActiveFill: true,
+
                             validator: (value) {
-                              // Changed check to 6 digits
-                              if (value != null && value.length == 6) {
+                              // Update validation to check for 4 digits
+                              if (value != null && value.length == 4) {
                                 return null;
                               } else {
-                                return "Please enter a 6-digit code";
+                                return "Please enter a 4-digit code";
                               }
                             },
                             onChanged: (value) {
-                              // Optional: you can trigger state changes here
+                              // Logic for value change
                             },
                           ),
                         ),

@@ -33,7 +33,7 @@ class ForgetPasswordController extends GetxController {
     text: kDebugMode ? "user@gmail.com" : '',
   );
   TextEditingController otpController = TextEditingController(
-    text: kDebugMode ? '123456' : '',
+    text: '',  // Empty for all modes
   );
   TextEditingController passwordController = TextEditingController(
     text: kDebugMode ? 'hello123' : '',

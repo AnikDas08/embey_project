@@ -522,14 +522,12 @@ class ApplicationDetailsHeaderCard extends StatelessWidget {
                       children: [
                         CommonImage(imageSrc: AppIcons.location, size: 14.sp),
                         4.width,
-                        Expanded(
-                          child: CommonText(
-                            text: location,
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w400,
-                            color: AppColors.primaryText,
-                            maxLines: 1,
-                          ),
+                        CommonText(
+                          text: location,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.primaryText,
+                          maxLines: 1,
                         ),
                       ],
                     ),

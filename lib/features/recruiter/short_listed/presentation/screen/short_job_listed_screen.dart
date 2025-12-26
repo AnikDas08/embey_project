@@ -3,6 +3,7 @@ import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import '../../../../../core/component/button/common_button.dart';
 import '../../../../../core/config/api/api_end_point.dart';
 import '../controller/short_job_listed_controller.dart';
 import '../../../home/presentation/widgets/shortlisted_candidate_card.dart';
@@ -78,11 +79,60 @@ class ShortJobListedScreen extends StatelessWidget {
               description: application.user.bio,
               profileImage: ApiEndPoint.imageUrl+application.user.image,
               onTap: () => controller.viewCandidateProfile(application.id),
-              onDelete: () => controller.deleteCandidate(application.id),
+              onDelete: () => _showDeleteDialog(context, controller, index),
             );
           },
         );
       },
+    );
+  }
+
+  void _showDeleteDialog(BuildContext context, ShortJobListedController controller, int index) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        contentPadding: EdgeInsets.all(16.r),
+        content: CommonText(
+          text: 'Are you sure you want to Delete Job Post?',
+          maxLines: 2,
+          fontSize: 20.sp,
+          fontWeight: FontWeight.w400,
+          color: AppColors.black,
+        ),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: CommonButton(
+                  titleText: 'No',
+                  onTap: () => Get.back(),
+                  buttonColor: AppColors.transparent,
+                  borderColor: AppColors.black,
+                  titleColor: AppColors.black,
+                ),
+              ),
+              SizedBox(width: 16.w),
+              Expanded(
+                child: CommonButton(
+                  titleText: 'Yes',
+                  onTap: () {
+                    Get.back();
+                    controller.deletePost(controller.applications[index].id);
+                  },
+                  buttonColor: AppColors.red,
+                  borderColor: AppColors.red,
+                  titleColor: AppColors.white,
+                  isGradient: false,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 

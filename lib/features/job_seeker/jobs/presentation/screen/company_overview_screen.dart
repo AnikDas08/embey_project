@@ -6,6 +6,7 @@ import 'package:embeyi/core/utils/constants/app_images.dart';
 import 'package:embeyi/core/utils/extensions/extension.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../../core/config/api/api_end_point.dart';
 import '../controller/company_overview_controller.dart';
 import '../widgets/company_overview_widgets.dart';
 
@@ -44,18 +45,27 @@ class _CompanyOverviewScreenState extends State<CompanyOverviewScreen> {
             children: [
               // Hero Header with Company Image and Logo
               CompanyHeroHeader(
-                companyImage: controller.companyImage.isNotEmpty
+                companyImage: (controller.companyImage == null || controller.companyImage.isEmpty)
+                    ? "assets/images/noImage.png"
+                    : controller.companyImage.startsWith('http')
                     ? controller.companyImage
-                    : AppImages.imageBackground,
-                companyLogo: controller.companyLogo.isNotEmpty
+                    : '${ApiEndPoint.imageUrl}${controller.companyImage}',
+
+                companyLogo: (controller.companyLogo == null || controller.companyLogo.isEmpty)
+                    ? "assets/images/noImage.png"
+                    : controller.companyLogo.startsWith('http')
                     ? controller.companyLogo
-                    : AppImages.companyLogo,
+                    : '${ApiEndPoint.imageUrl}${controller.companyLogo}',
               ),
 
+
               // Company Name and Tagline
-              CompanyNameSection(
-                companyName: controller.companyName,
-                tagline: controller.tagline,
+
+              Center(
+                child: CompanyNameSection(
+                  companyName: controller.companyName,
+                  tagline: controller.tagline,
+                ),
               ),
 
               20.height,

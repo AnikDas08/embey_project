@@ -1,3 +1,4 @@
+import 'package:embeyi/features/job_seeker/resume/presentation/controller/view_resume_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -5,22 +6,20 @@ import '../../../../../../core/component/text/common_text.dart';
 import '../../../../../../core/utils/constants/app_colors.dart';
 import '../../../../../../core/utils/extensions/extension.dart';
 import '../../data/model/resume_model.dart';
-import '../controller/resume_controller.dart';
 import '../widgets/pdf_show.dart';
 
 class ViewResumeScreen extends StatelessWidget {
-  final String? resumeId;
+  final String resumeId;
 
-  const ViewResumeScreen({super.key, this.resumeId});
+  const ViewResumeScreen({super.key, required this.resumeId});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<ResumeController>();
-
-    // Find the resume by ID or use first one
-    final resume = resumeId != null
-        ? controller.resumes.firstWhere((r) => r.id == resumeId)
-        : controller.resumes.first;
+    // Pass resumeId to controller using Get.put with a unique tag
+    final controller = Get.put(
+      ViewResumeController(resumeId: resumeId),
+      tag: resumeId,
+    );
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -38,150 +37,209 @@ class ViewResumeScreen extends StatelessWidget {
           color: Colors.black,
         ),
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      /// Header Section - Name and Contact
-                      _buildHeaderSection(resume),
-
-                      /// Work Authorization and Preferences
-                      _buildWorkAuthSection(resume),
-                      8.height,
-
-                      Divider(
-                        color: Colors.grey,
-                        thickness: 1,
-                      ),
-                      8.height,
-
-                      /// Summary Section
-                      if (resume.personalInfo.summary.isNotEmpty)
-                        _buildSummarySection(resume.personalInfo.summary),
-                      18.height,
-
-
-                      /// Core Skills Section
-                      if (resume.coreFeatures.isNotEmpty)
-                        _buildCoreSkillsSection(resume.coreFeatures),
-                      16.height,
-
-
-                      /// Experience Section
-                      if (resume.workExperiences.isNotEmpty)
-                        _buildExperienceSection(resume.workExperiences),
-                      16.height,
-
-
-                      /// Selected Projects Section
-                      if (resume.projects.isNotEmpty)
-                        _buildProjectsSection(resume.projects),
-                      16.height,
-
-                      /// Education and Certifications Row
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          /// Education Section
-                          if (resume.educations.isNotEmpty)
-                            Expanded(
-                              child: _buildEducationSection(resume.educations),
-                            ),
-
-                          if (resume.educations.isNotEmpty &&
-                              resume.certifications.isNotEmpty)
-                            12.width,
-
-                          /// Certifications Section
-                          if (resume.certifications.isNotEmpty)
-                            Expanded(
-                              child: _buildCertificationsSection(resume.certifications),
-                            ),
-                        ],
-                      ),
-
-                      24.height,
-                    ],
-                  ),
-                ),
-              ),
+      body: Obx(() {
+        // Show loading indicator
+        if (controller.isLoadingDetails.value) {
+          return const Center(
+            child: CircularProgressIndicator(
+              color: AppColors.primary,
             ),
+          );
+        }
 
-            /// Download Button
-            Padding(
+        // Show error if any
+        if (controller.errorMessage.value.isNotEmpty) {
+          return Center(
+            child: Padding(
               padding: EdgeInsets.all(16.w),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    try {
-                      // Show loading dialog
-                      Get.dialog(
-                        const Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        barrierDismissible: false,
-                      );
-
-                      // Generate and download PDF
-                      await PdfDownloadHelper.downloadResumePdf(resume);
-
-                      // Close loading dialog
-                      Get.back();
-
-                      // Show success message
-                      Get.snackbar(
-                        'Success',
-                        'Resume downloaded successfully',
-                        snackPosition: SnackPosition.BOTTOM,
-                        backgroundColor: Colors.green,
-                        colorText: Colors.white,
-                        duration: const Duration(seconds: 2),
-                      );
-                    } catch (e) {
-                      // Close loading dialog if open
-                      if (Get.isDialogOpen ?? false) {
-                        Get.back();
-                      }
-
-                      // Show error message
-                      Get.snackbar(
-                        'Error',
-                        'Failed to download resume: $e',
-                        snackPosition: SnackPosition.BOTTOM,
-                        backgroundColor: Colors.red,
-                        colorText: Colors.white,
-                        duration: const Duration(seconds: 3),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 14.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.r),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 64.sp,
+                    color: Colors.red,
+                  ),
+                  16.height,
+                  CommonText(
+                    text: controller.errorMessage.value,
+                    color: Colors.red,
+                    textAlign: TextAlign.center,
+                    fontSize: 14,
+                  ),
+                  24.height,
+                  ElevatedButton(
+                    onPressed: () => controller.fetchResumeById(resumeId),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const CommonText(
+                      text: 'Retry',
+                      color: Colors.white,
                     ),
                   ),
-                  child: const CommonText(
-                    text: 'Download',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                ],
+              ),
+            ),
+          );
+        }
+
+        // Check if resume is loaded
+        if (controller.currentResume.value == null) {
+          return const Center(
+            child: CommonText(text: 'No resume found'),
+          );
+        }
+
+        final resume = controller.currentResume.value!;
+
+        return SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        /// Header Section - Name and Contact
+                        _buildHeaderSection(resume),
+
+                        /// Work Authorization and Preferences
+                        _buildWorkAuthSection(resume),
+                        8.height,
+
+                        Divider(
+                          color: Colors.grey,
+                          thickness: 1,
+                        ),
+                        8.height,
+
+                        /// Summary Section
+                        if (resume.personalInfo.summary.isNotEmpty)
+                          _buildSummarySection(resume.personalInfo.summary),
+                        18.height,
+
+                        /// Core Skills Section
+                        if (resume.coreFeatures.isNotEmpty)
+                          _buildCoreSkillsSection(resume.coreFeatures),
+                        16.height,
+
+                        /// Experience Section
+                        if (resume.workExperiences.isNotEmpty)
+                          _buildExperienceSection(resume.workExperiences),
+                        16.height,
+
+                        /// Selected Projects Section
+                        if (resume.projects.isNotEmpty)
+                          _buildProjectsSection(resume.projects),
+                        16.height,
+
+                        /// Education and Certifications Row
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            /// Education Section
+                            if (resume.educations.isNotEmpty)
+                              Expanded(
+                                child: _buildEducationSection(resume.educations),
+                              ),
+
+                            if (resume.educations.isNotEmpty &&
+                                resume.certifications.isNotEmpty)
+                              12.width,
+
+                            /// Certifications Section
+                            if (resume.certifications.isNotEmpty)
+                              Expanded(
+                                child: _buildCertificationsSection(resume.certifications),
+                              ),
+                          ],
+                        ),
+
+                        24.height,
+                      ],
+                    ),
                   ),
                 ),
               ),
+
+              /// Download Button
+              _buildDownloadButton(resume),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildDownloadButton(Resume resume) {
+    return Padding(
+      padding: EdgeInsets.all(16.w),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: () async {
+            try {
+              // Show loading dialog
+              Get.dialog(
+                const Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.primary,
+                  ),
+                ),
+                barrierDismissible: false,
+              );
+
+              // Generate and download PDF
+              await PdfDownloadHelper.downloadResumePdf(resume);
+
+              // Close loading dialog
+              Get.back();
+
+              // Show success message
+              Get.snackbar(
+                'Success',
+                'Resume downloaded successfully',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: Colors.green,
+                colorText: Colors.white,
+                duration: const Duration(seconds: 2),
+              );
+            } catch (e) {
+              // Close loading dialog if open
+              if (Get.isDialogOpen ?? false) {
+                Get.back();
+              }
+
+              // Show error message
+              Get.snackbar(
+                'Error',
+                'Failed to download resume: $e',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: Colors.red,
+                colorText: Colors.white,
+                duration: const Duration(seconds: 3),
+              );
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            padding: EdgeInsets.symmetric(vertical: 14.h),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.r),
             ),
-          ],
+          ),
+          child: const CommonText(
+            text: 'Download',
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
         ),
       ),
     );

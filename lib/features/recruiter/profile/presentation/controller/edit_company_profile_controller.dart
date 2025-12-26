@@ -18,6 +18,7 @@ class EditCompanyProfileController extends GetxController {
   RxBool isLoadingProfile = false.obs;
   RxBool isLoadingImage = false.obs;
   RxBool isLoadingUpdate = false.obs;
+  RxBool isPickingImage = false.obs; // Prevent multiple rapid taps
 
   final Rx<RecruiterProfileData?> profileData = Rx<RecruiterProfileData?>(null);
 
@@ -142,49 +143,37 @@ class EditCompanyProfileController extends GetxController {
     update();
 
     try {
-      // 1. Prepare the body
-      final body = {
-        "name": companyNameController.text,
-        "bio": overviewController.text,
-      };
+      // 1. Check if Profile Data or Profile Images changed
+      bool hasProfileChanges =
+          companyNameController.text != profileData.value?.name ||
+              overviewController.text != profileData.value?.bio ||
+              (coverPhotoPath.value.isNotEmpty && !coverPhotoPath.value.startsWith('http')) ||
+              (companyLogoPath.value.isNotEmpty && !companyLogoPath.value.startsWith('http'));
 
-      // 2. Prepare the files list
-      List<Map<String, String>> files = [];
+      // 2. Check if there are new Gallery Images
+      List<String> newGalleryImages = galleryImages
+          .where((path) => !path.startsWith('http'))
+          .toList();
 
-      if (coverPhotoPath.value.isNotEmpty && !coverPhotoPath.value.startsWith('http')) {
-        files.add({
-          "name": "cover",
-          "image": coverPhotoPath.value,
-        });
+      bool hasGalleryChanges = newGalleryImages.isNotEmpty;
+
+      // --- CASE 1: ONLY GALLERY CHANGES ---
+      if (hasGalleryChanges && !hasProfileChanges) {
+        await _updateGalleryOnly(newGalleryImages);
+      }
+      // --- CASE 2: ONLY PROFILE CHANGES ---
+      else if (!hasGalleryChanges && hasProfileChanges) {
+        await _updateProfileOnly();
+      }
+      // --- CASE 3: BOTH CHANGED ---
+      else if (hasGalleryChanges && hasProfileChanges) {
+        await _updateProfileAndGallery(newGalleryImages);
+      }
+      // --- CASE 4: NOTHING CHANGED ---
+      else {
+        Utils.successSnackBar("No changes detected", "You haven't modified anything.");
       }
 
-      if (companyLogoPath.value.isNotEmpty && !companyLogoPath.value.startsWith('http')) {
-        files.add({
-          "name": "image", // or "logo" depending on your backend
-          "image": companyLogoPath.value,
-        });
-      }
-
-      print("Files to upload: $files");
-
-      // 3. Call the multipart request
-      final response = await ApiService.multipartImage(
-        "user/profile",
-        body: body,
-        files: files,
-        method: "PATCH",
-        header: {
-          "Authorization": "Bearer ${LocalStorage.token}",
-        },
-      );
-
-      // 4. Handle response
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        Get.back(); // Close page after success
-        //Utils.successSnackBar("Profile updated successfully");
-      } else {
-        Utils.errorSnackBar(response.statusCode, response.message);
-      }
     } catch (e) {
       Utils.errorSnackBar(0, e.toString());
     }
@@ -193,14 +182,82 @@ class EditCompanyProfileController extends GetxController {
     update();
   }
 
+  // Separate function for Gallery API
+  Future<void> _updateGalleryOnly(List<String> images) async {
+    // Convert the List<String> of paths into a List of Maps that the API service expects
+    List<Map<String, String>> galleryFiles = images.map((path) => {
+      "name": "image", // This is the key name your backend expects
+      "image": path,   // This is the local file path (String)
+    }).toList();
 
-  // Pick cover photo
+    final response = await ApiService.multipartImage(
+      "user/gallery",
+      body: {},
+      files: galleryFiles, // Pass the mapped list here
+      method: "POST",
+      header: {"Authorization": "Bearer ${LocalStorage.token}"},
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      _handleSuccess();
+    } else {
+      Utils.errorSnackBar(response.statusCode, "Gallery update failed");
+    }
+  }
+
+  // Separate function for Profile API
+  Future<void> _updateProfileOnly() async {
+    final body = {"name": companyNameController.text, "bio": overviewController.text};
+    List<Map<String, String>> files = [];
+
+    if (coverPhotoPath.value.isNotEmpty && !coverPhotoPath.value.startsWith('http')) {
+      files.add({"name": "cover", "image": coverPhotoPath.value});
+    }
+    if (companyLogoPath.value.isNotEmpty && !companyLogoPath.value.startsWith('http')) {
+      files.add({"name": "image", "image": companyLogoPath.value});
+    }
+
+    final response = await ApiService.multipartImage(
+      "user/profile",
+      body: body,
+      files: files,
+      method: "PATCH",
+      header: {"Authorization": "Bearer ${LocalStorage.token}"},
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      _handleSuccess();
+    }
+  }
+
+  // Function to handle both
+  Future<void> _updateProfileAndGallery(List<String> images) async {
+    // Logic remains the same: hit Profile first, then Gallery
+    // (You can call the two functions above sequentially)
+    await _updateProfileOnly();
+    await _updateGalleryOnly(images);
+  }
+
+  void _handleSuccess() {
+    Get.back();
+    Utils.successSnackBar("Success", "Updated successfully");
+  }
+
+  // Pick cover photo with debouncing
   Future<void> pickCoverPhoto() async {
+    if (isPickingImage.value) return; // Prevent multiple calls
+
     try {
+      isPickingImage.value = true;
+
+      // Add a small delay to ensure UI state is settled
+      await Future.delayed(const Duration(milliseconds: 150));
+
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 80,
       );
+
       if (image != null) {
         coverPhotoPath.value = image.path;
         print("✅ Cover photo picked: ${image.path}");
@@ -211,16 +268,28 @@ class EditCompanyProfileController extends GetxController {
     } catch (e) {
       print("❌ Error picking cover photo: $e");
       Utils.errorSnackBar(0, "Failed to pick image: $e");
+    } finally {
+      // Reset the flag after a short delay to prevent immediate re-triggering
+      await Future.delayed(const Duration(milliseconds: 300));
+      isPickingImage.value = false;
     }
   }
 
-  // Pick company logo
+  // Pick company logo with debouncing
   Future<void> pickCompanyLogo() async {
+    if (isPickingImage.value) return; // Prevent multiple calls
+
     try {
+      isPickingImage.value = true;
+
+      // Add a small delay to ensure UI state is settled
+      await Future.delayed(const Duration(milliseconds: 150));
+
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 80,
       );
+
       if (image != null) {
         companyLogoPath.value = image.path;
         print("✅ Company logo picked: ${image.path}");
@@ -231,16 +300,28 @@ class EditCompanyProfileController extends GetxController {
     } catch (e) {
       print("❌ Error picking company logo: $e");
       Utils.errorSnackBar(0, "Failed to pick image: $e");
+    } finally {
+      // Reset the flag after a short delay to prevent immediate re-triggering
+      await Future.delayed(const Duration(milliseconds: 300));
+      isPickingImage.value = false;
     }
   }
 
-  // Add image to gallery
+  // Add image to gallery with debouncing
   Future<void> addGalleryImage() async {
+    if (isPickingImage.value) return; // Prevent multiple calls
+
     try {
+      isPickingImage.value = true;
+
+      // Add a small delay to ensure UI state is settled
+      await Future.delayed(const Duration(milliseconds: 150));
+
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 80,
       );
+
       if (image != null) {
         galleryImages.add(image.path);
         print("✅ Gallery image added: ${image.path}");
@@ -250,6 +331,10 @@ class EditCompanyProfileController extends GetxController {
     } catch (e) {
       print("❌ Error adding gallery image: $e");
       Utils.errorSnackBar(0, "Failed to pick image: $e");
+    } finally {
+      // Reset the flag after a short delay
+      await Future.delayed(const Duration(milliseconds: 300));
+      isPickingImage.value = false;
     }
   }
 
@@ -284,6 +369,6 @@ class EditCompanyProfileController extends GetxController {
     // Clear selection
     selectedImageIndices.clear();
 
-   // Utils.successSnackBar("${sortedIndices.length} image(s) removed");
+    // Utils.successSnackBar("${sortedIndices.length} image(s) removed");
   }
 }

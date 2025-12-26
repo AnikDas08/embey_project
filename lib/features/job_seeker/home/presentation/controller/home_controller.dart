@@ -18,9 +18,16 @@ class HomeController extends GetxController {
   RxList<String> bannerImages = <String>[].obs;
   final RxList<Map<String, dynamic>> categories = <Map<String, dynamic>>[].obs;
 
-  // ✅ CRITICAL FIX: Changed from List<JobPost>? to RxList
   RxList<JobPost> jobPost = <JobPost>[].obs;
   RxBool isLoadingJobs = false.obs;
+  RxBool isLoadingMore = false.obs;
+
+  // Pagination variables
+  RxInt currentPage = 1.obs;
+  RxInt totalPages = 1.obs;
+  RxInt totalJobs = 0.obs;
+  RxBool hasMorePages = true.obs;
+  Rx<int?> lastCursor = Rx<int?>(null);
 
   // Filter parameters
   RxString searchTerm = ''.obs;
@@ -176,8 +183,17 @@ class HomeController extends GetxController {
     }
   }
 
-  String _buildQueryParams() {
+  String _buildQueryParams({int? page}) {
     List<String> params = [];
+
+    // Check if we need to use cursor instead of page
+    if (currentPage.value == totalPages.value && lastCursor.value != null) {
+      // Use cursor when on the last page
+      params.add('cursor=${lastCursor.value}');
+    } else {
+      // Use page parameter for normal pagination
+      params.add('page=${page ?? currentPage.value}');
+    }
 
     if (searchTerm.value.isNotEmpty) {
       params.add('searchTerm=${Uri.encodeComponent(searchTerm.value)}');
@@ -206,24 +222,28 @@ class HomeController extends GetxController {
       params.add('experience_level=${selectedExperienceLevel.value}');
     }
 
-    return params.isEmpty ? '' : '?${params.join('&')}';
+    return '?${params.join('&')}';
   }
 
-  Future<void> getPost({bool useFilter = false}) async {
-    isLoadingJobs.value = true;
+  Future<void> getPost({bool useFilter = false, bool loadMore = false}) async {
+    // Prevent duplicate loading
+    if (loadMore && (isLoadingMore.value || !hasMorePages.value)) return;
+
+    if (loadMore) {
+      isLoadingMore.value = true;
+    } else {
+      isLoadingJobs.value = true;
+      currentPage.value = 1; // Reset to first page
+    }
 
     try {
-      String endpoint;
-
-      if (useFilter) {
-        endpoint = '${ApiEndPoint.job_post}${_buildQueryParams()}';
-      } else {
-        endpoint = ApiEndPoint.job_post;
-      }
+      int pageToLoad = loadMore ? currentPage.value + 1 : 1;
+      String endpoint = '${ApiEndPoint.job_post}${_buildQueryParams(page: pageToLoad)}';
 
       print("============ JOB POST REQUEST ============");
       print("Endpoint: $endpoint");
-      print("Using Filter: $useFilter");
+      print("Page: $pageToLoad");
+      print("Load More: $loadMore");
 
       final response = await ApiService.get(
           endpoint,
@@ -231,45 +251,59 @@ class HomeController extends GetxController {
       );
 
       print("Status Code: ${response.statusCode}");
-      print("Response Data: ${response.data}");
 
       if (response.statusCode == 200) {
         final jobPostResponse = JobPostResponse.fromJson(response.data);
 
-        print("Parsed Success: ${jobPostResponse.success}");
-        print("Parsed Message: ${jobPostResponse.message}");
-        print("Data is null? ${jobPostResponse.data == null}");
-        print("Data length: ${jobPostResponse.data?.length ?? 0}");
+        // Update pagination info
+        if (response.data['pagination'] != null) {
+          totalPages.value = response.data['pagination']['totalPage'] ?? 1;
+          totalJobs.value = response.data['pagination']['total'] ?? 0;
+          currentPage.value = response.data['pagination']['page'] ?? 1;
 
-        // ✅ CRITICAL FIX: Use .value assignment for RxList
+          // Store the cursor value for next request
+          lastCursor.value = response.data['pagination']['cursor'];
+
+          hasMorePages.value = currentPage.value < totalPages.value;
+
+          print("Pagination - Current: ${currentPage.value}, Total: ${totalPages.value}, Cursor: ${lastCursor.value}");
+        }
+
         if (jobPostResponse.data != null && jobPostResponse.data!.isNotEmpty) {
-          jobPost.value = jobPostResponse.data!;
-          print("✅ Job posts assigned: ${jobPost.length} items");
-
-          if (jobPost.isNotEmpty) {
-            final firstJob = jobPost[0];
-            print("First Job Title: ${firstJob.title}");
-            print("First Job Location: ${firstJob.location}");
-            print("First Job Salary: ${firstJob.minSalary} - ${firstJob.maxSalary}");
+          if (loadMore) {
+            // Append new jobs to existing list
+            jobPost.addAll(jobPostResponse.data!);
+            print("✅ Added ${jobPostResponse.data!.length} more jobs. Total: ${jobPost.length}");
+          } else {
+            // Replace list with new jobs
+            jobPost.value = jobPostResponse.data!;
+            print("✅ Loaded ${jobPost.length} jobs");
           }
         } else {
-          jobPost.clear();
-          print("⚠️ No jobs found in response");
+          if (!loadMore) {
+            jobPost.clear();
+            print("⚠️ No jobs found");
+          }
         }
       } else {
         Utils.errorSnackBar(response.statusCode, response.message);
-        jobPost.clear();
-        print("❌ Error response: ${response.statusCode}");
+        if (!loadMore) jobPost.clear();
       }
     } catch (e, stackTrace) {
       print("❌ Exception in getPost: $e");
       print("Stack trace: $stackTrace");
       Utils.errorSnackBar(0, "Failed to load jobs: ${e.toString()}");
-      jobPost.clear();
+      if (!loadMore) jobPost.clear();
     } finally {
       isLoadingJobs.value = false;
+      isLoadingMore.value = false;
       print("============ END JOB POST RESPONSE ============");
     }
+  }
+
+  // Load next page of jobs
+  Future<void> loadMoreJobs() async {
+    await getPost(useFilter: true, loadMore: true);
   }
 
   void applyFilters({
@@ -316,7 +350,6 @@ class HomeController extends GetxController {
   Future<void> toggleFavorite(String jobId) async {
     if (jobId.isEmpty) return;
 
-    // ✅ FIX: Updated to work with RxList
     final index = jobPost.indexWhere((job) => job.id == jobId);
     if (index == -1) {
       print("Error: Job ID not found in the list.");
@@ -328,7 +361,7 @@ class HomeController extends GetxController {
 
     // Optimistic Update
     job.isFavourite = !isCurrentlySaved;
-    jobPost.refresh(); // Trigger RxList update
+    jobPost.refresh();
 
     try {
       final response = await ApiService.post(
@@ -357,5 +390,6 @@ class HomeController extends GetxController {
 
   Future<void> refreshJobs() async {
     await getPost();
+    await getProfile();
   }
 }

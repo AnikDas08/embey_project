@@ -14,11 +14,22 @@ import '../controller/jobs_controller.dart';
 class JobsScreen extends StatelessWidget {
   JobsScreen({super.key});
   final JobController controller = Get.put(JobController());
+  final ScrollController _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
+    // Setup infinite scroll listener
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+        // Load more when user is 200px from bottom
+        controller.loadMoreJobs();
+      }
+    });
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Jobs')),
+      appBar: AppBar(
+        title: const Text('Jobs'),
+      ),
       body: Column(
         children: [
           // Search Bar - Fixed at top
@@ -30,8 +41,7 @@ class JobsScreen extends StatelessWidget {
                   isScrollControlled: true,
                   JobFilterBottomSheet(
                     controller: controller,
-                    onApply: () {
-                    },
+                    onApply: () {},
                     onClose: () {
                       Navigator.pop(context);
                     },
@@ -45,28 +55,17 @@ class JobsScreen extends StatelessWidget {
           ),
 
           // Auto Apply Widget
-          /*SliverToBoxAdapter(
-            child: Obx(() => AutoApply(
+          Obx(() => AutoApply(
               isEnabled: controller.autoApplHere.value,
               onToggle: (newValue) {
-                // Call the method in your controller
                 controller.toggleAutoApply(newValue);
-              },
-            )),
-          ),*/
+              })),
 
-          Obx(
-          () =>   AutoApply(
-                  isEnabled: controller.autoApplHere.value,
-                  onToggle: (newValue){
-                    controller.toggleAutoApply(newValue);
-                  })),
-
-          // Job List - Scrollable
+          // Job List - Scrollable with Pagination
           Expanded(
             child: Obx(() {
-              // Show loading indicator
-              if (controller.isLoadingJobs.value) {
+              // Show loading indicator for initial load
+              if (controller.isLoadingJobs.value && controller.jobPost.isEmpty) {
                 return Center(child: CircularProgressIndicator());
               }
 
@@ -92,26 +91,51 @@ class JobsScreen extends StatelessWidget {
                 );
               }
 
-              // Show job list
+              // Show job list with pagination
               return ListView.builder(
+                controller: _scrollController,
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
-                itemCount: controller.jobPost.length,
+                itemCount: controller.jobPost.length + 1, // +1 for loading indicator
                 itemBuilder: (context, index) {
+                  // Show loading indicator at the end
+                  if (index == controller.jobPost.length) {
+                    if (controller.isLoadingMore.value) {
+                      return Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20.h),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+
+                    // Show "No more jobs" message if at the end
+                    if (!controller.hasMorePages.value && controller.jobPost.isNotEmpty) {
+                      return Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20.h),
+                        child: Center(
+                          child: Text(
+                            'No more jobs to load',
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return SizedBox(height: 20.h);
+                  }
+
+                  // Display job card
                   final jobPost = controller.jobPost[index];
 
-                  // Calculate salary range safely
                   final minSalary = jobPost.minSalary ?? 0;
                   final maxSalary = jobPost.maxSalary ?? 0;
                   final salaryRange = '\$$minSalary - \$$maxSalary/month';
 
-                  // Get location safely
                   final location = jobPost.location ?? 'Location not specified';
-
-                  // Get job and recruiter titles safely
                   final jobTitle = jobPost.title ?? 'No Title Specified';
                   final companyName = jobPost.recruiter ?? 'Company N/A';
 
-                  // Format deadline date
                   String timePosted = '01 Dec 25';
                   if (jobPost.deadline != null) {
                     try {
@@ -122,12 +146,10 @@ class JobsScreen extends StatelessWidget {
                     }
                   }
 
-                  // Determine job properties safely
                   final jobType = jobPost.jobType?.toUpperCase();
                   final isFullTime = jobType == 'FULL_TIME';
                   final isRemote = jobType == 'REMOTE';
 
-                  // Get company logo with base URL
                   final thumbnail = jobPost.thumbnail ?? '';
                   String companyLogo;
 
@@ -189,7 +211,7 @@ class JobsScreen extends StatelessWidget {
   }
 }
 
-// ✅ NEW: Custom Filter Bottom Sheet for Jobs Screen
+// ✅ Custom Filter Bottom Sheet for Jobs Screen
 class JobFilterBottomSheet extends StatefulWidget {
   final JobController controller;
   final VoidCallback? onApply;
@@ -207,11 +229,9 @@ class JobFilterBottomSheet extends StatefulWidget {
 }
 
 class _JobFilterBottomSheetState extends State<JobFilterBottomSheet> {
-  // Controllers
   late TextEditingController minSalaryController;
   late TextEditingController maxSalaryController;
 
-  // State variables
   String? selectedCategory;
   List<String> selectedEmployeeTypes = [];
   List<String> selectedJobLevels = [];
@@ -221,7 +241,6 @@ class _JobFilterBottomSheetState extends State<JobFilterBottomSheet> {
   void initState() {
     super.initState();
 
-    // Initialize controllers with current values
     minSalaryController = TextEditingController(
         text: widget.controller.minSalary.value > 0
             ? widget.controller.minSalary.value.toString()
@@ -234,7 +253,6 @@ class _JobFilterBottomSheetState extends State<JobFilterBottomSheet> {
             : ''
     );
 
-    // Copy current filter values
     selectedCategory = widget.controller.selectedCategory.value.isEmpty
         ? null
         : widget.controller.selectedCategory.value;
@@ -265,10 +283,7 @@ class _JobFilterBottomSheetState extends State<JobFilterBottomSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Header
           _buildHeader(),
-
-          // Content
           Flexible(
             child: SingleChildScrollView(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -276,35 +291,17 @@ class _JobFilterBottomSheetState extends State<JobFilterBottomSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 20.h),
-
-                  // Category Dropdown Section
                   _buildCategorySection(),
-
                   SizedBox(height: 20.h),
-
-                  // Job Type Section
                   _buildJobTypeSection(),
-
                   SizedBox(height: 20.h),
-
-                  // Job Level Section
                   _buildJobLevelSection(),
-
                   SizedBox(height: 20.h),
-
-                  // Experience Level Section
                   _buildExperienceLevelSection(),
-
                   SizedBox(height: 20.h),
-
-                  // Salary Range Section
                   _buildSalaryRangeSection(),
-
                   SizedBox(height: 24.h),
-
-                  // Buttons
                   _buildButtonsRow(),
-
                   SizedBox(height: 24.h),
                 ],
               ),
@@ -594,11 +591,9 @@ class _JobFilterBottomSheetState extends State<JobFilterBottomSheet> {
             titleWeight: FontWeight.w600,
             isGradient: true,
             onTap: () {
-              // Parse salary values
               int minPrice = int.tryParse(minSalaryController.text) ?? 0;
               int maxPrice = int.tryParse(maxSalaryController.text) ?? 100000;
 
-              // Apply filters
               widget.controller.applyFilters(
                 category: selectedCategory,
                 minPrice: minPrice,

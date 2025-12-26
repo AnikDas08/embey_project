@@ -310,7 +310,7 @@ class CompanyInfoCard extends StatelessWidget {
                     ),
             ),
 
-            Expanded(
+            Flexible(
               child: CommonText(
                 text: companyName,
                 fontSize: 18.sp,

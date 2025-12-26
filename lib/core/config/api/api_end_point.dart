@@ -1,7 +1,7 @@
 class ApiEndPoint {
-  static const baseUrl = "https://shariful5001.binarybards.online/api/v1/";
-  static const imageUrl = "https://shariful5001.binarybards.online";
-  static const socketUrl = "https://shariful5001.binarybards.online";
+  static const baseUrl = "http://206.162.244.172:5001/api/v1/";
+  static const imageUrl = "http://206.162.244.172:5001";
+  static const socketUrl = "http://206.162.244.172:5001";
 
   static const signUp = "user";
   static const verifyEmail = "auth/verify-email";

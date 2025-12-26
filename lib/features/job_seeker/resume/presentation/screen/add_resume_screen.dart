@@ -232,7 +232,7 @@ class AddResumeScreen extends StatelessWidget {
             ),
 
             /// Arrow Icon
-            Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 24.sp),
+           // Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 24.sp),
           ],
         ),
       ),

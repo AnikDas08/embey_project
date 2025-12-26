@@ -56,7 +56,7 @@ class ApplicationDetail {
       history: (json['history'] as List?)
           ?.map((h) => History.fromJson(h))
           .toList() ?? [],
-      rejectionReason: json['rejectionReason'],
+      rejectionReason: json['rejectedReason'],
       createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
     );
   }

@@ -302,7 +302,7 @@ class ProfileController extends GetxController {
 
   void _showOtpPopUp() {
     List<TextEditingController> otpControllers = [];
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 4; i++) {
       otpControllers.add(TextEditingController());
     }
     showDialog(
@@ -317,7 +317,7 @@ class ProfileController extends GetxController {
               .join();
 
           // Validate OTP
-          if (otp.length != 6) {
+          if (otp.length != 4) {
             Utils.errorSnackBar(0, "Please enter a valid 6-digit OTP");
             return;
           }

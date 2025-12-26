@@ -10,6 +10,7 @@ import '../../../../../core/component/other_widgets/common_loader.dart';
 import '../../../../../core/component/screen/error_screen.dart';
 import '../../../../../core/component/text/common_text.dart';
 import '../../../../../core/component/text_field/common_text_field.dart';
+import '../../../../../core/config/api/api_end_point.dart';
 import '../../../../../core/utils/enum/enum.dart';
 import '../../../../../core/utils/extensions/extension.dart';
 import '../controller/message_controller.dart';
@@ -63,7 +64,19 @@ class _MessageScreenState extends State<MessageScreen> {
                   radius: 18.sp,
                   backgroundColor: Colors.white24,
                   child: ClipOval(
-                    child: CommonImage(imageSrc: controller.image, size: 36),
+                    child: Image.network(
+                      controller.image.startsWith("http")?controller.image:
+                      ApiEndPoint.imageUrl+controller.image,
+                    width: 36,
+                    height: 36,
+                    fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        height: 50.h,
+                        width: 50.w,
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.person, color: Colors.white),
+                      ),
+                    ),
                   ),
                 ),
                 12.width,

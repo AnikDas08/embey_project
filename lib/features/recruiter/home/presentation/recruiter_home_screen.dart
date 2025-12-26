@@ -28,17 +28,24 @@ class RecruiterHomeScreen extends StatelessWidget {
           children: [
             _buildHeader(),
             Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    16.height,
-                    _buildStatsGrid(),
-                    24.height,
-                    _buildRecentJobsSection(),
-                    16.height,
-                  ],
+              child: RefreshIndicator(
+                color: AppColors.primaryColor,
+                onRefresh: () async {
+                  await controller.refreshData();
+                },
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      16.height,
+                      _buildStatsGrid(),
+                      24.height,
+                      _buildRecentJobsSection(),
+                      16.height,
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -58,19 +65,14 @@ class RecruiterHomeScreen extends StatelessWidget {
         children: [
           // Logo
           Obx(() {
-            /*String image=controller.companyImage.value.startsWith("http")?
-            controller.companyImage.value:
-            ApiEndPoint.imageUrl+controller.companyImage.value;*/
-            //print("image 🤣🤣🤣🤣$image");
             return ClipOval(
               child: controller.companyImage.value.isNotEmpty
                   ? CommonImage(
-                  imageSrc: ApiEndPoint.imageUrl+controller.companyImage.value, size: 64.sp)
+                  imageSrc: ApiEndPoint.imageUrl + controller.companyImage.value,
+                  size: 64.sp)
                   : CommonImage(imageSrc: AppImages.logo, size: 64.sp),
             );
-          }
-          ),
-
+          }),
           8.width,
           // Company Info
           Expanded(
@@ -99,7 +101,7 @@ class RecruiterHomeScreen extends StatelessWidget {
               ],
             ),
           ),
-          // Action Icons remain same...
+          // Action Icons
           _buildActionIcon(
             AppIcons.chat,
             hasNotification: false,
@@ -109,7 +111,7 @@ class RecruiterHomeScreen extends StatelessWidget {
           ),
           8.width,
           Obx(
-            () => _buildActionIcon(
+                () => _buildActionIcon(
               AppIcons.notification,
               hasNotification: controller.notificationCount.value,
               onTap: () {
@@ -123,10 +125,10 @@ class RecruiterHomeScreen extends StatelessWidget {
   }
 
   Widget _buildActionIcon(
-    String imageSrc, {
-    required bool hasNotification,
-    required VoidCallback onTap,
-  }) {
+      String imageSrc, {
+        required bool hasNotification,
+        required VoidCallback onTap,
+      }) {
     return GestureDetector(
       onTap: onTap,
       child: Stack(
@@ -165,7 +167,7 @@ class RecruiterHomeScreen extends StatelessWidget {
         childAspectRatio: 1.6,
         children: [
           StatCard(
-            count: (summary?.activePosts ?? 0).toString().padLeft(2, '0'),
+            count: (controller.activeJobs.value).toString().padLeft(2, '0'),
             label: 'Active Jobs',
             backgroundColor: AppColors.primaryColor,
             onTap: () {
@@ -173,7 +175,7 @@ class RecruiterHomeScreen extends StatelessWidget {
             },
           ),
           StatCard(
-            count: (summary?.pendingRequest ?? 0).toString().padLeft(2, '0'),
+            count: (controller.pendingJobs.value ??0).toString().padLeft(2, '0'),
             label: 'Pending Request',
             backgroundColor: const Color(0xFF3AAFB9),
             onTap: () {
@@ -181,7 +183,7 @@ class RecruiterHomeScreen extends StatelessWidget {
             },
           ),
           StatCard(
-            count: (summary?.shortlistRequest ?? 0).toString().padLeft(2, '0'),
+            count: (controller.shortListsJobs).toString().padLeft(2, '0'),
             label: 'Short Listed',
             backgroundColor: const Color(0xFF008F37),
             onTap: () {
@@ -189,7 +191,7 @@ class RecruiterHomeScreen extends StatelessWidget {
             },
           ),
           StatCard(
-            count: (summary?.interviewRequest ?? 0).toString().padLeft(2, '0'),
+            count: (controller.interviewJobs.value).toString().padLeft(2, '0'),
             label: 'Interview',
             backgroundColor: AppColors.secondaryPrimary,
             onTap: () {
@@ -242,6 +244,7 @@ class RecruiterHomeScreen extends StatelessWidget {
       ],
     );
   }
+
   Widget _buildJobsList() {
     return Obx(
           () {
@@ -276,9 +279,9 @@ class RecruiterHomeScreen extends StatelessWidget {
           itemCount: controller.recentJobs.length,
           itemBuilder: (context, index) {
             final job = controller.recentJobs[index];
-            final thumbnailImage=job.thumbnail.startsWith("http")?
-            job.thumbnail:
-            ApiEndPoint.imageUrl+job.thumbnail;
+            final thumbnailImage = job.thumbnail.startsWith("http")
+                ? job.thumbnail
+                : ApiEndPoint.imageUrl + job.thumbnail;
             return RecruiterJobCard(
               jobTitle: job.title,
               location: job.location,
@@ -287,7 +290,7 @@ class RecruiterHomeScreen extends StatelessWidget {
               candidateCount: job.totalApplications,
               deadline: job.formattedDeadline,
               thumbnailImage: job.thumbnail,
-              userImages: job.userImages, // Pass the list here
+              userImages: job.userImages,
               onTap: () {
                 Get.toNamed(RecruiterRoutes.jobCardDetails, arguments: {
                   "postId": job.id,

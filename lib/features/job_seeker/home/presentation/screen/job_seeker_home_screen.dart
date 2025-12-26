@@ -17,9 +17,18 @@ import '../widgets/auto_apply.dart';
 class JobSeekerHomeScreen extends StatelessWidget {
   JobSeekerHomeScreen({super.key});
   final HomeController controller = Get.put(HomeController());
+  final ScrollController _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
+    // Setup infinite scroll listener
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+        // Load more when user is 200px from bottom
+        controller.loadMoreJobs();
+      }
+    });
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -47,7 +56,6 @@ class JobSeekerHomeScreen extends StatelessWidget {
               child: RefreshIndicator(
                 color: AppColors.primary,
                 onRefresh: () async {
-                  // Triggers all data fetching methods in parallel
                   await Future.wait([
                     controller.refreshJobs(),
                     controller.getProfile(),
@@ -56,7 +64,7 @@ class JobSeekerHomeScreen extends StatelessWidget {
                   ]);
                 },
                 child: CustomScrollView(
-                  // Force physics so pull-to-refresh works even with empty lists
+                  controller: _scrollController,
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
                     // Search Bar
@@ -103,56 +111,64 @@ class JobSeekerHomeScreen extends StatelessWidget {
 
                     SliverToBoxAdapter(child: 16.height),
 
-                    // Job Category Grid
+                    // Job Category Horizontal ListView
                     SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 10.w),
-                        child: Obx(() {
-                          final categoriesList = controller.categories;
-                          if (categoriesList.isEmpty && controller.isLoadingJobs.value) {
-                            return SizedBox(
-                              height: 150.h,
-                              child: const Center(child: CircularProgressIndicator()),
-                            );
-                          }
-                          if (categoriesList.isEmpty) {
-                            return SizedBox(
-                              height: 100.h,
-                              child: Center(
-                                child: Text(
-                                  'No categories available',
-                                  style: TextStyle(fontSize: 14.sp, color: Colors.grey),
-                                ),
-                              ),
-                            );
-                          }
-                          return GridView.count(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            crossAxisCount: 4,
-                            mainAxisSpacing: 10.h,
-                            crossAxisSpacing: 10.w,
-                            children: categoriesList.map((category) {
-                              return JobCategoryCard(
-                                imageSrc: category['image'] ?? "",
-                                title: category['name'],
-                                onTap: () {
-                                  Get.toNamed(JobSeekerRoutes.categoryDetails, arguments: {
-                                    "categoryId": category["id"],
-                                    "categoryName": category['name'],
-                                  });
-                                },
-                                isJobCountVisible: false,
-                              );
-                            }).toList(),
+                      child: Obx(() {
+                        final categoriesList = controller.categories;
+
+                        if (categoriesList.isEmpty && controller.isLoadingJobs.value) {
+                          return SizedBox(
+                            height: 120.h,
+                            child: const Center(child: CircularProgressIndicator()),
                           );
-                        }),
-                      ),
+                        }
+
+                        if (categoriesList.isEmpty) {
+                          return SizedBox(
+                            height: 100.h,
+                            child: Center(
+                              child: Text(
+                                'No categories available',
+                                style: TextStyle(fontSize: 14.sp, color: Colors.grey),
+                              ),
+                            ),
+                          );
+                        }
+
+                        return SizedBox(
+                          height: 120.h,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            padding: EdgeInsets.symmetric(horizontal: 20.w),
+                            itemCount: categoriesList.length,
+                            itemBuilder: (context, index) {
+                              final category = categoriesList[index];
+                              return Padding(
+                                padding: EdgeInsets.only(right: 12.w),
+                                child: SizedBox(
+                                  width: 85.w,
+                                  child: JobCategoryCard(
+                                    imageSrc: category['image'] ?? "",
+                                    title: category['name'],
+                                    onTap: () {
+                                      Get.toNamed(JobSeekerRoutes.categoryDetails, arguments: {
+                                        "categoryId": category["id"],
+                                        "categoryName": category['name'],
+                                      });
+                                    },
+                                    isJobCountVisible: false,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      }),
                     ),
 
                     SliverToBoxAdapter(child: 24.height),
 
-                    // Recommended Job Header
+                    // Recommended Job Header with Pagination Info
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -173,7 +189,7 @@ class JobSeekerHomeScreen extends StatelessWidget {
                       )),
                     ),
 
-                    // Recommended Job List - ✅ FIXED: Now uses Obx properly with RxList
+                    // Recommended Job List
                     SliverToBoxAdapter(
                       child: Obx(() {
                         // Check loading state and empty list
@@ -239,7 +255,37 @@ class JobSeekerHomeScreen extends StatelessWidget {
                       }),
                     ),
 
-                    SliverToBoxAdapter(child: 20.height),
+                    // Load More Indicator
+                    SliverToBoxAdapter(
+                      child: Obx(() {
+                        if (controller.isLoadingMore.value) {
+                          return Padding(
+                            padding: EdgeInsets.symmetric(vertical: 20.h),
+                            child: const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        }
+
+                        // Show "No more jobs" message if at the end
+                        if (!controller.hasMorePages.value && controller.jobPost.isNotEmpty) {
+                          return Padding(
+                            padding: EdgeInsets.symmetric(vertical: 20.h),
+                            child: Center(
+                              child: Text(
+                                'No more jobs to load',
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+
+                        return SizedBox(height: 20.h);
+                      }),
+                    ),
                   ],
                 ),
               ),

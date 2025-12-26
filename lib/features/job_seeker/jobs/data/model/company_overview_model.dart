@@ -1,23 +1,23 @@
 // lib/features/company/models/company_overview_model.dart
 
 class CompanyOverviewModel {
-  final bool? success;
-  final String? message;
-  final CompanyData? data;
+  final bool success;
+  final String message;
+  final CompanyData data;
 
   CompanyOverviewModel({
-    this.success,
-    this.message,
-    this.data,
+    required this.success,
+    required this.message,
+    required this.data,
   });
 
   factory CompanyOverviewModel.fromJson(Map<dynamic, dynamic> json) {
     return CompanyOverviewModel(
-      success: json['success'] as bool?,
-      message: json['message'] as String?,
+      success: json['success'] ?? false,
+      message: json['message'] ?? "",
       data: json['data'] != null
           ? CompanyData.fromJson(json['data'] as Map<String, dynamic>)
-          : null,
+          : CompanyData(),
     );
   }
 
@@ -25,93 +25,106 @@ class CompanyOverviewModel {
     return {
       'success': success,
       'message': message,
-      'data': data?.toJson(),
+      'data': data.toJson(),
     };
   }
 }
 
 class CompanyData {
-  final User? user;
-  final List<String>? gallery;
-  final List<RecentJob>? recentJobs;
+  final User user;
+  final List<String> gallery;
+  final List<RecentJob> recentJobs;
 
   CompanyData({
-    this.user,
-    this.gallery,
-    this.recentJobs,
-  });
+    User? user,
+    List<String>? gallery,
+    List<RecentJob>? recentJobs,
+  })  : user = user ?? User(),
+        gallery = gallery ?? [],
+        recentJobs = recentJobs ?? [];
 
   factory CompanyData.fromJson(Map<String, dynamic> json) {
     return CompanyData(
       user: json['user'] != null
           ? User.fromJson(json['user'] as Map<String, dynamic>)
-          : null,
+          : User(),
       gallery: json['gallery'] != null
           ? List<String>.from(json['gallery'] as List)
-          : null,
+          : [],
       recentJobs: json['recentJobs'] != null
           ? (json['recentJobs'] as List)
           .map((job) => RecentJob.fromJson(job as Map<String, dynamic>))
           .toList()
-          : null,
+          : [],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'user': user?.toJson(),
+      'user': user.toJson(),
       'gallery': gallery,
-      'recentJobs': recentJobs?.map((job) => job.toJson()).toList(),
+      'recentJobs': recentJobs.map((job) => job.toJson()).toList(),
     };
   }
 }
 
 class User {
-  final String? id;
-  final String? name;
-  final String? role;
-  final String? email;
-  final String? image;
-  final String? status;
-  final bool? verified;
-  final bool? isSocialLogin;
-  final List<dynamic>? skills;
-  final List<dynamic>? educations;
-  final List<dynamic>? workExperiences;
-  final String? createdAt;
-  final String? updatedAt;
+  final String id;
+  final String name;
+  final String role;
+  final String email;
+  final String image;
+  final String cover;
+  final String overview;
+  final String aboutUs;
+  final String status;
+  final bool verified;
+  final bool isSocialLogin;
+  final List<dynamic> skills;
+  final List<dynamic> educations;
+  final List<dynamic> workExperiences;
+  final String createdAt;
+  final String updatedAt;
 
   User({
-    this.id,
-    this.name,
-    this.role,
-    this.email,
-    this.image,
-    this.status,
-    this.verified,
-    this.isSocialLogin,
-    this.skills,
-    this.educations,
-    this.workExperiences,
-    this.createdAt,
-    this.updatedAt,
-  });
+    this.id = "",
+    this.name = "",
+    this.role = "",
+    this.email = "",
+    this.image = "",
+    this.status = "",
+    this.verified = false,
+    this.isSocialLogin = false,
+    List<dynamic>? skills,
+    List<dynamic>? educations,
+    List<dynamic>? workExperiences,
+    this.createdAt = "",
+    this.updatedAt = "",
+    this.cover = "",
+    this.overview = "",
+    this.aboutUs = "",
+  })  : skills = skills ?? [],
+        educations = educations ?? [],
+        workExperiences = workExperiences ?? [];
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['_id'] as String?,
-      name: json['name'] as String?,
-      role: json['role'] as String?,
-      email: json['email'] as String?,
-      image: json['image'] as String?,
-      status: json['status'] as String?,
-      verified: json['verified'] as bool?,
-      isSocialLogin: json['isSocialLogin'] as bool?,
-      skills: json['skills'] as List<dynamic>?,
-      educations: json['educations'] as List<dynamic>?,
-      workExperiences: json['workExperiences'] as List<dynamic>?,
-      createdAt: json['createdAt'] as String?,
-      updatedAt: json['updatedAt'] as String?,
+      id: json['_id'] ?? "",
+      name: json['name'] ?? "",
+      role: json['role'] ?? "",
+      email: json['email'] ?? "",
+      image: json['image'] ?? "",
+      cover: json['cover'] ?? "",
+      status: json['status'] ?? "",
+      verified: json['verified'] ?? false,
+      isSocialLogin: json['isSocialLogin'] ?? false,
+      skills: json['skills'] ?? [],
+      educations: json['educations'] ?? [],
+      workExperiences: json['workExperiences'] ?? [],
+      createdAt: json['createdAt'] ?? "",
+      updatedAt: json['updatedAt'] ?? "",
+      overview: json['company_overview'] ?? "",
+      aboutUs: json['about_us'] ?? "",
     );
   }
 
@@ -122,6 +135,7 @@ class User {
       'role': role,
       'email': email,
       'image': image,
+      'cover': cover,
       'status': status,
       'verified': verified,
       'isSocialLogin': isSocialLogin,
@@ -130,6 +144,8 @@ class User {
       'workExperiences': workExperiences,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      'company_overview': overview,
+      'about_us': aboutUs,
     };
   }
 }
@@ -147,73 +163,74 @@ class CompanyJobItem {
 }
 
 class RecentJob {
-  final String? id;
-  final String? thumbnail;
-  final String? recruiter;
-  final String? title;
-  final String? description;
-  final String? status;
-  final String? category;
-  final String? jobType;
-  final String? jobLevel;
-  final String? experienceLevel;
-  final int? minSalary;
-  final int? maxSalary;
-  final String? location;
-  final List<String>? requiredSkills;
-  final String? deadline;
-  final GeoLocation? geoLocation;
-  final bool? isDeleted;
-  final String? createdAt;
-  final String? updatedAt;
+  final String id;
+  final String thumbnail;
+  final String recruiter;
+  final String title;
+  final String description;
+  final String status;
+  final String category;
+  final String jobType;
+  final String jobLevel;
+  final String experienceLevel;
+  final int minSalary;
+  final int maxSalary;
+  final String location;
+  final List<String> requiredSkills;
+  final String deadline;
+  final GeoLocation geoLocation;
+  final bool isDeleted;
+  final String createdAt;
+  final String updatedAt;
 
   RecentJob({
-    this.id,
-    this.thumbnail,
-    this.recruiter,
-    this.title,
-    this.description,
-    this.status,
-    this.category,
-    this.jobType,
-    this.jobLevel,
-    this.experienceLevel,
-    this.minSalary,
-    this.maxSalary,
-    this.location,
-    this.requiredSkills,
-    this.deadline,
-    this.geoLocation,
-    this.isDeleted,
-    this.createdAt,
-    this.updatedAt,
-  });
+    this.id = "",
+    this.thumbnail = "",
+    this.recruiter = "",
+    this.title = "",
+    this.description = "",
+    this.status = "",
+    this.category = "",
+    this.jobType = "",
+    this.jobLevel = "",
+    this.experienceLevel = "",
+    this.minSalary = 0,
+    this.maxSalary = 0,
+    this.location = "",
+    List<String>? requiredSkills,
+    this.deadline = "",
+    GeoLocation? geoLocation,
+    this.isDeleted = false,
+    this.createdAt = "",
+    this.updatedAt = "",
+  })  : requiredSkills = requiredSkills ?? [],
+        geoLocation = geoLocation ?? GeoLocation();
 
   factory RecentJob.fromJson(Map<String, dynamic> json) {
     return RecentJob(
-      id: json['_id'] as String?,
-      thumbnail: json['thumbnail'] as String?,
-      recruiter: json['recruiter'] as String?,
-      title: json['title'] as String?,
-      description: json['description'] as String?,
-      status: json['status'] as String?,
-      category: json['category'] as String?,
-      jobType: json['job_type'] as String?,
-      jobLevel: json['job_level'] as String?,
-      experienceLevel: json['experience_level'] as String?,
-      minSalary: json['min_salary'] as int?,
-      maxSalary: json['max_salary'] as int?,
-      location: json['location'] as String?,
+      id: json['_id'] ?? "",
+      thumbnail: json['thumbnail'] ?? "",
+      recruiter: json['recruiter'] ?? "",
+      title: json['title'] ?? "",
+      description: json['description'] ?? "",
+      status: json['status'] ?? "",
+      category: json['category'] ?? "",
+      jobType: json['job_type'] ?? "",
+      jobLevel: json['job_level'] ?? "",
+      experienceLevel: json['experience_level'] ?? "",
+      minSalary: json['min_salary'] ?? 0,
+      maxSalary: json['max_salary'] ?? 0,
+      location: json['location'] ?? "",
       requiredSkills: json['required_skills'] != null
           ? List<String>.from(json['required_skills'] as List)
-          : null,
-      deadline: json['deadline'] as String?,
+          : [],
+      deadline: json['deadline'] ?? "",
       geoLocation: json['gioLocation'] != null
           ? GeoLocation.fromJson(json['gioLocation'] as Map<String, dynamic>)
-          : null,
-      isDeleted: json['is_deleted'] as bool?,
-      createdAt: json['createdAt'] as String?,
-      updatedAt: json['updatedAt'] as String?,
+          : GeoLocation(),
+      isDeleted: json['is_deleted'] ?? false,
+      createdAt: json['createdAt'] ?? "",
+      updatedAt: json['updatedAt'] ?? "",
     );
   }
 
@@ -234,7 +251,7 @@ class RecentJob {
       'location': location,
       'required_skills': requiredSkills,
       'deadline': deadline,
-      'gioLocation': geoLocation?.toJson(),
+      'gioLocation': geoLocation.toJson(),
       'is_deleted': isDeleted,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
@@ -242,37 +259,38 @@ class RecentJob {
   }
 
   String get formattedSalary {
-    if (minSalary == null && maxSalary == null) return 'Salary not specified';
-    if (minSalary != null && maxSalary != null) {
+    if (minSalary == 0 && maxSalary == 0) return 'Salary not specified';
+    if (minSalary > 0 && maxSalary > 0) {
       return '\$${minSalary} - \$${maxSalary}';
     }
-    if (minSalary != null) return '\$${minSalary}+';
-    return '\$${maxSalary}';
+    if (minSalary > 0) return '\$${minSalary}+';
+    if (maxSalary > 0) return '\$${maxSalary}';
+    return 'Salary not specified';
   }
 
   String get formattedJobType {
-    if (jobType == null) return '';
-    return jobType!.replaceAll('_', ' ').toLowerCase().split(' ').map((word) {
+    if (jobType.isEmpty) return '';
+    return jobType.replaceAll('_', ' ').toLowerCase().split(' ').map((word) {
       return word[0].toUpperCase() + word.substring(1);
     }).join(' ');
   }
 }
 
 class GeoLocation {
-  final String? type;
-  final List<double>? coordinates;
+  final String type;
+  final List<double> coordinates;
 
   GeoLocation({
-    this.type,
-    this.coordinates,
-  });
+    this.type = "",
+    List<double>? coordinates,
+  }) : coordinates = coordinates ?? [];
 
   factory GeoLocation.fromJson(Map<String, dynamic> json) {
     return GeoLocation(
-      type: json['type'] as String?,
+      type: json['type'] ?? "",
       coordinates: json['coordinates'] != null
           ? List<double>.from(json['coordinates'] as List)
-          : null,
+          : [],
     );
   }
 

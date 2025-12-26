@@ -12,11 +12,41 @@ import 'package:embeyi/core/utils/extensions/extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../widgets/job_details_widgets.dart';
 import '../controller/job_details_controller.dart';
 
 class JobDetailsScreen extends StatelessWidget {
   const JobDetailsScreen({super.key});
+
+  // Function to launch URL in external browser
+  Future<void> _launchURL(String url) async {
+    try {
+      final Uri uri = Uri.parse(url);
+
+      // Try to launch in external browser
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication, // Opens in external browser
+        );
+      } else {
+        Get.snackbar(
+          "Error",
+          "Could not open the URL",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        "Invalid URL: ${e.toString()}",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -121,35 +151,29 @@ class JobDetailsScreen extends StatelessWidget {
                               color: AppColors.secondaryText,
                             ),
                             8.height,
-                            const JobDetailsSectionHeader(
-                              title: 'Your Profile Matches 90% with this Job',
-                            ),
 
                             12.height,
 
                             if(controller.isNotSystem==false)
-                            CompanyInfoCard(
-                              companyName: controller.getCompanyName(),
-                              companyLogo: controller.getCompanyLogo().isNotEmpty
-                                  ? controller.getCompanyLogo()
-                                  : AppImages.companyLogo,
-                              onTap: () {
-                                Get.toNamed(JobSeekerRoutes.companyOverview,arguments: controller.getRecuirterId());
-                              },
-                            ),
-                            if(controller.isNotSystem==true && controller.recruiter_company!="")
                               CompanyInfoCard(
-                                companyName: controller.recruiter_company!,
+                                companyName: controller.getCompanyName(),
                                 companyLogo: controller.getCompanyLogo().isNotEmpty
                                     ? controller.getCompanyLogo()
                                     : AppImages.companyLogo,
                                 onTap: () {
+                                  Get.toNamed(JobSeekerRoutes.companyOverview,arguments: controller.getRecuirterId());
+                                },
+                              ),
+                            if(controller.isNotSystem==true && controller.recruiter_company!="")
+                              CompanyInfoCard(
+                                companyName: controller.recruiter_company,
+                                companyLogo: controller.getCompanyLogo().isNotEmpty
+                                    ? controller.getCompanyLogo().startsWith("http")?controller.getCompanyLogo():ApiEndPoint.imageUrl+controller.getCompanyLogo()
+                                    : AppImages.companyLogo,
+                                onTap: () {
                                   final url=controller.url;
                                   if(url!=""){
-                                    Get.toNamed(JobSeekerRoutes.jobWebView,arguments: {
-                                      'url': url,
-                                      'title': controller.getJobTitle(),
-                                    });
+                                    _launchURL(url);
                                   }
                                   else{
                                     Get.snackbar("Error","Job URL not available");
@@ -161,7 +185,6 @@ class JobDetailsScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-
                       16.height,
                       CommonText(
                         text: 'Job Description',
@@ -224,11 +247,13 @@ class JobDetailsScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               CommonText(text: "• ", fontSize: 14.sp, fontWeight: FontWeight.bold),
-                              CommonText(
-                                text: item,
-                                fontSize: 14.sp,
-                                color: AppColors.secondaryText,
-                                maxLines: 5,
+                              Expanded(
+                                child: CommonText(
+                                  text: item,
+                                  fontSize: 14.sp,
+                                  color: AppColors.secondaryText,
+                                  maxLines: 5,
+                                ),
                               ),
                             ],
                           ),
@@ -250,24 +275,26 @@ class JobDetailsScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               CommonText(text: "• ", fontSize: 14.sp, fontWeight: FontWeight.bold),
-                              CommonText(
-                                text: item,
-                                fontSize: 14.sp,
-                                color: AppColors.secondaryText,
-                                maxLines: 5,
+                              Expanded(
+                                child: CommonText(
+                                  text: item,
+                                  fontSize: 14.sp,
+                                  color: AppColors.secondaryText,
+                                  maxLines: 5,
+                                ),
                               ),
                             ],
                           ),
                         )).toList(),
                       ],
 
-                       if (controller.getCategory().isNotEmpty) ...[
-                      CommonText(
-                        text: 'Category: ${controller.getCategory()}',
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.secondaryText,
-                      ),
+                      if (controller.getCategory().isNotEmpty) ...[
+                        CommonText(
+                          text: 'Category: ${controller.getCategory()}',
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.secondaryText,
+                        ),
                       ],
                       16.height,
                     ],
@@ -284,18 +311,15 @@ class JobDetailsScreen extends StatelessWidget {
                 top: false,
                 child: controller.isNotSystem==true?
                 CommonButton(
-                    titleText: "Review and Apply",
+                  titleText: "Review and Apply",
                   onTap: () {
-                      final url=controller.url;
-                      if(url!=""){
-                        Get.toNamed(JobSeekerRoutes.jobWebView,arguments: {
-                          'url': url,
-                          'title': controller.getJobTitle(),
-                        });
-                      }
-                      else{
-                        Get.snackbar("Error","Job URL not available");
-                      }
+                    final url=controller.url;
+                    if(url!=""){
+                      _launchURL(url);
+                    }
+                    else{
+                      Get.snackbar("Error","Job URL not available");
+                    }
                   },
                 )
                     :

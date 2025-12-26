@@ -17,6 +17,10 @@ class RecruiterHomeController extends GetxController {
   final RxBool isLoadingJobs = false.obs;
   final RxBool isLoadingProfile = false.obs;
   final RxBool notificationCount = false.obs;
+  final RxInt activeJobs = 0.obs;
+  final RxInt pendingJobs = 0.obs;
+  final RxInt shortListsJobs = 0.obs;
+  final RxInt interviewJobs = 0.obs;
 
   @override
   void onInit() {
@@ -42,6 +46,15 @@ class RecruiterHomeController extends GetxController {
         companyName.value = profileModel.data.name;
         companyImage.value = profileModel.data.image;
         companyAddress.value = profileModel.data.address;
+        activeJobs.value = response.data["data"]["overviewSummury"]["activePosts"];
+        pendingJobs.value = response.data["data"]["overviewSummury"]["pendingRequest"];
+        shortListsJobs.value = response.data["data"]["overviewSummury"]["shortlistRequest"];
+        interviewJobs.value = response.data["data"]["overviewSummury"]["interviewRequest"];
+
+        print("activeJobs: ${activeJobs.value}");
+        print("activeJobs: ${pendingJobs.value}");
+        print("activeJobs: ${shortListsJobs.value}");
+        print("activeJobs: ${activeJobs.value}");
       } else {
         Utils.errorSnackBar(response.statusCode, response.message);
       }
@@ -52,27 +65,25 @@ class RecruiterHomeController extends GetxController {
     update();
   }
 
-  Future<void> readNotification()async{
-    try{
+  Future<void> readNotification() async {
+    try {
       final response = await ApiService.get(
           "notification",
           header: {
             "Content-Type": "application/json",
           }
       );
-      if(response.statusCode==200){
+      if (response.statusCode == 200) {
         final data = response.data['data'];
-        final count=data["unreadCount"];
-        if(count!=0){
-          notificationCount.value=true;
-        }
-        else{
-          notificationCount.value=false;
+        final count = data["unreadCount"];
+        if (count != 0) {
+          notificationCount.value = true;
+        } else {
+          notificationCount.value = false;
         }
       }
-    }
-    catch(e){
-
+    } catch (e) {
+      // Handle error silently
     }
   }
 
@@ -86,7 +97,7 @@ class RecruiterHomeController extends GetxController {
       );
       if (response.statusCode == 200) {
         final jobModel = RecruiterJobModel.fromJson(response.data);
-        recentJobs.value = jobModel.data.toList(); // Get first 3 jobs for recent
+        recentJobs.value = jobModel.data.toList();
       } else {
         Utils.errorSnackBar(response.statusCode, response.message);
       }
@@ -97,8 +108,13 @@ class RecruiterHomeController extends GetxController {
     update();
   }
 
-  void refreshData() {
-    getProfile();
-    getJobs();
+  /// Refreshes all data on the home screen
+  Future<void> refreshData() async {
+    // Run all refresh operations in parallel for better performance
+    await Future.wait([
+      getProfile(),
+      getJobs(),
+      readNotification(),
+    ]);
   }
 }
