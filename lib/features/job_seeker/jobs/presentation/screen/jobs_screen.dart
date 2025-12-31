@@ -26,180 +26,186 @@ class JobsScreen extends StatelessWidget {
       }
     });
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Jobs'),
-      ),
-      body: Column(
-        children: [
-          // Search Bar - Fixed at top
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: HomeSearchBar(
-              onFilterTap: () {
-                Get.bottomSheet(
-                  isScrollControlled: true,
-                  JobFilterBottomSheet(
-                    controller: controller,
-                    onApply: () {},
-                    onClose: () {
-                      Navigator.pop(context);
-                    },
-                  ),
-                );
-              },
-              onChanged: (value) {
-                controller.searchJobs(value);
-              },
-            ),
-          ),
-
-          // Auto Apply Widget
-          Obx(() => AutoApply(
-              isEnabled: controller.autoApplHere.value,
-              onToggle: (newValue) {
-                controller.toggleAutoApply(newValue);
-              })),
-
-          // Job List - Scrollable with Pagination
-          Expanded(
-            child: Obx(() {
-              // Show loading indicator for initial load
-              if (controller.isLoadingJobs.value && controller.jobPost.isEmpty) {
-                return Center(child: CircularProgressIndicator());
-              }
-
-              // Show empty state
-              if (controller.jobPost.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.work_off, size: 64.sp, color: Colors.grey),
-                      SizedBox(height: 16.h),
-                      Text(
-                        'No jobs available',
-                        style: TextStyle(fontSize: 18.sp, color: Colors.grey),
-                      ),
-                      SizedBox(height: 8.h),
-                      Text(
-                        'Try adjusting your filters',
-                        style: TextStyle(fontSize: 14.sp, color: Colors.grey.shade600),
-                      ),
-                    ],
-                  ),
-                );
-              }
-
-              // Show job list with pagination
-              return ListView.builder(
-                controller: _scrollController,
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                itemCount: controller.jobPost.length + 1, // +1 for loading indicator
-                itemBuilder: (context, index) {
-                  // Show loading indicator at the end
-                  if (index == controller.jobPost.length) {
-                    if (controller.isLoadingMore.value) {
-                      return Padding(
-                        padding: EdgeInsets.symmetric(vertical: 20.h),
-                        child: Center(child: CircularProgressIndicator()),
-                      );
-                    }
-
-                    // Show "No more jobs" message if at the end
-                    if (!controller.hasMorePages.value && controller.jobPost.isNotEmpty) {
-                      return Padding(
-                        padding: EdgeInsets.symmetric(vertical: 20.h),
-                        child: Center(
-                          child: Text(
-                            'No more jobs to load',
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-
-                    return SizedBox(height: 20.h);
-                  }
-
-                  // Display job card
-                  final jobPost = controller.jobPost[index];
-
-                  final minSalary = jobPost.minSalary ?? 0;
-                  final maxSalary = jobPost.maxSalary ?? 0;
-                  final salaryRange = '\$$minSalary - \$$maxSalary/month';
-
-                  final location = jobPost.location ?? 'Location not specified';
-                  final jobTitle = jobPost.title ?? 'No Title Specified';
-                  final companyName = jobPost.recruiter ?? 'Company N/A';
-                  final job_board = jobPost.jobsBoard ?? 'JOBARMAN';
-
-                  String timePosted = '01 Dec 25';
-                  if (jobPost.deadline != null) {
-                    try {
-                      final deadline = jobPost.deadline!;
-                      timePosted = '${deadline.day.toString().padLeft(2, '0')} ${_getMonthName(deadline.month)} ${deadline.year.toString().substring(2)}';
-                    } catch (e) {
-                      print("Error formatting date: $e");
-                    }
-                  }
-
-                  final jobType = jobPost.jobType?.toUpperCase();
-                  final isFullTime = jobType == 'FULL_TIME';
-                  final isRemote = jobType == 'REMOTE';
-
-                  final thumbnail = jobPost.thumbnail ?? '';
-                  String companyLogo;
-
-                  if (thumbnail.isEmpty) {
-                    companyLogo = 'assets/images/noImage.png';
-                  } else if (thumbnail.startsWith('http')) {
-                    companyLogo = thumbnail;
-                  } else {
-                    companyLogo = ApiEndPoint.imageUrl + thumbnail;
-                  }
-
-                  return Padding(
-                    padding: EdgeInsets.only(bottom: 16.h),
-                    child: JobCard(
-                      companyName: companyName,
-                      location: location,
-                      jobTitle: jobTitle,
-                      job_board: job_board,
-                      salaryRange: salaryRange,
-                      timePosted: timePosted,
-                      isFullTime: isFullTime,
-                      companyLogo: companyLogo,
-                      showFavoriteButton: true,
-                      isSaved: false,
-                      isRemote: isRemote,
-                      isFavorite: jobPost.isFavourite,
-                      isApplied: jobPost.isApplied ?? false,
-                      onTap: () {
-                        if (jobPost.id != null && jobPost.id!.isNotEmpty) {
-                          print("Job tapped: ${jobPost.id}");
-                          Get.toNamed(JobSeekerRoutes.jobDetails, arguments: jobPost.id);
-                        }
-                      },
-                      onFavoriteTap: () {
-                        final jobId = jobPost.id;
-                        if (jobId != null && jobId.isNotEmpty) {
-                          controller.toggleFavorite(jobId);
-                        }
+    return WillPopScope(
+      onWillPop: () async {
+        Get.offAllNamed(JobSeekerRoutes.home); // উদাহরণ: home screen এ নিয়ে যাবে
+        return false; // false দিয়ে back action block করছো
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Jobs'),
+        ),
+        body: Column(
+          children: [
+            // Search Bar - Fixed at top
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: HomeSearchBar(
+                onFilterTap: () {
+                  Get.bottomSheet(
+                    isScrollControlled: true,
+                    JobFilterBottomSheet(
+                      controller: controller,
+                      onApply: () {},
+                      onClose: () {
+                        Navigator.pop(context);
                       },
                     ),
                   );
                 },
-              );
-            }),
-          ),
-        ],
-      ),
-      bottomNavigationBar: SafeArea(
-        child: const CommonBottomNavBar(currentIndex: 1),
+                onChanged: (value) {
+                  controller.searchJobs(value);
+                },
+              ),
+            ),
+      
+            // Auto Apply Widget
+            Obx(() => AutoApply(
+                isEnabled: controller.autoApplHere.value,
+                onToggle: (newValue) {
+                  controller.toggleAutoApply(newValue);
+                })),
+      
+            // Job List - Scrollable with Pagination
+            Expanded(
+              child: Obx(() {
+                // Show loading indicator for initial load
+                if (controller.isLoadingJobs.value && controller.jobPost.isEmpty) {
+                  return Center(child: CircularProgressIndicator());
+                }
+      
+                // Show empty state
+                if (controller.jobPost.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.work_off, size: 64.sp, color: Colors.grey),
+                        SizedBox(height: 16.h),
+                        Text(
+                          'No jobs available',
+                          style: TextStyle(fontSize: 18.sp, color: Colors.grey),
+                        ),
+                        SizedBox(height: 8.h),
+                        Text(
+                          'Try adjusting your filters',
+                          style: TextStyle(fontSize: 14.sp, color: Colors.grey.shade600),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+      
+                // Show job list with pagination
+                return ListView.builder(
+                  controller: _scrollController,
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  itemCount: controller.jobPost.length + 1, // +1 for loading indicator
+                  itemBuilder: (context, index) {
+                    // Show loading indicator at the end
+                    if (index == controller.jobPost.length) {
+                      if (controller.isLoadingMore.value) {
+                        return Padding(
+                          padding: EdgeInsets.symmetric(vertical: 20.h),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
+      
+                      // Show "No more jobs" message if at the end
+                      if (!controller.hasMorePages.value && controller.jobPost.isNotEmpty) {
+                        return Padding(
+                          padding: EdgeInsets.symmetric(vertical: 20.h),
+                          child: Center(
+                            child: Text(
+                              'No more jobs to load',
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+      
+                      return SizedBox(height: 20.h);
+                    }
+      
+                    // Display job card
+                    final jobPost = controller.jobPost[index];
+      
+                    final minSalary = jobPost.minSalary ?? 0;
+                    final maxSalary = jobPost.maxSalary ?? 0;
+                    final salaryRange = '\$$minSalary - \$$maxSalary/month';
+      
+                    final location = jobPost.location ?? 'Location not specified';
+                    final jobTitle = jobPost.title ?? 'No Title Specified';
+                    final companyName = jobPost.recruiter ?? 'Company N/A';
+                    final job_board = jobPost.jobsBoard ?? 'JOBARMAN';
+      
+                    String timePosted = '01 Dec 25';
+                    if (jobPost.deadline != null) {
+                      try {
+                        final deadline = jobPost.deadline!;
+                        timePosted = '${deadline.day.toString().padLeft(2, '0')} ${_getMonthName(deadline.month)} ${deadline.year.toString().substring(2)}';
+                      } catch (e) {
+                        print("Error formatting date: $e");
+                      }
+                    }
+      
+                    final jobType = jobPost.jobType?.toUpperCase();
+                    final isFullTime = jobType == 'FULL_TIME';
+                    final isRemote = jobType == 'REMOTE';
+      
+                    final thumbnail = jobPost.thumbnail ?? '';
+                    String companyLogo;
+      
+                    if (thumbnail.isEmpty) {
+                      companyLogo = 'assets/images/noImage.png';
+                    } else if (thumbnail.startsWith('http')) {
+                      companyLogo = thumbnail;
+                    } else {
+                      companyLogo = ApiEndPoint.imageUrl + thumbnail;
+                    }
+      
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: 16.h),
+                      child: JobCard(
+                        companyName: companyName,
+                        location: location,
+                        jobTitle: jobTitle,
+                        job_board: job_board,
+                        salaryRange: salaryRange,
+                        timePosted: timePosted,
+                        isFullTime: isFullTime,
+                        companyLogo: companyLogo,
+                        showFavoriteButton: true,
+                        isSaved: false,
+                        isRemote: isRemote,
+                        isFavorite: jobPost.isFavourite,
+                        isApplied: jobPost.isApplied ?? false,
+                        onTap: () {
+                          if (jobPost.id != null && jobPost.id!.isNotEmpty) {
+                            print("Job tapped: ${jobPost.id}");
+                            Get.toNamed(JobSeekerRoutes.jobDetails, arguments: jobPost.id);
+                          }
+                        },
+                        onFavoriteTap: () {
+                          final jobId = jobPost.id;
+                          if (jobId != null && jobId.isNotEmpty) {
+                            controller.toggleFavorite(jobId);
+                          }
+                        },
+                      ),
+                    );
+                  },
+                );
+              }),
+            ),
+          ],
+        ),
+        bottomNavigationBar: SafeArea(
+          child: const CommonBottomNavBar(currentIndex: 1),
+        ),
       ),
     );
   }

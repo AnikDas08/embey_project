@@ -24,7 +24,7 @@ class PendingJobRequestScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildCategoryDropdown(controller),
+              _buildPostDropdown(controller),
               16.height,
               _buildCandidatesList(controller),
             ],
@@ -56,7 +56,7 @@ class PendingJobRequestScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryDropdown(PendingJobRequestController controller) {
+  Widget _buildPostDropdown(PendingJobRequestController controller) {
     return Obx(
           () => Container(
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
@@ -67,7 +67,7 @@ class PendingJobRequestScreen extends StatelessWidget {
         ),
         child: DropdownButtonHideUnderline(
           child: DropdownButton<String>(
-            value: controller.selectedCategory.value,
+            value: controller.selectedPostId.value,
             isExpanded: true,
             icon: Icon(
               Icons.keyboard_arrow_down,
@@ -79,15 +79,31 @@ class PendingJobRequestScreen extends StatelessWidget {
               fontWeight: FontWeight.w600,
               color: AppColors.black,
             ),
-            items: controller.categoryNames.map((String category) {
-              return DropdownMenuItem<String>(
-                value: category,
-                child: Text(category),
-              );
-            }).toList(),
+            items: [
+              // "All Posts" option
+              DropdownMenuItem<String>(
+                value: 'all',
+                child: Text(
+                  'All Posts',
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+              // Individual post options using unique IDs
+              ...controller.posts.map((post) {
+                return DropdownMenuItem<String>(
+                  value: post['id'] as String,
+                  child: Text(
+                    post['title'] as String,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                );
+              }).toList(),
+            ],
             onChanged: (String? newValue) {
               if (newValue != null) {
-                controller.selectCategory(newValue);
+                controller.selectPost(newValue);
               }
             },
           ),

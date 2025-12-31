@@ -6,23 +6,29 @@ import '../../../../../core/services/api/api_service.dart';
 import '../../../../../core/services/storage/storage_services.dart';
 import '../../data/model/home_model.dart';
 
-class AllJobCategoryController extends GetxController{
-
-
+class AllJobCategoryController extends GetxController {
   RxString categoryImage = "".obs;
   RxString categoryName = "".obs;
   UserData? profileData;
   RxList<String> bannerImages = <String>[].obs;
+
+  // Original list of all categories
+  final RxList<Map<String, dynamic>> allCategories = <Map<String, dynamic>>[].obs;
+
+  // Filtered list (displayed in UI)
   final RxList<Map<String, dynamic>> categories = <Map<String, dynamic>>[].obs;
-  String categoryId="";
+
+  // Search query
+  RxString searchQuery = ''.obs;
+
+  String categoryId = "";
   num? jobs;
 
   @override
-  void onInit(){
+  void onInit() {
     super.onInit();
     fetchCategories();
   }
-
 
   Future<void> fetchCategories() async {
     try {
@@ -36,18 +42,18 @@ class AllJobCategoryController extends GetxController{
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data['data'];
 
-        categories.value = data.map((item) {
-          categoryImage.value = item['image'] ?? "assets/images/noImage.png";
-          categoryName.value = item['name'] ?? "";
-          categoryId = item['_id'] ?? "";
-          jobs = item['jobs'] ?? "";
+        final categoryList = data.map((item) {
           return {
             "id": item['_id'] ?? "",
             "name": item['name'] ?? "",
             "image": item['image'] ?? "assets/images/noImage.png",
-            "jobs": item['jobs'] ?? "",
+            "jobs": item['jobs'] ?? 0,
           };
         }).toList();
+
+        // Store in both lists
+        allCategories.value = categoryList;
+        categories.value = categoryList;
 
         update();
       } else {
@@ -70,4 +76,29 @@ class AllJobCategoryController extends GetxController{
     }
   }
 
+  // Search categories by name
+  void searchCategories(String query) {
+    searchQuery.value = query.trim();
+
+    if (searchQuery.value.isEmpty) {
+      // Show all categories if search is empty
+      categories.value = allCategories;
+    } else {
+      // Filter categories by name (case-insensitive)
+      categories.value = allCategories.where((category) {
+        final categoryName = category['name']?.toString().toLowerCase() ?? '';
+        final searchLower = searchQuery.value.toLowerCase();
+        return categoryName.contains(searchLower);
+      }).toList();
+    }
+
+    update();
+  }
+
+  // Clear search
+  void clearSearch() {
+    searchQuery.value = '';
+    categories.value = allCategories;
+    update();
+  }
 }

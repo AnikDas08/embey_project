@@ -20,82 +20,88 @@ class MyProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.white,
-      appBar: AppBar(
+    return WillPopScope(
+      onWillPop: () async {
+        Get.offAllNamed(JobSeekerRoutes.home);
+        return false; // false দিয়ে back action block করছো
+      },
+      child: Scaffold(
         backgroundColor: AppColors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: AppColors.black, size: 20.sp),
-          onPressed: () => Navigator.pop(context),
+        appBar: AppBar(
+          backgroundColor: AppColors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios, color: AppColors.black, size: 20.sp),
+            onPressed: () => Navigator.pop(context),
+          ),
+          centerTitle: true,
+          title: CommonText(
+            text: 'My Profile',
+            fontWeight: FontWeight.w600,
+            fontSize: 20.sp,
+            color: AppColors.black,
+          ),
         ),
-        centerTitle: true,
-        title: CommonText(
-          text: 'My Profile',
-          fontWeight: FontWeight.w600,
-          fontSize: 20.sp,
-          color: AppColors.black,
-        ),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: GetBuilder<ProfileController>(
-            builder: (controller) {
-              return Column(
-                children: [
-                  16.height,
+        body: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: GetBuilder<ProfileController>(
+              builder: (controller) {
+                return Column(
+                  children: [
+                    16.height,
 
-                  /// Profile Header Section
-                  _buildProfileHeader(controller),
+                    /// Profile Header Section
+                    _buildProfileHeader(controller),
 
-                  48.height,
+                    48.height,
 
-                  /// Menu Items
-                  _buildMenuItem(
-                    color: AppColors.secondaryPrimary.withOpacity(0.1),
-                    imageSrc: AppIcons.personal,
-                    title: 'Personal Info',
-                    subtitle: 'Complete',
-                    onTap: () {
-                      Get.to(()=>PersonalInfoScreen());
-                    },
-                  ),
-                  16.height,
+                    /// Menu Items
+                    _buildMenuItem(
+                      color: AppColors.secondaryPrimary.withOpacity(0.1),
+                      imageSrc: AppIcons.personal,
+                      title: 'Personal Info',
+                      subtitle: 'Complete',
+                      onTap: () {
+                        Get.to(()=>PersonalInfoScreen());
+                      },
+                    ),
+                    16.height,
 
-                  _buildMenuItem(
-                    color: AppColors.primary.withOpacity(0.1),
-                    imageSrc: AppIcons.education2,
-                    title: 'Education',
-                    subtitle: 'Complete',
-                    onTap: () {
-                      Get.toNamed(JobSeekerRoutes.education);
-                    },
-                  ),
-                  16.height,
-                  _buildMenuItem(
-                    color: AppColors.success.withOpacity(0.1),
-                    imageSrc: AppIcons.workEdit,
-                    title: 'Work Experience',
-                    subtitle: 'Complete',
-                    onTap: () {
-                      Get.toNamed(JobSeekerRoutes.workExperience);
-                    },
-                  ),
-                  16.height,
-                  _buildMenuItem(
-                    color: AppColors.buttomNavBarColor.withOpacity(0.1),
-                    imageSrc: AppIcons.star,
-                    title: 'Skills',
-                    subtitle: 'Complete',
-                    onTap: () {
-                      Get.toNamed(JobSeekerRoutes.skills);
-                    },
-                    isLast: true,
-                  ),
-                ],
-              );
-            }
+                    _buildMenuItem(
+                      color: AppColors.primary.withOpacity(0.1),
+                      imageSrc: AppIcons.education2,
+                      title: 'Education',
+                      subtitle: 'Complete',
+                      onTap: () {
+                        Get.toNamed(JobSeekerRoutes.education);
+                      },
+                    ),
+                    16.height,
+                    _buildMenuItem(
+                      color: AppColors.success.withOpacity(0.1),
+                      imageSrc: AppIcons.workEdit,
+                      title: 'Work Experience',
+                      subtitle: 'Complete',
+                      onTap: () {
+                        Get.toNamed(JobSeekerRoutes.workExperience);
+                      },
+                    ),
+                    16.height,
+                    _buildMenuItem(
+                      color: AppColors.buttomNavBarColor.withOpacity(0.1),
+                      imageSrc: AppIcons.star,
+                      title: 'Skills',
+                      subtitle: 'Complete',
+                      onTap: () {
+                        Get.toNamed(JobSeekerRoutes.skills);
+                      },
+                      isLast: true,
+                    ),
+                  ],
+                );
+              }
+            ),
           ),
         ),
       ),

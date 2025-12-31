@@ -17,32 +17,38 @@ class JobPostScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.put(RecruiterJobPostController());
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: _buildAppBar(),
-      body: Column(
-        children: [
-          _buildTabBar(controller),
-          Expanded(
-            child: RefreshIndicator(
-              color: AppColors.primaryColor,
-              onRefresh: () async {
-                await controller.getJobs();
-              },
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Padding(
-                  padding: EdgeInsets.all(16.r),
-                  child: _buildJobsList(controller),
+    return WillPopScope(
+      onWillPop: ()async{
+        Get.offAllNamed(RecruiterRoutes.home); // উদাহরণ: home screen এ নিয়ে যাবে
+        return false; // false দিয়ে back action block করছো
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: _buildAppBar(),
+        body: Column(
+          children: [
+            _buildTabBar(controller),
+            Expanded(
+              child: RefreshIndicator(
+                color: AppColors.primaryColor,
+                onRefresh: () async {
+                  await controller.getJobs();
+                },
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Padding(
+                    padding: EdgeInsets.all(16.r),
+                    child: _buildJobsList(controller),
+                  ),
                 ),
               ),
             ),
-          ),
-          _buildCreateJobButton(controller),
-        ],
-      ),
-      bottomNavigationBar: const SafeArea(
-        child: CommonBottomNavBar(currentIndex: 2),
+            _buildCreateJobButton(controller),
+          ],
+        ),
+        bottomNavigationBar: const SafeArea(
+          child: CommonBottomNavBar(currentIndex: 2),
+        ),
       ),
     );
   }

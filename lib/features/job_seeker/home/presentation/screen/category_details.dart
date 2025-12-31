@@ -50,16 +50,47 @@ class CategoryDetails extends StatelessWidget {
             ),
           ),
 
-          // Job List - Scrollable
+          // Pagination Info
+          /*Obx(() {
+            if (controller.totalJobs.value > 0) {
+              return Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${controller.jobPost.length} of ${controller.totalJobs.value} jobs',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    if (controller.currentPage.value > 1)
+                      Text(
+                        'Page ${controller.currentPage.value} of ${controller.totalPages.value}',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            }
+            return SizedBox.shrink();
+          }),*/
+
+          // Job List - Scrollable with pagination
           Expanded(
             child: Obx(() {
-              // Show loading indicator
-              if (controller.isLoadingJobs.value) {
+              // Show loading indicator for initial load
+              if (controller.isLoadingJobs.value && controller.jobPost.isEmpty) {
                 return Center(child: CircularProgressIndicator());
               }
 
               // Show empty state
-              if (controller.jobPost.isEmpty) {
+              if (controller.jobPost.isEmpty && !controller.isLoadingJobs.value) {
                 return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -80,83 +111,99 @@ class CategoryDetails extends StatelessWidget {
                 );
               }
 
-              // Show job list
-              return ListView.builder(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                itemCount: controller.jobPost.length,
-                itemBuilder: (context, index) {
-                  final jobPost = controller.jobPost[index];
-
-                  // Calculate salary range safely
-                  final minSalary = jobPost.minSalary ?? 0;
-                  final maxSalary = jobPost.maxSalary ?? 0;
-                  final salaryRange = '\$$minSalary - \$$maxSalary/month';
-
-                  // Get location safely
-                  final location = jobPost.location ?? 'Location not specified';
-
-                  // Get job and recruiter titles safely
-                  final jobTitle = jobPost.title ?? 'No Title Specified';
-                  final companyName = jobPost.recruiter ?? 'Company N/A';
-
-                  // Format deadline date
-                  String timePosted = '01 Dec 25';
-                  if (jobPost.deadline != null) {
-                    try {
-                      final deadline = jobPost.deadline!;
-                      timePosted = '${deadline.day.toString().padLeft(2, '0')} ${_getMonthName(deadline.month)} ${deadline.year.toString().substring(2)}';
-                    } catch (e) {
-                      print("Error formatting date: $e");
+              // Show job list with pagination
+              return RefreshIndicator(
+                onRefresh: controller.refreshJobs,
+                child: ListView.builder(
+                  controller: controller.scrollController,
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  itemCount: controller.jobPost.length + (controller.hasMoreData.value ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    // Show loading indicator at the bottom
+                    if (index == controller.jobPost.length) {
+                      return Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        child: Center(
+                          child: controller.isLoadingMore.value
+                              ? CircularProgressIndicator()
+                              : SizedBox.shrink(),
+                        ),
+                      );
                     }
-                  }
 
-                  // Determine job properties safely
-                  final jobType = jobPost.jobType?.toUpperCase();
-                  final isFullTime = jobType == 'FULL_TIME';
-                  final isRemote = jobType == 'REMOTE';
+                    final jobPost = controller.jobPost[index];
 
-                  // Get company logo with base URL
-                  final thumbnail = jobPost.thumbnail ?? '';
-                  String companyLogo;
+                    // Calculate salary range safely
+                    final minSalary = jobPost.minSalary ?? 0;
+                    final maxSalary = jobPost.maxSalary ?? 0;
+                    final salaryRange = '\$$minSalary - \$$maxSalary/month';
 
-                  if (thumbnail.isEmpty) {
-                    companyLogo = 'assets/images/noImage.png';
-                  } else if (thumbnail.startsWith('http')) {
-                    companyLogo = thumbnail;
-                  } else {
-                    companyLogo = ApiEndPoint.imageUrl + thumbnail;
-                  }
+                    // Get location safely
+                    final location = jobPost.location ?? 'Location not specified';
 
-                  return Padding(
-                    padding: EdgeInsets.only(bottom: 16.h),
-                    child: JobCard(
-                      companyName: companyName,
-                      location: location,
-                      jobTitle: jobTitle,
-                      salaryRange: salaryRange,
-                      timePosted: timePosted,
-                      isFullTime: isFullTime,
-                      companyLogo: companyLogo,
-                      showFavoriteButton: true,
-                      isSaved: false,
-                      isRemote: isRemote,
-                      isFavorite: jobPost.isFavourite,
-                      isApplied: jobPost.isApplied ?? false,
-                      onTap: () {
-                        if (jobPost.id != null && jobPost.id!.isNotEmpty) {
-                          print("Job tapped: ${jobPost.id}");
-                          Get.toNamed(JobSeekerRoutes.jobDetails, arguments: jobPost.id);
-                        }
-                      },
-                      onFavoriteTap: () {
-                        final jobId = jobPost.id;
-                        if (jobId != null && jobId.isNotEmpty) {
-                          controller.toggleFavorite(jobId);
-                        }
-                      },
-                    ),
-                  );
-                },
+                    // Get job and recruiter titles safely
+                    final jobTitle = jobPost.title ?? 'No Title Specified';
+                    final companyName = jobPost.recruiter ?? 'Company N/A';
+
+                    // Format deadline date
+                    String timePosted = '01 Dec 25';
+                    if (jobPost.deadline != null) {
+                      try {
+                        final deadline = jobPost.deadline!;
+                        timePosted = '${deadline.day.toString().padLeft(2, '0')} ${_getMonthName(deadline.month)} ${deadline.year.toString().substring(2)}';
+                      } catch (e) {
+                        print("Error formatting date: $e");
+                      }
+                    }
+
+                    // Determine job properties safely
+                    final jobType = jobPost.jobType?.toUpperCase();
+                    final isFullTime = jobType == 'FULL_TIME';
+                    final isRemote = jobType == 'REMOTE';
+
+                    // Get company logo with base URL
+                    final thumbnail = jobPost.thumbnail ?? '';
+                    String companyLogo;
+
+                    if (thumbnail.isEmpty) {
+                      companyLogo = 'assets/images/noImage.png';
+                    } else if (thumbnail.startsWith('http')) {
+                      companyLogo = thumbnail;
+                    } else {
+                      companyLogo = ApiEndPoint.imageUrl + thumbnail;
+                    }
+
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: 16.h),
+                      child: JobCard(
+                        companyName: companyName,
+                        location: location,
+                        jobTitle: jobTitle,
+                        salaryRange: salaryRange,
+                        timePosted: timePosted,
+                        isFullTime: isFullTime,
+                        companyLogo: companyLogo,
+                        showFavoriteButton: true,
+                        isSaved: false,
+                        isRemote: isRemote,
+                        isFavorite: jobPost.isFavourite,
+                        isApplied: jobPost.isApplied ?? false,
+                        onTap: () {
+                          if (jobPost.id != null && jobPost.id!.isNotEmpty) {
+                            print("Job tapped: ${jobPost.id}");
+                            Get.toNamed(JobSeekerRoutes.jobDetails, arguments: jobPost.id);
+                          }
+                        },
+                        onFavoriteTap: () {
+                          final jobId = jobPost.id;
+                          if (jobId != null && jobId.isNotEmpty) {
+                            controller.toggleFavorite(jobId);
+                          }
+                        },
+                      ),
+                    );
+                  },
+                ),
               );
             }),
           ),
@@ -174,7 +221,7 @@ class CategoryDetails extends StatelessWidget {
   }
 }
 
-// ✅ NEW: Custom Filter Bottom Sheet for Category Screen
+// CategoryFilterBottomSheet remains the same...
 class CategoryFilterBottomSheet extends StatefulWidget {
   final CategoryDetailController controller;
   final VoidCallback? onApply;
@@ -192,11 +239,8 @@ class CategoryFilterBottomSheet extends StatefulWidget {
 }
 
 class _CategoryFilterBottomSheetState extends State<CategoryFilterBottomSheet> {
-  // Controllers
   late TextEditingController minSalaryController;
   late TextEditingController maxSalaryController;
-
-  // State variables
   List<String> selectedEmployeeTypes = [];
   List<String> selectedJobLevels = [];
   String? selectedExperienceLevel;
@@ -204,21 +248,16 @@ class _CategoryFilterBottomSheetState extends State<CategoryFilterBottomSheet> {
   @override
   void initState() {
     super.initState();
-
-    // Initialize controllers with current values
     minSalaryController = TextEditingController(
         text: widget.controller.minSalary.value > 0
             ? widget.controller.minSalary.value.toString()
             : ''
     );
-
     maxSalaryController = TextEditingController(
         text: widget.controller.maxSalary.value < 100000
             ? widget.controller.maxSalary.value.toString()
             : ''
     );
-
-    // Copy current filter values
     selectedEmployeeTypes = List.from(widget.controller.selectedJobTypes);
     selectedJobLevels = List.from(widget.controller.selectedJobLevels);
     selectedExperienceLevel = widget.controller.selectedExperienceLevel.value.isEmpty
@@ -246,10 +285,7 @@ class _CategoryFilterBottomSheetState extends State<CategoryFilterBottomSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Header
           _buildHeader(),
-
-          // Content
           Flexible(
             child: SingleChildScrollView(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -257,35 +293,17 @@ class _CategoryFilterBottomSheetState extends State<CategoryFilterBottomSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 20.h),
-
-                  // Category Info (Read-only)
                   _buildCategoryInfo(),
-
                   SizedBox(height: 20.h),
-
-                  // Job Type Section
                   _buildJobTypeSection(),
-
                   SizedBox(height: 20.h),
-
-                  // Job Level Section
                   _buildJobLevelSection(),
-
                   SizedBox(height: 20.h),
-
-                  // Experience Level Section
                   _buildExperienceLevelSection(),
-
                   SizedBox(height: 20.h),
-
-                  // Salary Range Section
                   _buildSalaryRangeSection(),
-
                   SizedBox(height: 24.h),
-
-                  // Buttons
                   _buildButtonsRow(),
-
                   SizedBox(height: 24.h),
                 ],
               ),
@@ -308,13 +326,7 @@ class _CategoryFilterBottomSheetState extends State<CategoryFilterBottomSheet> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           SizedBox(width: 24.w),
-          Text(
-            'Filter Jobs',
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          Text('Filter Jobs', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600)),
           GestureDetector(
             onTap: () => Get.back(),
             child: Icon(Icons.close, size: 24.sp),
@@ -339,11 +351,7 @@ class _CategoryFilterBottomSheetState extends State<CategoryFilterBottomSheet> {
           Expanded(
             child: Text(
               'Filtering in: ${widget.controller.categoryName.value}',
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w500,
-                color: Colors.blue.shade700,
-              ),
+              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500, color: Colors.blue.shade700),
             ),
           ),
         ],
@@ -355,10 +363,7 @@ class _CategoryFilterBottomSheetState extends State<CategoryFilterBottomSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Job Type',
-          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
-        ),
+        Text('Job Type', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500)),
         SizedBox(height: 8.h),
         Wrap(
           spacing: 8.w,
@@ -378,10 +383,7 @@ class _CategoryFilterBottomSheetState extends State<CategoryFilterBottomSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Job Level',
-          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
-        ),
+        Text('Job Level', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500)),
         SizedBox(height: 8.h),
         Wrap(
           spacing: 8.w,
@@ -400,10 +402,7 @@ class _CategoryFilterBottomSheetState extends State<CategoryFilterBottomSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Experience Level',
-          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
-        ),
+        Text('Experience Level', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500)),
         SizedBox(height: 8.h),
         Wrap(
           spacing: 8.w,
@@ -436,16 +435,11 @@ class _CategoryFilterBottomSheetState extends State<CategoryFilterBottomSheet> {
         decoration: BoxDecoration(
           color: isSelected ? Colors.blue : Colors.white,
           borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(
-            color: isSelected ? Colors.blue : Colors.grey.shade300,
-          ),
+          border: Border.all(color: isSelected ? Colors.blue : Colors.grey.shade300),
         ),
         child: Text(
           label,
-          style: TextStyle(
-            fontSize: 12.sp,
-            color: isSelected ? Colors.white : Colors.black87,
-          ),
+          style: TextStyle(fontSize: 12.sp, color: isSelected ? Colors.white : Colors.black87),
         ),
       ),
     );
@@ -464,16 +458,11 @@ class _CategoryFilterBottomSheetState extends State<CategoryFilterBottomSheet> {
         decoration: BoxDecoration(
           color: isSelected ? Colors.blue : Colors.white,
           borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(
-            color: isSelected ? Colors.blue : Colors.grey.shade300,
-          ),
+          border: Border.all(color: isSelected ? Colors.blue : Colors.grey.shade300),
         ),
         child: Text(
           label,
-          style: TextStyle(
-            fontSize: 12.sp,
-            color: isSelected ? Colors.white : Colors.black87,
-          ),
+          style: TextStyle(fontSize: 12.sp, color: isSelected ? Colors.white : Colors.black87),
         ),
       ),
     );
@@ -483,10 +472,7 @@ class _CategoryFilterBottomSheetState extends State<CategoryFilterBottomSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Salary Range',
-          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
-        ),
+        Text('Salary Range', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500)),
         SizedBox(height: 8.h),
         Row(
           children: [
@@ -548,11 +534,9 @@ class _CategoryFilterBottomSheetState extends State<CategoryFilterBottomSheet> {
             titleWeight: FontWeight.w600,
             isGradient: true,
             onTap: () {
-              // Parse salary values
               int minPrice = int.tryParse(minSalaryController.text) ?? 0;
               int maxPrice = int.tryParse(maxSalaryController.text) ?? 100000;
 
-              // Apply filters (categoryId is preserved in controller)
               widget.controller.applyFilters(
                 minPrice: minPrice,
                 maxPrice: maxPrice,

@@ -129,7 +129,7 @@ class JobDetailsScreen extends StatelessWidget {
                             JobTitleSection(
                               jobTitle: controller.getJobTitle(),
                               location: controller.getLocation(),
-                              salary: controller.isNotSystem==true?controller.salary_status!:controller.getSalary(),
+                              salary: controller.getSalary(),
                             ),
 
                             10.height,

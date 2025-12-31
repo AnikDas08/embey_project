@@ -79,6 +79,16 @@ class SignUpController extends GetxController {
 
   signUpUser() async {
 
+    if (passwordController.text.trim() !=
+        confirmPasswordController.text.trim()) {
+      ScaffoldMessenger.of(Get.context!).showSnackBar(
+        const SnackBar(
+          content: Text("Password and Confirm Password do not match"),
+        ),
+      );
+      return; // ⛔ এখানেই থেমে যাবে, API call হবে না
+    }
+
     if(LocalStorage.userRole==UserRole.jobSeeker){
       role="EMPLOYEE";
     }

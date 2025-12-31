@@ -16,7 +16,6 @@ class AddEducationController extends GetxController{
 
 
     try {
-
       // Prepare body data
       Map<String, String> body = {
       };

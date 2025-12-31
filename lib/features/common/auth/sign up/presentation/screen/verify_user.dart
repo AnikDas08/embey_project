@@ -151,7 +151,7 @@ class _VerifyUserState extends State<VerifyUser> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             CommonText(
-                                text: "Did't receive a code? ",
+                                text: "Didn't get a code? ",
                               fontSize: 16.sp,
                               color: AppColors.grey,
                               fontWeight: FontWeight.w500,

@@ -37,8 +37,6 @@ class EditPersonalController extends GetxController {
   final TextEditingController socialMediaController = TextEditingController();
   final TextEditingController summaryController = TextEditingController();
 
-  // Form Key
-  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   // Image Picker
   final ImagePicker _picker = ImagePicker();

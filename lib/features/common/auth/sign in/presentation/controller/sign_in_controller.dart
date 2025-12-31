@@ -1,7 +1,9 @@
 import 'package:embeyi/core/config/route/recruiter_routes.dart';
+import 'package:embeyi/core/utils/app_utils.dart';
 import 'package:embeyi/core/utils/enum/enum.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../../core/config/route/job_seeker_routes.dart';
 import '../../../../../../core/services/api/api_service.dart';
@@ -26,15 +28,6 @@ class SignInController extends GetxController {
   /// Sign in Api call here
 
   Future<void> signInUser() async {
-    /*if (LocalStorage.userRole == UserRole.jobSeeker) {
-      LocalStorage.isLogIn = true;
-      Get.toNamed(JobSeekerRoutes.home);
-    } else {
-      LocalStorage.isLogIn = true;
-      Get.toNamed(RecruiterRoutes.home);
-    }*/
-    //return;
-
     isLoading = true;
     update();
 
@@ -50,39 +43,73 @@ class SignInController extends GetxController {
 
     if (response.statusCode == 200) {
       var data = response.data;
+      String apiRole = data['data']["role"]; // "EMPLOYEE" or "RECRUITER"
 
+      print("User Role : 🤣🤣🤣🤣 $apiRole");
+
+      // Check if roles match BEFORE saving anything
+      bool roleMatches = (LocalStorage.userRole == UserRole.employer && apiRole == "RECRUITER") ||
+          (LocalStorage.userRole == UserRole.jobSeeker && apiRole == "EMPLOYEE");
+
+      if (!roleMatches) {
+        isLoading = false;
+        update();
+
+        Get.snackbar(
+          "Error",
+          "You are trying to login as the wrong user type",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+        return; // Exit here if roles don't match
+      }
+
+      // If we reach here, roles match - proceed with login
+      isLoading = false;
+      update();
+
+      Get.snackbar(
+        "Success",
+        "Login successful",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
+
+      // Save user data
       LocalStorage.token = data['data']["createToken"];
       LocalStorage.userId = data['data']["userId"];
-
-      //LocalStorage.myEmail = data['data']["attributes"]["email"];
       LocalStorage.isLogIn = true;
 
       LocalStorage.setBool(LocalStorageKeys.isLogIn, LocalStorage.isLogIn);
       LocalStorage.setString(LocalStorageKeys.userId, LocalStorage.userId);
       LocalStorage.setString(LocalStorageKeys.token, LocalStorage.token);
-      LocalStorage.setString(LocalStorageKeys.userRole, UserRole.employer.toString());
 
+      if(apiRole == "EMPLOYEE"){
+        LocalStorage.setString(LocalStorageKeys.userRole, UserRole.jobSeeker.toString());
+      } else {
+        LocalStorage.setString(LocalStorageKeys.userRole, UserRole.employer.toString());
+      }
 
-      // if (LocalStorage.myRole == 'consultant') {
-      //   Get.offAllNamed(AppRoutes.doctorHome);
-      // } else {
-      //   Get.offAllNamed(AppRoutes.patientsHome);
-      // }
-      print("User Role : 🤣🤣🤣🤣 ${LocalStorage.userRole}");
-      if(LocalStorage.userRole==UserRole.employer){
-        Get.offAllNamed(RecruiterRoutes.home);
-      }
-      else{
-        Get.offAllNamed(JobSeekerRoutes.home);
-      }
+      print("User Role Saved: ${LocalStorage.userRole}");
 
       emailController.clear();
       passwordController.clear();
+
+      // Navigate to appropriate screen
+      if(LocalStorage.userRole == UserRole.employer) {
+        Get.offAllNamed(RecruiterRoutes.home); // Replace with your route
+      } else {
+        Get.offAllNamed(JobSeekerRoutes.home); // Replace with your route
+      }
+
     } else {
+      isLoading = false;
+      update();
       Get.snackbar(response.statusCode.toString(), response.message);
     }
-
-    isLoading = false;
-    update();
   }
 }

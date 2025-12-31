@@ -2,24 +2,18 @@ import 'package:embeyi/core/config/route/app_routes.dart';
 import 'package:embeyi/core/config/route/recruiter_routes.dart';
 import 'package:embeyi/core/services/api/api_service.dart';
 import 'package:get/get.dart';
-import 'package:embeyi/core/utils/constants/app_images.dart';
-
 import '../../../home/data/model/application_model.dart';
 
 class PendingJobRequestController extends GetxController {
-  // Observable properties
-  final RxString selectedCategory = 'All Categories'.obs;
-  final RxString selectedCategoryId = ''.obs;
+  // Observable properties - now using post ID as the value
+  final RxString selectedPostId = 'all'.obs;
 
   final RxList<ApplicationData> applications = <ApplicationData>[].obs;
   final RxList<ApplicationData> filteredApplications = <ApplicationData>[].obs;
-  final RxList<Map<String, dynamic>> categories = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> posts = <Map<String, dynamic>>[].obs;
 
   final RxBool isLoading = true.obs;
   final RxBool isLoadingApplications = true.obs;
-
-  // Category options for dropdown
-  final RxList<String> categoryNames = <String>['All Categories'].obs;
 
   @override
   void onInit() {
@@ -28,9 +22,10 @@ class PendingJobRequestController extends GetxController {
   }
 
   Future<void> _loadInitialData() async {
-    await allCategories(); // Load categories first
+    await allPosts();      // Load posts first
     await pendingList();   // Then load applications
   }
+
   Future<void> pendingList() async {
     try {
       isLoading.value = true;
@@ -47,7 +42,6 @@ class PendingJobRequestController extends GetxController {
 
           print("✅ Applications loaded: ${applications.length}");
 
-          // Debug: Print first application to see structure
           if (applications.isNotEmpty) {
             print("📋 Sample application title: ${applications[0].title}");
           }
@@ -61,95 +55,74 @@ class PendingJobRequestController extends GetxController {
     }
   }
 
-  /// Fetch all job categories from API
-  Future<void> allCategories() async {
+  /// Fetch all posts from API
+  Future<void> allPosts() async {
     try {
-      final response = await ApiService.get("job-category");
+      final response = await ApiService.get("job-post/feed/user");
 
       if (response.statusCode == 200) {
         var data = response.data['data'] as List;
 
-        categories.assignAll(
+        posts.assignAll(
             data.map((e) => {
               "id": e['_id'],
-              "name": e['name'],
-              "jobs": e['jobs'],
+              "title": e['title'],
+              "thumbnail": e['thumbnail'],
+              "recruiter": e['recruiter'],
             }).toList()
         );
 
-        // Build dropdown list
-        categoryNames.value = ['All Categories'];
-        categoryNames.addAll(
-            categories.map((e) => e['name'] as String).toList()
-        );
-
-        print("✅ Categories loaded: ${categories.length}");
-        print("📋 Available categories: ${categoryNames}");
+        print("✅ Posts loaded: ${posts.length}");
+        print("📋 Available posts: ${posts.take(3).map((e) => e['title']).toList()}...");
       }
     } catch (e) {
-      print("❌ Error loading categories: $e");
+      print("❌ Error loading posts: $e");
     }
   }
 
-  /// Select category from dropdown
-  void selectCategory(String categoryName) {
-    selectedCategory.value = categoryName;
+  /// Get post title by ID
+  String getPostTitle(String postId) {
+    if (postId == 'all') return 'All Posts';
 
-    if (categoryName != 'All Categories') {
-      final category = categories.firstWhere(
-            (cat) => cat['name'] == categoryName,
-        orElse: () => {"id": "", "name": ""},
-      );
-      selectedCategoryId.value = category['id'] as String;
-      print("🔍 Selected: $categoryName (ID: ${selectedCategoryId.value})");
+    final post = posts.firstWhere(
+          (p) => p['id'] == postId,
+      orElse: () => {"title": "Unknown Post"},
+    );
+    return post['title'] as String;
+  }
+
+  /// Select post from dropdown
+  void selectPost(String postId) {
+    selectedPostId.value = postId;
+
+    if (postId == 'all') {
+      print("🔍 Selected: All Posts");
     } else {
-      selectedCategoryId.value = '';
-      print("🔍 Selected: All Categories");
+      print("🔍 Selected: ${getPostTitle(postId)} (ID: $postId)");
     }
 
     _applyFilter();
   }
 
-  /// Apply filter based on selected category
-  ///
-  /// FILTERING LOGIC:
-  /// Since the application response doesn't have a direct category field,
-  /// we need to match based on the job title or fetch full post details.
-  ///
-  /// Current approach: Filter by matching job title keywords with category name
-  ///
-  /// Example:
-  /// - Category: "UX/UI Designer"
-  /// - Application title: "Hiring UX Developer"
-  /// - Match: Contains "UX" keyword
+  /// Apply filter based on selected post
   void _applyFilter() {
-    if (selectedCategory.value == 'All Categories') {
+    if (selectedPostId.value == 'all') {
       // Show all applications
       filteredApplications.value = applications;
       print("📊 Showing all: ${filteredApplications.length} applications");
     } else {
-      // Filter by matching job title with category name
-      // This is a fuzzy match approach since we don't have direct category field
-
-      final categoryKeywords = selectedCategory.value
-          .toLowerCase()
-          .split(' ')
-          .where((word) => word.length > 2) // Only meaningful words
-          .toList();
+      // Filter by matching post title
+      final selectedTitle = getPostTitle(selectedPostId.value);
 
       filteredApplications.value = applications.where((application) {
-        final jobTitle = application.title.toLowerCase();
-
-        // Check if job title contains any category keyword
-        return categoryKeywords.any((keyword) => jobTitle.contains(keyword));
+        return application.title == selectedTitle;
       }).toList();
 
-      print("🔍 Filter: '${selectedCategory.value}'");
+      print("🔍 Filter: '$selectedTitle'");
       print("📊 Found: ${filteredApplications.length} applications");
 
-      // Debug: Show which titles matched
       if (filteredApplications.isNotEmpty) {
-        print("✅ Matched titles:");
+        print("✅ Matched applications:");
         for (var app in filteredApplications.take(3)) {
           print("   - ${app.title}");
         }

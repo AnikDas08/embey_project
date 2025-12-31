@@ -25,39 +25,45 @@ class HistoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: CommonAppbar(
-        title: 'Jobs History',
-        centerTitle: true,
-        showBackButton: true,
-      ),
-      body: Column(
-        children: [
-          16.height,
-          _buildTabBar(),
-          16.height,
-          Obx(() {
-            if (controller.currentTabIndex.value == 2) {
-              return Column(
-                children: [
-                  InterviewFilterButtons(
-                    selectedIndex: controller.interviewFilterIndex.value,
-                    onFilterChanged: (index) {
-                      controller.setInterviewFilter(index);
-                    },
-                  ),
-                  16.height,
-                ],
-              );
-            }
-            return const SizedBox.shrink();
-          }),
-          Expanded(child: _buildTabBarView()),
-        ],
-      ),
-      bottomNavigationBar: const SafeArea(
-        child: CommonBottomNavBar(currentIndex: 2),
+    return WillPopScope(
+      onWillPop: () async {
+        Get.offAllNamed(JobSeekerRoutes.home);
+        return false; // false দিয়ে back action block করছো
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: CommonAppbar(
+          title: 'Jobs History',
+          centerTitle: true,
+          showBackButton: true,
+        ),
+        body: Column(
+          children: [
+            16.height,
+            _buildTabBar(),
+            16.height,
+            Obx(() {
+              if (controller.currentTabIndex.value == 2) {
+                return Column(
+                  children: [
+                    InterviewFilterButtons(
+                      selectedIndex: controller.interviewFilterIndex.value,
+                      onFilterChanged: (index) {
+                        controller.setInterviewFilter(index);
+                      },
+                    ),
+                    16.height,
+                  ],
+                );
+              }
+              return const SizedBox.shrink();
+            }),
+            Expanded(child: _buildTabBarView()),
+          ],
+        ),
+        bottomNavigationBar: const SafeArea(
+          child: CommonBottomNavBar(currentIndex: 2),
+        ),
       ),
     );
   }

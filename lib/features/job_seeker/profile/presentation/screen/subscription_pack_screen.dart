@@ -32,7 +32,6 @@ class SubscriptionPackScreen extends StatelessWidget {
                     child: CircularProgressIndicator(),
                   );
                 }
-
                 if (controller.errorMessage.value.isNotEmpty) {
                   return Center(
                     child: Column(
