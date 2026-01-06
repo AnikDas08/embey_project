@@ -36,7 +36,7 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    HomeController controller=Get.put(HomeController());
+    HomeController controller = Get.put(HomeController());
     return Row(
       children: [
         GestureDetector(
@@ -58,87 +58,114 @@ class HomeHeader extends StatelessWidget {
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Icon(
-                          Icons.person,
-                          size: 24.sp,
-                          color: AppColors.primaryColor,
+                        Icons.person,
+                        size: 24.sp,
+                        color: AppColors.primaryColor,
                       );
                     },
                   );
                 },
               ),
-
             ),
           ),
-            ),
+        ),
         12.width,
         Expanded(
-          child:Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Obx(
-    ()=> CommonText(
-                      text: controller.name.value,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primaryColor,
-                      textAlign: TextAlign.start,
-                    ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Obx(
+                    () => CommonText(
+                  text: controller.name.value,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primaryColor,
+                  textAlign: TextAlign.start,
                 ),
-                2.height,
-                Obx(
-                  ()=> CommonText(
-                      text: controller.designation.value??"Not Available",
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.secondaryText,
-                      textAlign: TextAlign.start,
-                    ),
+              ),
+              2.height,
+              Obx(
+                    () => CommonText(
+                  text: controller.designation.value ?? "Not Available",
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.secondaryText,
+                  textAlign: TextAlign.start,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-
+        ),
         _buildActionIcon(
           AppIcons.chat,
-          hasNotification: false,
           onTap: () {
             RecruiterRoutes.goToChat();
           },
         ),
         8.width,
-        _buildActionIcon(
-          AppIcons.notification,
-          hasNotification: hasNotification,
-          onTap: () {
-            Get.to(()=>JobSeekerNotificationScreen());
-          },
+        Obx(
+              () => _buildActionIcon(
+            AppIcons.notification,
+            hasNotification: controller.notificationCounts.value > 0,
+            badgeCount: controller.notificationCounts.value,
+            onTap: () {
+              Get.to(() => JobSeekerNotificationScreen());
+            },
+          ),
         ),
       ],
     );
   }
 
   Widget _buildActionIcon(
-    String imageSrc, {
-    required bool hasNotification,
-    required VoidCallback onTap,
-  }) {
+      String imageSrc, {
+        bool hasNotification = false,
+        int? badgeCount,
+        required VoidCallback onTap,
+      }) {
     return GestureDetector(
       onTap: onTap,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           CommonImage(imageSrc: imageSrc, size: 24.sp),
-          if (hasNotification)
+          if (hasNotification && badgeCount != null && badgeCount > 0)
             Positioned(
-              top: 0,
-              right: 0,
+              top: -2,
+              right: -2,
               child: Container(
-                width: 10.w,
-                height: 10.h,
+                padding: EdgeInsets.symmetric(
+                  horizontal: badgeCount > 99 ? 3.w : 4.w,
+                  vertical: badgeCount > 99 ? 1.h : 2.h,
+                ),
+                constraints: BoxConstraints(
+                  minWidth: 14.w,
+                  minHeight: 14.h,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.secondaryPrimary,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
+                  shape: badgeCount > 99 ? BoxShape.rectangle : BoxShape.circle,
+                  borderRadius: badgeCount > 99 ? BorderRadius.circular(8.r) : null,
+                  border: Border.all(color: Colors.white, width: 1.2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 2,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    badgeCount > 99 ? '99+' : badgeCount.toString(),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: badgeCount > 99 ? 7.sp : 8.sp,
+                      fontWeight: FontWeight.w700,
+                      height: 1.1,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
             ),

@@ -41,10 +41,12 @@ class JobSeekerPrivacyPolicyScreen extends StatelessWidget {
               if (controller.html == null) {
                 return const Center(child: Text("No data found"));
               }
-              return SingleChildScrollView(
-                padding:
-                const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-                child: Html(data: controller.html!.data.content),
+              return SafeArea(
+                child: SingleChildScrollView(
+                  padding:
+                  const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+                  child: Html(data: controller.html!.data.content),
+                ),
               );
           }
         },

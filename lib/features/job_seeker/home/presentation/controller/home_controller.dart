@@ -34,6 +34,7 @@ class HomeController extends GetxController {
   RxString searchTerm = ''.obs;
   RxString selectedCategory = ''.obs;
   RxInt minSalary = 0.obs;
+  RxInt notificationCounts = 0.obs;
   RxInt maxSalary = 100000.obs;
   RxList<String> selectedJobTypes = <String>[].obs;
   RxList<String> selectedJobLevels = <String>[].obs;
@@ -42,6 +43,7 @@ class HomeController extends GetxController {
   RxBool isNotification = false.obs;
   RxBool autoApplHere = false.obs;
   RxBool isLoadingAutoApply = false.obs;
+
 
   // Debouncing for search
   Worker? _searchDebouncer;
@@ -95,6 +97,15 @@ class HomeController extends GetxController {
     }
   }
 
+  void countNotification()async{
+    final response=await ApiService.get(
+      "notification"
+    );
+    if(response.statusCode==200){
+      notificationCounts.value=response.data["data"]["unreadCount"];
+    }
+  }
+
   Future<void> getBanner() async {
     try {
       final response = await ApiService.get(
@@ -120,25 +131,31 @@ class HomeController extends GetxController {
       Utils.errorSnackBar(0, e.toString());
     }
   }
-
   Future<void> readNotification() async {
     try {
       final response = await ApiService.get(
           "notification",
           header: {
+            "Authorization": "Bearer ${LocalStorage.token}",
             "Content-Type": "application/json",
           }
       );
+
       if (response.statusCode == 200) {
         final data = response.data['data'];
-        final count = data["unreadCount"];
-        isNotification.value = count != 0;
+        final count = data["unreadCount"] ?? 2;
+
+        notificationCounts.value = count;
+        isNotification.value = count > 0;
+
+        print("🔔 Unread notifications: $count");
+      } else {
+        print("⚠️ Failed to fetch notification count: ${response.statusCode}");
       }
     } catch (e) {
-      // Handle error silently
+      print("❌ Error fetching notification count: $e");
     }
   }
-
   Future<void> fetchCategories() async {
     try {
       final response = await ApiService.get(

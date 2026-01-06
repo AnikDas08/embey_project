@@ -38,7 +38,7 @@ class RecruiterPrivacyPolicyScreen extends StatelessWidget {
 
           /// Show main data here
           Status.completed => SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
             child: Html(data: controller.data.content),
           ),
         },

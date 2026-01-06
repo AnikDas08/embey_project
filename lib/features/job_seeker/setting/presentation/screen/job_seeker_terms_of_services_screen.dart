@@ -19,7 +19,7 @@ class JobSeekerTermsOfServicesScreen extends StatelessWidget {
       appBar: AppBar(
         centerTitle: true,
         title: const CommonText(
-          text: AppString.privacyPolicy,
+          text: AppString.termsOfServices,
           fontSize: 20,
           fontWeight: FontWeight.w600,
         ),
@@ -42,10 +42,12 @@ class JobSeekerTermsOfServicesScreen extends StatelessWidget {
               if (controller.html == null) {
                 return const Center(child: Text("No data found"));
               }
-              return SingleChildScrollView(
-                padding:
-                const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-                child: Html(data: controller.html!.data.content),
+              return SafeArea(
+                child: SingleChildScrollView(
+                  padding:
+                  const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+                  child: Html(data: controller.html!.data.content),
+                ),
               );
           }
         },

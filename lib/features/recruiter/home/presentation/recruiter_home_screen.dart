@@ -34,6 +34,7 @@ class RecruiterHomeScreen extends StatelessWidget {
                   await controller.refreshData();
                 },
                 child: SingleChildScrollView(
+                  controller: controller.scrollController,
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
                   child: Column(
@@ -104,7 +105,6 @@ class RecruiterHomeScreen extends StatelessWidget {
           // Action Icons
           _buildActionIcon(
             AppIcons.chat,
-            hasNotification: false,
             onTap: () {
               RecruiterRoutes.goToChat();
             },
@@ -113,7 +113,8 @@ class RecruiterHomeScreen extends StatelessWidget {
           Obx(
                 () => _buildActionIcon(
               AppIcons.notification,
-              hasNotification: controller.notificationCount.value,
+              hasNotification: controller.notificationCounts.value > 0,
+              badgeCount: controller.notificationCounts.value,
               onTap: () {
                 RecruiterRoutes.goToNotifications();
               },
@@ -126,7 +127,8 @@ class RecruiterHomeScreen extends StatelessWidget {
 
   Widget _buildActionIcon(
       String imageSrc, {
-        required bool hasNotification,
+        bool hasNotification = false,
+        int? badgeCount,
         required VoidCallback onTap,
       }) {
     return GestureDetector(
@@ -135,17 +137,43 @@ class RecruiterHomeScreen extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           CommonImage(imageSrc: imageSrc, size: 24.sp),
-          if (hasNotification)
+          if (hasNotification && badgeCount != null && badgeCount > 0)
             Positioned(
-              top: 0,
-              right: 0,
+              top: -2,
+              right: -2,
               child: Container(
-                width: 10.w,
-                height: 10.h,
+                padding: EdgeInsets.symmetric(
+                  horizontal: badgeCount > 99 ? 3.w : 4.w,
+                  vertical: badgeCount > 99 ? 1.h : 2.h,
+                ),
+                constraints: BoxConstraints(
+                  minWidth: 14.w,
+                  minHeight: 14.h,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.secondaryPrimary,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
+                  shape: badgeCount > 99 ? BoxShape.rectangle : BoxShape.circle,
+                  borderRadius: badgeCount > 99 ? BorderRadius.circular(8.r) : null,
+                  border: Border.all(color: Colors.white, width: 1.2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 2,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    badgeCount > 99 ? '99+' : badgeCount.toString(),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: badgeCount > 99 ? 7.sp : 8.sp,
+                      fontWeight: FontWeight.w700,
+                      height: 1.1,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
             ),
@@ -273,31 +301,58 @@ class RecruiterHomeScreen extends StatelessWidget {
           );
         }
 
-        return ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: controller.recentJobs.length,
-          itemBuilder: (context, index) {
-            final job = controller.recentJobs[index];
-            final thumbnailImage = job.thumbnail.startsWith("http")
-                ? job.thumbnail
-                : ApiEndPoint.imageUrl + job.thumbnail;
-            return RecruiterJobCard(
-              jobTitle: job.title,
-              location: job.location,
-              isFullTime: job.isFullTime,
-              isRemote: job.isRemote,
-              candidateCount: job.totalApplications,
-              deadline: job.formattedDeadline,
-              thumbnailImage: job.thumbnail,
-              userImages: job.userImages,
-              onTap: () {
-                Get.toNamed(RecruiterRoutes.jobCardDetails, arguments: {
-                  "postId": job.id,
-                });
+        return Column(
+          children: [
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: controller.recentJobs.length,
+              itemBuilder: (context, index) {
+                final job = controller.recentJobs[index];
+                final thumbnailImage = job.thumbnail.startsWith("http")
+                    ? job.thumbnail
+                    : ApiEndPoint.imageUrl + job.thumbnail;
+                return RecruiterJobCard(
+                  jobTitle: job.title,
+                  location: job.location,
+                  isFullTime: job.isFullTime,
+                  isRemote: job.isRemote,
+                  candidateCount: job.totalApplications,
+                  deadline: job.formattedDeadline,
+                  thumbnailImage: job.thumbnail,
+                  userImages: job.userImages,
+                  onTap: () {
+                    Get.toNamed(RecruiterRoutes.jobCardDetails, arguments: {
+                      "postId": job.id,
+                    });
+                  },
+                );
               },
-            );
-          },
+            ),
+            // Loading more indicator
+            if (controller.isLoadingMore.value)
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.primaryColor,
+                  ),
+                ),
+              ),
+            // End of list indicator
+            if (!controller.hasMoreData.value && controller.recentJobs.isNotEmpty)
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                child: Center(
+                  child: CommonText(
+                    text: 'No more jobs to load',
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.secondaryText,
+                  ),
+                ),
+              ),
+          ],
         );
       },
     );

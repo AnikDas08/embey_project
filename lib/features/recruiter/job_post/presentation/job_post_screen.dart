@@ -18,9 +18,9 @@ class JobPostScreen extends StatelessWidget {
     final controller = Get.put(RecruiterJobPostController());
 
     return WillPopScope(
-      onWillPop: ()async{
-        Get.offAllNamed(RecruiterRoutes.home); // উদাহরণ: home screen এ নিয়ে যাবে
-        return false; // false দিয়ে back action block করছো
+      onWillPop: () async {
+        Get.offAllNamed(RecruiterRoutes.home);
+        return false;
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
@@ -32,9 +32,10 @@ class JobPostScreen extends StatelessWidget {
               child: RefreshIndicator(
                 color: AppColors.primaryColor,
                 onRefresh: () async {
-                  await controller.getJobs();
+                  await controller.refreshData();
                 },
                 child: SingleChildScrollView(
+                  controller: controller.scrollController,
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: Padding(
                     padding: EdgeInsets.all(16.r),
@@ -161,28 +162,55 @@ class JobPostScreen extends StatelessWidget {
           );
         }
 
-        return ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: controller.recentJobs.length,
-          itemBuilder: (context, index) {
-            final job = controller.recentJobs[index];
-            return RecruiterJobCard(
-              jobTitle: job.title,
-              location: job.location,
-              isFullTime: job.isFullTime,
-              isRemote: job.isRemote,
-              candidateCount: job.totalApplications,
-              deadline: job.formattedDeadline,
-              thumbnailImage: job.thumbnail,
-              userImages: job.userImages,
-              onTap: () {
-                Get.toNamed(RecruiterRoutes.jobCardDetails, arguments: {
-                  "postId": job.id,
-                });
+        return Column(
+          children: [
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: controller.recentJobs.length,
+              itemBuilder: (context, index) {
+                final job = controller.recentJobs[index];
+                return RecruiterJobCard(
+                  jobTitle: job.title,
+                  location: job.location,
+                  isFullTime: job.isFullTime,
+                  isRemote: job.isRemote,
+                  candidateCount: job.totalApplications,
+                  deadline: job.formattedDeadline,
+                  thumbnailImage: job.thumbnail,
+                  userImages: job.userImages,
+                  onTap: () {
+                    Get.toNamed(RecruiterRoutes.jobCardDetails, arguments: {
+                      "postId": job.id,
+                    });
+                  },
+                );
               },
-            );
-          },
+            ),
+            // Loading more indicator
+            if (controller.isLoadingMore.value)
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.primaryColor,
+                  ),
+                ),
+              ),
+            // End of list indicator
+            if (!controller.hasMoreData.value && controller.recentJobs.isNotEmpty)
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                child: Center(
+                  child: CommonText(
+                    text: 'No more jobs to load',
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.secondaryText,
+                  ),
+                ),
+              ),
+          ],
         );
       },
     );

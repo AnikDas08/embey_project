@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-
+import 'package:flutter/material.dart';
 import '../../../../../core/config/api/api_end_point.dart';
 import '../../../../../core/services/api/api_service.dart';
 import '../../../../../core/services/storage/storage_services.dart';
@@ -16,18 +16,43 @@ class RecruiterHomeController extends GetxController {
   final RxString companyAddress = ''.obs;
   final RxBool isLoadingJobs = false.obs;
   final RxBool isLoadingProfile = false.obs;
-  final RxBool notificationCount = false.obs;
+  final RxBool isNotification = false.obs;
   final RxInt activeJobs = 0.obs;
+  RxInt notificationCounts = 0.obs;
   final RxInt pendingJobs = 0.obs;
   final RxInt shortListsJobs = 0.obs;
   final RxInt interviewJobs = 0.obs;
+
+  // Pagination variables
+  final RxInt currentPage = 1.obs;
+  final RxInt totalPages = 1.obs;
+  final RxBool isLoadingMore = false.obs;
+  final RxBool hasMoreData = true.obs;
+  final ScrollController scrollController = ScrollController();
 
   @override
   void onInit() {
     super.onInit();
     getProfile();
-    getJobs();
+    getJobs(page: 1, isInitial: true);
     readNotification();
+    setupScrollListener();
+  }
+
+  @override
+  void onClose() {
+    scrollController.dispose();
+    super.onClose();
+  }
+
+  void setupScrollListener() {
+    scrollController.addListener(() {
+      if (scrollController.position.pixels >= scrollController.position.maxScrollExtent * 0.8) {
+        if (!isLoadingMore.value && hasMoreData.value) {
+          loadMoreJobs();
+        }
+      }
+    });
   }
 
   Future<void> getProfile() async {
@@ -52,9 +77,9 @@ class RecruiterHomeController extends GetxController {
         interviewJobs.value = response.data["data"]["overviewSummury"]["interviewRequest"];
 
         print("activeJobs: ${activeJobs.value}");
-        print("activeJobs: ${pendingJobs.value}");
-        print("activeJobs: ${shortListsJobs.value}");
-        print("activeJobs: ${activeJobs.value}");
+        print("pendingJobs: ${pendingJobs.value}");
+        print("shortListsJobs: ${shortListsJobs.value}");
+        print("interviewJobs: ${interviewJobs.value}");
       } else {
         Utils.errorSnackBar(response.statusCode, response.message);
       }
@@ -70,50 +95,96 @@ class RecruiterHomeController extends GetxController {
       final response = await ApiService.get(
           "notification",
           header: {
+            "Authorization": "Bearer ${LocalStorage.token}",
             "Content-Type": "application/json",
           }
       );
+
       if (response.statusCode == 200) {
         final data = response.data['data'];
-        final count = data["unreadCount"];
-        if (count != 0) {
-          notificationCount.value = true;
-        } else {
-          notificationCount.value = false;
-        }
+        final count = data["unreadCount"] ?? 2;
+
+        notificationCounts.value = count;
+        isNotification.value = count > 0;
+
+        print("🔔 Unread notifications: $count");
+      } else {
+        print("⚠️ Failed to fetch notification count: ${response.statusCode}");
       }
     } catch (e) {
-      // Handle error silently
+      print("❌ Error fetching notification count: $e");
     }
   }
 
-  Future<void> getJobs() async {
-    isLoadingJobs.value = true;
+  Future<void> getJobs({int page = 1, bool isInitial = false}) async {
+    if (isInitial) {
+      isLoadingJobs.value = true;
+      recentJobs.clear();
+      currentPage.value = 1;
+      hasMoreData.value = true;
+    }
+
     update();
     try {
       final response = await ApiService.get(
-          ApiEndPoint.job_all,
+          "${ApiEndPoint.job_all}?page=$page",
           header: {"Authorization": "Bearer ${LocalStorage.token}"}
       );
+
       if (response.statusCode == 200) {
         final jobModel = RecruiterJobModel.fromJson(response.data);
-        recentJobs.value = jobModel.data.toList();
+
+        // Update pagination info
+        if (response.data['pagination'] != null) {
+          totalPages.value = response.data['pagination']['totalPage'] ?? 1;
+          currentPage.value = page;
+
+          // Check if there's more data
+          hasMoreData.value = currentPage.value < totalPages.value;
+        }
+
+        if (isInitial) {
+          recentJobs.value = jobModel.data.toList();
+        } else {
+          recentJobs.addAll(jobModel.data.toList());
+        }
       } else {
         Utils.errorSnackBar(response.statusCode, response.message);
       }
     } catch (e) {
       Utils.errorSnackBar(0, e.toString());
     }
-    isLoadingJobs.value = false;
+
+    if (isInitial) {
+      isLoadingJobs.value = false;
+    }
     update();
+  }
+
+  Future<void> loadMoreJobs() async {
+    if (isLoadingMore.value || !hasMoreData.value) return;
+
+    isLoadingMore.value = true;
+    update();
+
+    try {
+      await getJobs(page: currentPage.value + 1);
+    } finally {
+      isLoadingMore.value = false;
+      update();
+    }
   }
 
   /// Refreshes all data on the home screen
   Future<void> refreshData() async {
+    // Reset pagination
+    currentPage.value = 1;
+    hasMoreData.value = true;
+
     // Run all refresh operations in parallel for better performance
     await Future.wait([
       getProfile(),
-      getJobs(),
+      getJobs(page: 1, isInitial: true),
       readNotification(),
     ]);
   }
