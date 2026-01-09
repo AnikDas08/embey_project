@@ -72,7 +72,7 @@ class _VerifyUserState extends State<VerifyUser> {
                         Center(
                           child: CommonText(
                             text:
-                                "OTP Code has been sent to your registered email",
+                            "OTP Code has been sent to your registered email",
                             fontSize: 18,
                             top: 10,
                             bottom: 20,
@@ -80,7 +80,6 @@ class _VerifyUserState extends State<VerifyUser> {
                           ),
                         ),
 
-                        /// OTP Filed here
                         /// OTP Field here
                         Flexible(
                           flex: 0,
@@ -90,20 +89,18 @@ class _VerifyUserState extends State<VerifyUser> {
                             cursorColor: AppColors.primaryColor,
                             appContext: (context),
                             autoFocus: true,
-                            // Change length to 4
                             length: 4,
                             keyboardType: TextInputType.number,
                             autovalidateMode: AutovalidateMode.onUserInteraction,
                             enableActiveFill: true,
-
-                            // Center the fields
+                            enablePinAutofill: true,
+                            useHapticFeedback: true,
                             mainAxisAlignment: MainAxisAlignment.center,
 
                             pinTheme: PinTheme(
                               shape: PinCodeFieldShape.box,
                               borderRadius: BorderRadius.circular(12.r),
                               fieldHeight: 50.h,
-                              // You can increase fieldWidth slightly for 4 boxes
                               fieldWidth: 55.w,
                               fieldOuterPadding: EdgeInsets.symmetric(horizontal: 10.w),
                               activeFillColor: AppColors.transparent,
@@ -116,7 +113,6 @@ class _VerifyUserState extends State<VerifyUser> {
                             ),
 
                             validator: (value) {
-                              // Update validation to check for 4 digits
                               if (value != null && value.length == 4) {
                                 return null;
                               } else {
@@ -129,43 +125,68 @@ class _VerifyUserState extends State<VerifyUser> {
                           ),
                         ),
 
-                        /// Resent OTP or show Timer
-                       /* GestureDetector(
-                          onTap: controller.time == '00:00'
+                        SizedBox(height: 20.h),
+
+                        /// Resend OTP or show Timer
+                        GestureDetector(
+                          onTap: controller.time == '00:00' && !controller.isLoadingResend
                               ? () {
-                                  controller.startTimer();
-                                  controller.signUpUser();
-                                }
-                              : () {},
-                          child: CommonText(
-                            text: controller.time == '00:00'
-                                ? "Did you not receive the code? ${AppString.resendCode}"
-                                : "${AppString.resendCodeIn} ${controller.time} ${AppString.minute}",
-                            top: 20,
-                            bottom: 20,
-                            fontSize: 18,
+                            controller.resendOtpRepo();
+                          }
+                              : null,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              if (controller.time != '00:00') ...[
+                                CommonText(
+                                  text: "Resend code in ",
+                                  fontSize: 16.sp,
+                                  color: AppColors.grey,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                CommonText(
+                                  text: controller.time,
+                                  fontSize: 16.sp,
+                                  color: AppColors.grey,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ] else if (controller.isLoadingResend) ...[
+                                SizedBox(
+                                  width: 16.w,
+                                  height: 16.h,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      AppColors.primaryColor,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 8.w),
+                                CommonText(
+                                  text: "Resending...",
+                                  fontSize: 16.sp,
+                                  color: AppColors.primaryColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ] else ...[
+                                CommonText(
+                                  text: "Didn't get a code? ",
+                                  fontSize: 16.sp,
+                                  color: AppColors.grey,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                CommonText(
+                                  text: "Resend",
+                                  fontSize: 16.sp,
+                                  color: AppColors.primaryColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ],
+                            ],
                           ),
-                        ),*/
-                        
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            CommonText(
-                                text: "Didn't get a code? ",
-                              fontSize: 16.sp,
-                              color: AppColors.grey,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            CommonText(
-                              text: "Resend",
-                              fontSize: 16.sp,
-                              color: AppColors.primaryColor,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ],
                         ),
 
-                        SizedBox(height: 20.h,),
+                        SizedBox(height: 20.h),
 
                         ///  Submit Button here
                         CommonButton(

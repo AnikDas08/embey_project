@@ -72,19 +72,19 @@ class _VerifyScreenState extends State<VerifyScreen> {
                             padding: const EdgeInsets.all(20.0),
                             child: CommonImage(imageSrc: AppIcons.otp),
                           ),
-                    
+
                           /// instruction how to get OTP
                           Center(
                             child: CommonText(
                               text:
-                                  "${AppString.codeHasBeenSendTo} ${controller.emailController.text}",
+                              "${AppString.codeHasBeenSendTo} ${controller.emailController.text}",
                               fontSize: 16.sp,
                               top: 10,
                               bottom: 60,
                               maxLines: 2,
                             ),
                           ),
-                    
+
                           /// OTP Filed here
                           Flexible(
                             flex: 0,
@@ -94,20 +94,23 @@ class _VerifyScreenState extends State<VerifyScreen> {
                               cursorColor: AppColors.primaryColor,
                               appContext: (context),
                               autoFocus: true,
-                              // Change length to 4
                               length: 4,
                               keyboardType: TextInputType.number,
+                              textInputAction: TextInputAction.done,
                               autovalidateMode: AutovalidateMode.onUserInteraction,
                               enableActiveFill: true,
-
-                              // Center the fields
+                              enablePinAutofill: true,
+                              useHapticFeedback: true,
+                              pastedTextStyle: TextStyle(
+                                color: AppColors.primaryColor,
+                                fontWeight: FontWeight.bold,
+                              ),
                               mainAxisAlignment: MainAxisAlignment.center,
 
                               pinTheme: PinTheme(
                                 shape: PinCodeFieldShape.box,
                                 borderRadius: BorderRadius.circular(12.r),
                                 fieldHeight: 50.h,
-                                // You can increase fieldWidth slightly for 4 boxes
                                 fieldWidth: 55.w,
                                 fieldOuterPadding: EdgeInsets.symmetric(horizontal: 10.w),
                                 activeFillColor: AppColors.transparent,
@@ -120,7 +123,6 @@ class _VerifyScreenState extends State<VerifyScreen> {
                               ),
 
                               validator: (value) {
-                                // Update validation to check for 4 digits
                                 if (value != null && value.length == 4) {
                                   return null;
                                 } else {
@@ -132,25 +134,38 @@ class _VerifyScreenState extends State<VerifyScreen> {
                               },
                             ),
                           ),
-                    
-                          /// Resent OTP or show Timer
-                          /*GestureDetector(
-                            onTap: controller.time == '00:00'
+
+                          20.height,
+
+                          /// Resend OTP or show Timer
+                          GestureDetector(
+                            onTap: controller.time == '00:00' && !controller.isLoadingResend
                                 ? () {
-                                    controller.startTimer();
-                                    controller.forgotPasswordRepo();
-                                  }
-                                : () {},
-                            child: CommonText(
+                              controller.resendOtpRepo();
+                            }
+                                : null,
+                            child: controller.isLoadingResend
+                                ? const CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                AppColors.primaryColor,
+                              ),
+                            )
+                                : CommonText(
                               text: controller.time == '00:00'
                                   ? AppString.resendCode
                                   : "${AppString.resendCodeIn} ${controller.time} ${AppString.minute}",
                               top: 0,
                               bottom: 20,
                               fontSize: 18,
+                              color: controller.time == '00:00'
+                                  ? AppColors.primaryColor
+                                  : AppColors.black,
+                              fontWeight: controller.time == '00:00'
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
                             ),
-                          ),*/
-                    
+                          ),
+
                           ///  Submit Button here
                           CommonButton(
                             titleText: AppString.verify,

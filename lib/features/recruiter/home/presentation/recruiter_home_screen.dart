@@ -181,7 +181,6 @@ class RecruiterHomeScreen extends StatelessWidget {
       ),
     );
   }
-
   Widget _buildStatsGrid() {
     return Obx(() {
       final summary = controller.profileData.value?.overviewSummary;
@@ -230,7 +229,6 @@ class RecruiterHomeScreen extends StatelessWidget {
       );
     });
   }
-
   Widget _buildRecentJobsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

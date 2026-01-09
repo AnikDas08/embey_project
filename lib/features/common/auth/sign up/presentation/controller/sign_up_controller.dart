@@ -21,12 +21,13 @@ class SignUpController extends GetxController {
   bool isPopUpOpen = false;
   bool isLoading = false;
   bool isLoadingVerify = false;
+  bool isLoadingResend = false;
   String role="";
 
   Timer? _timer;
   int start = 0;
 
-  String time = "";
+  String time = "00:00";
 
   List selectedOption = ["User", "Consultant"];
 
@@ -35,6 +36,9 @@ class SignUpController extends GetxController {
   String? image;
 
   String signUpToken = '';
+
+  // Add checkbox state
+  bool isTermsAccepted = false;
 
   static SignUpController get instance => Get.put(SignUpController());
 
@@ -77,6 +81,12 @@ class SignUpController extends GetxController {
     update();
   }
 
+  // Toggle checkbox state
+  toggleTermsAcceptance(bool? value) {
+    isTermsAccepted = value ?? false;
+    update();
+  }
+
   signUpUser() async {
 
     if (passwordController.text.trim() !=
@@ -87,6 +97,16 @@ class SignUpController extends GetxController {
         ),
       );
       return; // ⛔ এখানেই থেমে যাবে, API call হবে না
+    }
+
+    // Check if terms are accepted
+    if (!isTermsAccepted) {
+      ScaffoldMessenger.of(Get.context!).showSnackBar(
+        const SnackBar(
+          content: Text("Please accept the Terms & Privacy Policy to continue"),
+        ),
+      );
+      return;
     }
 
     if(LocalStorage.userRole==UserRole.jobSeeker){
@@ -146,19 +166,61 @@ class SignUpController extends GetxController {
         update();
       } else {
         _timer?.cancel();
+        time = "00:00";
+        update();
       }
     });
   }
 
-  Future<void> verifyOtpRepo() async {
-    /*SuccessDialog.show(
-      message: 'Your account has been created. Start using the app now.',
-      buttonText: 'Proceed to Login',
-      onTap: () {
-        Get.offAllNamed(AppRoutes.signIn);
-      },
-    );*/
+  /// Resend OTP Api Call
+  Future<void> resendOtpRepo() async {
+    isLoadingResend = true;
+    update();
 
+    if(LocalStorage.userRole==UserRole.jobSeeker){
+      role="EMPLOYEE";
+    }
+    else{
+      role="RECRUITER";
+    }
+
+    try{
+      Map<String, String> body = {
+        "name": nameController.text,
+        "email": emailController.text,
+        "password": passwordController.text,
+        "role": role,
+      };
+
+      var response = await ApiService.post(ApiEndPoint.signUp, body: body);
+
+      if(response.statusCode == 200){
+        isLoadingResend = false;
+        update();
+
+        // Clear OTP field for new code
+        otpController.clear();
+
+        // Restart timer
+        startTimer();
+
+        var data = response.data;
+        Utils.successSnackBar("Success", "OTP has been resent to your email");
+      }
+      else{
+        isLoadingResend = false;
+        update();
+        Utils.errorSnackBar("Error", response.message);
+      }
+    }
+    catch(e){
+      isLoadingResend = false;
+      update();
+      Utils.errorSnackBar("Error", e.toString());
+    }
+  }
+
+  Future<void> verifyOtpRepo() async {
     isLoadingVerify = true;
     update();
     Map<String, dynamic> body = {
@@ -174,33 +236,12 @@ class SignUpController extends GetxController {
     if (response.statusCode == 200) {
       var data = response.data;
       SuccessDialog.show(
-      message: 'Your account has been created. Start using the app now.',
-      buttonText: 'Proceed to Login',
-      onTap: () {
-        Get.offAllNamed(AppRoutes.signIn);
-      },
-    );
-
-
-      /*LocalStorage.token = data['data']["accessToken"];
-      LocalStorage.userId = data['data']["attributes"]["_id"];
-      LocalStorage.myImage = data['data']["attributes"]["image"];
-      LocalStorage.myName = data['data']["attributes"]["fullName"];
-      LocalStorage.myEmail = data['data']["attributes"]["email"];
-      LocalStorage.isLogIn = true;
-
-      LocalStorage.setBool(LocalStorageKeys.isLogIn, LocalStorage.isLogIn);
-      LocalStorage.setString(LocalStorageKeys.token, LocalStorage.token);
-      LocalStorage.setString(LocalStorageKeys.userId, LocalStorage.userId);
-      LocalStorage.setString(LocalStorageKeys.myImage, LocalStorage.myImage);
-      LocalStorage.setString(LocalStorageKeys.myName, LocalStorage.myName);
-      LocalStorage.setString(LocalStorageKeys.myEmail, LocalStorage.myEmail);*/
-
-      // if (LocalStorage.myRole == 'consultant') {
-      //   Get.toNamed(AppRoutes.personalInformation);
-      // } else {
-      //   Get.offAllNamed(AppRoutes.patientsHome);
-      // }
+        message: 'Your account has been created. Start using the app now.',
+        buttonText: 'Proceed to Login',
+        onTap: () {
+          Get.offAllNamed(AppRoutes.signIn);
+        },
+      );
     } else {
       Get.snackbar(response.statusCode.toString(), response.message);
     }

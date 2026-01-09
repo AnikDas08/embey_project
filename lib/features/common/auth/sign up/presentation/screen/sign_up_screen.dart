@@ -65,27 +65,34 @@ class SignUpScreen extends StatelessWidget {
                         SignUpAllField(controller: controller),
 
                         8.height,
-                        Row(
-                          children: [
-                            Checkbox(value: true, onChanged: (value) {}),
-                            RichText(
-                              text: TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: "I Agree to the",
-                                    style: TextStyle(color: AppColors.black),
-                                  ),
-                                  TextSpan(
-                                    text: " Terms & Privacy Policy ",
-                                    style: TextStyle(
-                                      color: AppColors.primaryColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: controller.isTermsAccepted,
+                          onChanged: controller.toggleTermsAcceptance,
+                          activeColor: AppColors.primaryColor,
                         ),
+                        Expanded(
+                          child: RichText(
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: "I Agree to the",
+                                  style: TextStyle(color: AppColors.black),
+                                ),
+                                TextSpan(
+                                  text: " Terms & Privacy Policy ",
+                                  style: TextStyle(
+                                    color: AppColors.primaryColor,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
 
                         8.height,
 

@@ -14,11 +14,13 @@ class ForgetPasswordController extends GetxController {
   bool isLoadingEmail = false;
 
   /// Loading for Verify OTP
-
   bool isLoadingVerify = false;
 
   /// Loading for Creating New Password
   bool isLoadingReset = false;
+
+  /// Loading for Resend OTP
+  bool isLoadingResend = false;
 
   /// this is ForgetPassword Token , need to verification
   var forgetPasswordToken = '';
@@ -48,7 +50,7 @@ class ForgetPasswordController extends GetxController {
 
   @override
   void dispose() {
-    startTimer();
+    _timer?.cancel();
     emailController.dispose();
     otpController.dispose();
     passwordController.dispose();
@@ -57,7 +59,6 @@ class ForgetPasswordController extends GetxController {
   }
 
   /// start Time for check Resend OTP Time
-
   void startTimer() {
     _timer?.cancel(); // Cancel any existing timer
     start = 180; // Reset the start value
@@ -72,53 +73,99 @@ class ForgetPasswordController extends GetxController {
         update();
       } else {
         _timer?.cancel();
+        time = "00:00";
+        update();
       }
     });
   }
 
   /// Forget Password Api Call
-
   Future<void> forgotPasswordRepo() async {
     isLoadingEmail = true;
     update();
-     try{
-       if(emailController.text.isEmpty){
-         Utils.errorSnackBar("Email is required", "Please enter your email");
-         return;
-       }
-       final response=await ApiService.post(
-         ApiEndPoint.forgotPassword,
-         body:{
-           "email": emailController.text
-         }
-       );
-       if(response.statusCode==200){
-         var data=response.data;
-         isLoadingEmail = false;
-         update();
-         Get.toNamed(AppRoutes.verifyEmail);
-       }
-       else{
-         isLoadingEmail = false;
-         update();
-         Utils.errorSnackBar("Error", response.message);
-       }
-     }
+    try{
+      if(emailController.text.isEmpty){
+        Utils.errorSnackBar("Email is required", "Please enter your email");
+        isLoadingEmail = false;
+        update();
+        return;
+      }
+      final response=await ApiService.post(
+          ApiEndPoint.forgotPassword,
+          body:{
+            "email": emailController.text
+          }
+      );
+      if(response.statusCode==200){
+        var data=response.data;
+        isLoadingEmail = false;
+        update();
+        Get.toNamed(AppRoutes.verifyEmail);
+      }
+      else{
+        isLoadingEmail = false;
+        update();
+        Utils.errorSnackBar("Error", response.message);
+      }
+    }
     catch(e){
-       isLoadingEmail = false;
-       update();
-       Utils.errorSnackBar("Error", e.toString());
+      isLoadingEmail = false;
+      update();
+      Utils.errorSnackBar("Error", e.toString());
+    }
+  }
+
+  /// Resend OTP Api Call
+  Future<void> resendOtpRepo() async {
+    isLoadingResend = true;
+    update();
+
+    try{
+      if(emailController.text.isEmpty){
+        Utils.errorSnackBar("Error", "Email not found");
+        isLoadingResend = false;
+        update();
+        return;
+      }
+
+      final response = await ApiService.post(
+          ApiEndPoint.forgotPassword,
+          body:{
+            "email": emailController.text
+          }
+      );
+
+      if(response.statusCode == 200){
+        isLoadingResend = false;
+        update();
+
+        // Clear OTP field for new code
+        otpController.clear();
+
+        // Restart timer
+        startTimer();
+
+        Utils.successSnackBar("Success", "OTP has been resent to your email");
+      }
+      else{
+        isLoadingResend = false;
+        update();
+        Utils.errorSnackBar("Error", response.message);
+      }
+    }
+    catch(e){
+      isLoadingResend = false;
+      update();
+      Utils.errorSnackBar("Error", e.toString());
     }
   }
 
   /// Verify OTP Api Call
-
   Future<void> verifyOtpRepo() async {
     isLoadingVerify = true;
     update();
 
     try{
-
       Map<String, dynamic> body = {
         "email": emailController.text,
         "oneTimeCode": int.tryParse(otpController.text),
@@ -146,9 +193,6 @@ class ForgetPasswordController extends GetxController {
   }
 
   /// Create New Password Api Call
-  ///
-  ///
-
   Future<void> resetPasswordRepo() async {
     isLoadingReset = true;
     update();
@@ -163,9 +207,9 @@ class ForgetPasswordController extends GetxController {
         "confirmPassword": confirmPasswordController.text,
       };
       var response = await ApiService.post(
-        ApiEndPoint.resetPassword,
-        body: body,
-        header: header
+          ApiEndPoint.resetPassword,
+          body: body,
+          header: header
       );
 
       if (response.statusCode == 200) {
@@ -181,7 +225,7 @@ class ForgetPasswordController extends GetxController {
       }
     }
     catch(e){
-
+      Utils.errorSnackBar("Error", e.toString());
     }
 
     isLoadingReset = false;
