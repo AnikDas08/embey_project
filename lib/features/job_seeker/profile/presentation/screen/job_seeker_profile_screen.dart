@@ -50,6 +50,7 @@ class JobSeekerProfileScreen extends StatelessWidget {
                   children: [
                     /// User Profile Image here
                     Center(
+
                       child: Container(
                         width: 100.w,
                         height: 100.h,
