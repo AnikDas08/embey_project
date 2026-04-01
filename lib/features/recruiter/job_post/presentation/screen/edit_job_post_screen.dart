@@ -1,11 +1,9 @@
-import 'dart:io';
 import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:embeyi/core/component/appbar/common_appbar.dart';
 import 'package:embeyi/core/component/button/common_button.dart';
-import 'package:embeyi/core/component/image/common_image.dart';
 import 'package:embeyi/core/component/text/common_text.dart';
 import 'package:embeyi/core/component/text_field/common_text_field.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';

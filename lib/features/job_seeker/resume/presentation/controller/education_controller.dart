@@ -209,7 +209,7 @@ class EducationController extends GetxController {
         await Future.delayed(const Duration(milliseconds: 500));
         Get.back(result: true);
       } else {
-        final errorData = response.data is Map ? response.data : {};
+        final errorData = response.data;
         throw Exception(errorData['message'] ?? 'Failed to update educations');
       }
     } catch (e) {

@@ -218,8 +218,7 @@ class HomeController extends GetxController {
 
       if (response.statusCode == 200) {
         // Check if the API returns the updated status
-        if (response.data != null &&
-            response.data['data'] != null &&
+        if (response.data['data'] != null &&
             response.data['data']['isAutoApply'] != null) {
           // Update with the actual value from API response
           autoApplHere.value = response.data['data']['isAutoApply'];

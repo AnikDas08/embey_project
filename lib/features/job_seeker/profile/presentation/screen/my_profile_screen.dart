@@ -1,7 +1,6 @@
 import 'package:embeyi/core/component/image/common_image.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/core/utils/constants/app_icons.dart';
-import 'package:embeyi/core/utils/constants/app_images.dart';
 import 'package:embeyi/features/job_seeker/profile/presentation/controller/profile_controller.dart';
 import 'package:embeyi/features/job_seeker/profile/presentation/screen/profile/personal_info_screen.dart';
 import 'package:flutter/material.dart';

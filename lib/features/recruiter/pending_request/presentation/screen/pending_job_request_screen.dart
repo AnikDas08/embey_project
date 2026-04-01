@@ -3,7 +3,6 @@ import 'package:embeyi/core/utils/extensions/extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import '../../../../../core/component/text/common_text.dart';
 import '../../../../../core/config/api/api_end_point.dart';
 import '../controller/pending_job_request_controller.dart';
 import '../../../home/presentation/widgets/candidate_card.dart';

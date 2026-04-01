@@ -244,6 +244,7 @@ class JobSeekerHomeScreen extends StatelessWidget {
                                         final jobPost = controller.jobPost[index];
                                         final salaryRange = '\$${jobPost.minSalary ?? 0} - \$${jobPost.maxSalary ?? 0}/month';
                                         final jobType = jobPost.jobType?.toUpperCase();
+                                        final jobboard = jobPost.jobsBoard;
 
                                         String companyLogo = jobPost.thumbnail?.isEmpty ?? true
                                             ? 'assets/images/noImage.png'
@@ -258,6 +259,7 @@ class JobSeekerHomeScreen extends StatelessWidget {
                                             location: jobPost.location ?? 'Remote',
                                             jobTitle: jobPost.title ?? 'No Title',
                                             salaryRange: salaryRange,
+                                            job_board: jobboard??"N/A",
                                             timePosted: jobPost.deadline != null
                                                 ? '${jobPost.deadline!.day} ${_getMonthName(jobPost.deadline!.month)}'
                                                 : 'N/A',
@@ -309,7 +311,7 @@ class JobSeekerHomeScreen extends StatelessWidget {
                               // Formatting logic
                               final salaryRange = '\$${jobPost.minSalary ?? 0} - \$${jobPost.maxSalary ?? 0}/month';
                               final jobType = jobPost.jobType?.toUpperCase();
-                              final jobBoard = jobPost.jobsBoard??"JOBARMAN";
+                              final jobBoard = jobPost.jobsBoard??"N/A";
 
                               String companyLogo = jobPost.thumbnail?.isEmpty ?? true
                                   ? 'assets/images/noImage.png'
@@ -324,6 +326,7 @@ class JobSeekerHomeScreen extends StatelessWidget {
                                   location: jobPost.location ?? 'Remote',
                                   jobTitle: jobPost.title ?? 'No Title',
                                   salaryRange: salaryRange,
+                                  job_board: jobBoard,
                                   timePosted: jobPost.deadline != null
                                       ? '${jobPost.deadline!.day} ${_getMonthName(jobPost.deadline!.month)}'
                                       : 'N/A',

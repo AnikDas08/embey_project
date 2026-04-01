@@ -259,8 +259,7 @@ class CertificationScreen extends StatelessWidget {
           ),
 
           // Description (if available)
-          if (certification.description != null &&
-              certification.description!.isNotEmpty) ...[
+          if (certification.description.isNotEmpty) ...[
             12.height,
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -276,7 +275,7 @@ class CertificationScreen extends StatelessWidget {
                 ),
                 Expanded(
                   child: CommonText(
-                    text: certification.description!,
+                    text: certification.description,
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
                     color: Colors.grey.shade700,

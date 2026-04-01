@@ -1,8 +1,8 @@
 import 'package:embeyi/core/utils/constants/app_colors.dart';
+import 'package:embeyi/core/utils/extensions/extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import '../../../../../../core/component/text/common_text.dart';
 import '../../../../../../core/component/text_field/common_text_field.dart';
 import '../../../../../../core/component/button/common_button.dart';
@@ -169,7 +169,7 @@ class AddEducationScreen extends StatelessWidget {
 
     if (picked != null) {
       // Format as "yyyy" for API (just year)
-      controller.startDateController.text = picked.year.toString();
+      controller.startDateController.text = picked.date.toString();
       controller.update();
     }
   }
@@ -185,7 +185,7 @@ class AddEducationScreen extends StatelessWidget {
 
     if (picked != null) {
       // Format as "yyyy" for API (just year)
-      controller.endDateController.text = picked.year.toString();
+      controller.endDateController.text = picked.date.toString();
       controller.update();
     }
   }

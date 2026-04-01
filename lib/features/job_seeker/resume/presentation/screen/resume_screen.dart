@@ -1,6 +1,5 @@
 import 'package:embeyi/core/component/image/common_image.dart';
 import 'package:embeyi/core/config/api/api_end_point.dart';
-import 'package:embeyi/core/config/route/job_seeker_routes.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/core/utils/constants/app_icons.dart';
 import 'package:embeyi/features/job_seeker/resume/presentation/controller/resume_controller.dart';

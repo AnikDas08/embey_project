@@ -1,6 +1,5 @@
 import 'package:embeyi/core/component/button/common_button.dart';
 import 'package:embeyi/core/component/image/common_image.dart';
-import 'package:embeyi/core/component/pop_up/success_dialog.dart';
 import 'package:embeyi/core/component/text/common_text.dart';
 import 'package:embeyi/core/component/text_field/common_text_field.dart';
 import 'package:embeyi/core/services/api/api_service.dart';
@@ -9,7 +8,6 @@ import 'package:embeyi/core/utils/constants/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../utils/constants/app_colors.dart';

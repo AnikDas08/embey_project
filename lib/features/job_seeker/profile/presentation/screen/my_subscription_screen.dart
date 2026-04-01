@@ -5,7 +5,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../../../core/component/text/common_text.dart';
 import '../../../../../core/utils/extensions/extension.dart';
-import '../../../../recruiter/profile/presentation/screen/subscription_pack_screen.dart';
 import '../controller/my_subscription_controller.dart';
 
 class MySubscriptionScreen extends StatelessWidget {
@@ -146,8 +145,7 @@ class MySubscriptionScreen extends StatelessWidget {
               color: const Color(0xFF1E3A5F),
               border: Border.all(color: Colors.grey.shade200, width: 2),
             ),
-            child: controller.userImage.value!=null
-                ? ClipOval(
+            child: ClipOval(
               child: Image.network(
                 ApiEndPoint.imageUrl+controller.userImage.value,
                 fit: BoxFit.cover,
@@ -159,11 +157,6 @@ class MySubscriptionScreen extends StatelessWidget {
                   );
                 },
               ),
-            )
-                : Icon(
-              Icons.person,
-              size: 50.sp,
-              color: Colors.white,
             ),
           ),
 

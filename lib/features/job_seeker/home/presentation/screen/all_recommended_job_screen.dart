@@ -148,10 +148,10 @@ class AllRecommendedJobScreen extends StatelessWidget {
                   salaryRange: salaryRange,
                   timePosted: timePosted,
                   isFullTime: isFullTime,
-                  job_board: job_board??"JOBARMAN",
+                  job_board: job_board??"N/A",
                   companyLogo: companyLogo,
                   showFavoriteButton: true,
-                  isSaved: jobPost.isFavourite ?? false,
+                  isFavorite: jobPost.isFavourite ?? false,
                   isRemote: isRemote,
                   onTap: () {
                     if (jobPost.id != null && jobPost.id!.isNotEmpty) {

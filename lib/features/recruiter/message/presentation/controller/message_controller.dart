@@ -1,16 +1,13 @@
 import 'dart:io';
-import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart'; // Add this package
 import '../../../../../core/config/api/api_end_point.dart';
 import '../../../../../core/services/api/api_service.dart';
 import '../../../../../core/services/socket/socket_service.dart';
-import '../../../../../core/services/storage/storage_services.dart';
 import '../../../../../core/utils/app_utils.dart';
 import '../../../../../core/utils/enum/enum.dart';
 import '../../data/model/message_model.dart';

@@ -1,13 +1,9 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:embeyi/core/services/api/api_service.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 
 class PaymentDetailController extends GetxController {
   final isLoading = false.obs;

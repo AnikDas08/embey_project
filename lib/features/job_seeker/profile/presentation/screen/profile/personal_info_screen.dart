@@ -1,4 +1,3 @@
-import 'package:embeyi/core/config/route/job_seeker_routes.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/features/job_seeker/profile/presentation/controller/profile_controller.dart';
 import 'package:flutter/material.dart';

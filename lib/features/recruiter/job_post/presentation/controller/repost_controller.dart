@@ -80,7 +80,7 @@ class RepostController extends GetxController {
     companyDescriptionController.text = data.description;
     applicationDeadlineController.text = data.deadline.split('T').first;
     selectedCategoryName.value = data.category;
-    if (categories.isNotEmpty && data.category != null) {
+    if (categories.isNotEmpty) {
       final match = categories.firstWhere(
             (element) => element['name'] == data.category,
         orElse: () => {},

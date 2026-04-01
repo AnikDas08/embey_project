@@ -1,7 +1,4 @@
-import 'package:embeyi/core/utils/constants/app_icons.dart';
-import 'package:embeyi/features/recruiter/profile/data/model/company_job_item_model.dart';
 import 'package:get/get.dart';
-import 'package:embeyi/core/utils/constants/app_images.dart';
 
 import '../../../../../core/config/api/api_end_point.dart';
 import '../../../../../core/services/api/api_service.dart';

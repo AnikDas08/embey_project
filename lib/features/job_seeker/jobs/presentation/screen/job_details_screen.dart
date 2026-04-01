@@ -232,7 +232,7 @@ class JobDetailsScreen extends StatelessWidget {
                         16.height,
                       ],
 
-                      if (controller.responsibilities != null && controller.responsibilities!.isNotEmpty&&controller.isNotSystem==true) ...[
+                      if (controller.responsibilities.isNotEmpty&&controller.isNotSystem==true) ...[
                         16.height,
                         CommonText(
                           text: 'Responsibilities',
@@ -241,7 +241,7 @@ class JobDetailsScreen extends StatelessWidget {
                           color: AppColors.primary,
                           bottom: 10,
                         ).start,
-                        ...controller.responsibilities!.map((item) => Padding(
+                        ...controller.responsibilities.map((item) => Padding(
                           padding: EdgeInsets.only(bottom: 6.h),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,7 +260,7 @@ class JobDetailsScreen extends StatelessWidget {
                         )).toList(),
                       ],
 
-                      if (controller.benefits != null && controller.benefits!.isNotEmpty&&controller.isNotSystem==true) ...[
+                      if (controller.benefits.isNotEmpty&&controller.isNotSystem==true) ...[
                         16.height,
                         CommonText(
                           text: 'Benefits',
@@ -269,7 +269,7 @@ class JobDetailsScreen extends StatelessWidget {
                           color: AppColors.primary,
                           bottom: 10,
                         ).start,
-                        ...controller.benefits!.map((item) => Padding(
+                        ...controller.benefits.map((item) => Padding(
                           padding: EdgeInsets.only(bottom: 6.h),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,

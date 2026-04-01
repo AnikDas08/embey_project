@@ -12,7 +12,6 @@ class PlatformReviewScreen extends StatelessWidget {
   PlatformReviewScreen({super.key});
 
   final controller = Get.put(PlatformReviewController());
-  final selectedRating = 0.obs;
   final reviewController = TextEditingController();
 
   @override
@@ -82,17 +81,15 @@ class PlatformReviewScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(5, (index) {
                         return GestureDetector(
-                          onTap: () {
-                            selectedRating.value = index + 1;
-                          },
+                          onTap: () => controller.updateRating(index),
                           child: Padding(
                             padding: EdgeInsets.symmetric(horizontal: 4.w),
                             child: Icon(
-                              index < selectedRating.value
+                              index < controller.selectedRating.value
                                   ? Icons.star
                                   : Icons.star_border,
                               size: 48.sp,
-                              color: index < selectedRating.value
+                              color: index < controller.selectedRating.value
                                   ? AppColors.warning
                                   : AppColors.secondaryText,
                             ),
@@ -103,13 +100,13 @@ class PlatformReviewScreen extends StatelessWidget {
                   ),
                 ),
                 Obx(() {
-                  if (selectedRating.value > 0) {
+                  if (controller.selectedRating.value > 0) {
                     return Column(
                       children: [
                         8.height,
                         Center(
                           child: CommonText(
-                            text: _getRatingText(selectedRating.value),
+                            text: _getRatingText(controller.selectedRating.value),
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                             color: AppColors.primary,
@@ -148,8 +145,7 @@ class PlatformReviewScreen extends StatelessWidget {
                       contentPadding: EdgeInsets.all(16.w),
                     ),
                     onChanged: (value) {
-                      // Trigger rebuild to enable/disable button
-                      selectedRating.refresh();
+                      controller.selectedRating.refresh();
                     },
                   ),
                 ),
@@ -165,11 +161,11 @@ class PlatformReviewScreen extends StatelessWidget {
                   )
                       : CommonButton(
                     titleText: 'Submit Review',
-                    onTap: selectedRating.value > 0 &&
+                    onTap: controller.selectedRating.value > 0 &&
                         reviewController.text.isNotEmpty
                         ? () async {
                       final success = await controller.submitReview(
-                        rating: selectedRating.value,
+                        rating: controller.selectedRating.value,
                         comment: reviewController.text.trim(),
                       );
                       if (success) {
@@ -177,7 +173,7 @@ class PlatformReviewScreen extends StatelessWidget {
                       }
                     }
                         : null,
-                    buttonColor: selectedRating.value > 0 &&
+                    buttonColor: controller.selectedRating.value > 0 &&
                         reviewController.text.isNotEmpty
                         ? AppColors.primary
                         : AppColors.secondaryText,
@@ -239,6 +235,7 @@ class PlatformReviewScreen extends StatelessWidget {
             CommonButton(
               titleText: 'Done',
               onTap: () {
+                controller.resetRating();
                 Navigator.pop(context);
                 Navigator.pop(context);
               },

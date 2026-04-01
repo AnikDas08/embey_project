@@ -1,4 +1,3 @@
-import 'package:embeyi/core/services/storage/storage_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:embeyi/core/utils/extensions/extension.dart';
 import '../../../core/config/route/app_routes.dart';
@@ -36,12 +35,12 @@ class _SplashScreenState extends State<SplashScreen> {
       // User is logged in, navigate to appropriate home screen based on role
       if (LocalStorage.role=="jobSeeker") {
         // Navigate to recruiter home
-        print("a 🤣🤣🤣🤣${LocalStorage.userRole!.name}");
+        print("a 🤣🤣🤣🤣${LocalStorage.userRole.name}");
         print("User Role : 😍😍😍😍 kdfdk ${LocalStorage.role}");
         Get.offAllNamed(JobSeekerRoutes.home);
       } else {
         // Navigate to job seeker home
-        print("b 🤣🤣🤣🤣${LocalStorage.userRole!.name}");
+        print("b 🤣🤣🤣🤣${LocalStorage.userRole.name}");
         print("User Role : 😍😍😍😍 kdfdk ${LocalStorage.role}");
         LocalStorage.userRole==UserRole.employer;
         Get.offAllNamed(RecruiterRoutes.home);

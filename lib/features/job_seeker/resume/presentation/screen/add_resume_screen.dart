@@ -5,11 +5,6 @@ import 'package:get/get.dart';
 import '../../../../../../core/component/text/common_text.dart';
 import '../../../../../../core/utils/extensions/extension.dart';
 import 'personal_info_screen.dart';
-import 'core_skills_screen.dart';
-import 'work_experience_screen.dart';
-import 'project_screen.dart';
-import 'education_screen.dart';
-import 'certification_screen.dart';
 
 class AddResumeScreen extends StatelessWidget {
   final String resumeId;

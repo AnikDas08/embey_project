@@ -6,7 +6,6 @@ import '../../../../../core/component/other_widgets/no_data.dart';
 import '../../../../../core/component/text/common_text.dart';
 import '../../../../recruiter/notifications/data/model/notification_model.dart';
 import '../controller/notifications_controller.dart';
-import '../../data/model/notification_model.dart';
 import '../widgets/notification_item.dart';
 import '../../../../../core/utils/constants/app_colors.dart';
 

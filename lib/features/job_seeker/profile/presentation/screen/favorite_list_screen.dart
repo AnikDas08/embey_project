@@ -121,7 +121,7 @@ class FavoriteListScreen extends StatelessWidget {
                   companyLogo: companyLogo,
                   isFavorite: true,
                   onTap: () {
-                    if (job.id != null && job.id!.isNotEmpty) {
+                    if (job.id.isNotEmpty) {
                       print("Job tapped: ${job.id}");
                       Get.toNamed(JobSeekerRoutes.jobDetails, arguments: job.id);
                     }
@@ -129,7 +129,7 @@ class FavoriteListScreen extends StatelessWidget {
                   onFavoriteTap: () {
                     // Show confirmation dialog
                     final jobId = job.id;
-                    if (jobId != null && jobId.isNotEmpty) {
+                    if (jobId.isNotEmpty) {
                       controller.toggleFavorite(jobId);
                     }
                   },

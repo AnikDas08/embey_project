@@ -1,5 +1,4 @@
 import 'package:embeyi/core/services/api/api_service.dart';
-import 'package:embeyi/features/job_seeker/profile/presentation/screen/profile/education_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../data/model/resume_model.dart';
@@ -188,7 +187,7 @@ class ProjectController extends GetxController {
         await Future.delayed(const Duration(milliseconds: 500));
         Get.back(result: true); // Return true to indicate successful update
       } else {
-        final errorData = response.data is Map ? response.data : {};
+        final errorData = response.data;
         throw Exception(errorData['message'] ?? 'Failed to update projects');
       }
     } catch (e) {

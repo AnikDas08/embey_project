@@ -1,10 +1,7 @@
-import 'dart:convert';
 import 'package:embeyi/core/services/api/api_service.dart';
 import 'package:embeyi/features/job_seeker/resume/presentation/screen/core_skills_screen.dart';
-import 'package:embeyi/features/job_seeker/resume/presentation/screen/personal_info_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../../core/services/storage/storage_services.dart';
 import '../../data/model/resume_model.dart';
 
 class PersonalInfoController extends GetxController {
@@ -218,7 +215,7 @@ class PersonalInfoController extends GetxController {
         await Future.delayed(const Duration(milliseconds: 500));
         Get.back(result: true); // Return true to indicate successful update
       } else {
-        final errorData = response.data is Map ? response.data : {};
+        final errorData = response.data;
         throw Exception(errorData['message'] ?? 'Failed to update');
       }
     } catch (e) {

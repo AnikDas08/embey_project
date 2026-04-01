@@ -6,7 +6,6 @@ import 'package:embeyi/core/component/button/common_button.dart';
 import 'package:embeyi/core/component/text/common_text.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 
-import '../../utils/constants/app_icons.dart';
 
 class SuccessDialog {
   /// Shows a reusable success dialog with customizable content

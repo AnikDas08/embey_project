@@ -39,7 +39,7 @@ class MySubscriptionController extends GetxController {
       // Replace with your actual API endpoint
       final response = await ApiService.get('subscription/subscribe'); // or your API method
 
-      if (response.statusCode == 200 && response.statusCode != null) {
+      if (response.statusCode == 200) {
         final data = response.data["data"];
 
         // Set subscription data

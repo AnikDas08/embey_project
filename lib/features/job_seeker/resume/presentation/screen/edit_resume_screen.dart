@@ -1,16 +1,11 @@
-import 'package:embeyi/core/config/route/app_routes.dart';
-import 'package:embeyi/core/config/route/job_seeker_routes.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
-import 'package:embeyi/features/job_seeker/profile/presentation/screen/profile/edit_personal_info_screen.dart';
 import 'package:embeyi/features/job_seeker/resume/presentation/screen/personal_info_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../../../../core/component/text/common_text.dart';
 import '../../../../../../core/utils/extensions/extension.dart';
-import '../../../profile/presentation/screen/profile/personal_info_screen.dart';
 import 'core_skills_screen.dart';
-import 'work_experience_screen.dart';
 import 'project_screen.dart';
 import 'education_screen.dart';
 import 'certification_screen.dart';

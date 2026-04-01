@@ -71,7 +71,6 @@ class PostInsightScreen extends StatelessWidget {
       centerTitle: true,
     );
   }
-
   Widget _buildDropdowns(PostInsightController controller) {
     return Row(
       children: [
@@ -80,7 +79,6 @@ class PostInsightScreen extends StatelessWidget {
             if (controller.postIds.isEmpty) {
               return const SizedBox();
             }
-
             return _buildDropdown(
               value: controller.selectedPostId.value,
               items: controller.postIds,

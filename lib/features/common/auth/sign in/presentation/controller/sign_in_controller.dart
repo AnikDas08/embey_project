@@ -1,7 +1,5 @@
 import 'package:embeyi/core/config/route/recruiter_routes.dart';
-import 'package:embeyi/core/utils/app_utils.dart';
 import 'package:embeyi/core/utils/enum/enum.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

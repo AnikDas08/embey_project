@@ -7,7 +7,6 @@ import '../../../../../core/component/text/common_text.dart';
 import '../../../../../core/utils/constants/app_colors.dart';
 import '../../../../../core/utils/extensions/extension.dart';
 import '../../../../job_seeker/profile/presentation/controller/platform_review_controller.dart';
-//import '../controller/platform_review_controller.dart';
 
 class PlatformReviewScreen extends StatelessWidget {
   PlatformReviewScreen({super.key});
@@ -35,7 +34,6 @@ class PlatformReviewScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                /// Review Header
                 Center(
                   child: Column(
                     children: [
@@ -70,7 +68,6 @@ class PlatformReviewScreen extends StatelessWidget {
                 ),
                 32.height,
 
-                /// Rating Section
                 const CommonText(
                   text: 'How would you rate us?',
                   fontSize: 16,
@@ -84,7 +81,12 @@ class PlatformReviewScreen extends StatelessWidget {
                       children: List.generate(5, (index) {
                         return GestureDetector(
                           onTap: () {
-                            selectedRating.value = index + 1;
+                            // ✅ THE FIX: click same star = go back one
+                            if (selectedRating.value == index + 1) {
+                              selectedRating.value = index;
+                            } else {
+                              selectedRating.value = index + 1;
+                            }
                           },
                           child: Padding(
                             padding: EdgeInsets.symmetric(horizontal: 4.w),
@@ -123,7 +125,6 @@ class PlatformReviewScreen extends StatelessWidget {
                 }),
                 32.height,
 
-                /// Review Text Area
                 const CommonText(
                   text: 'Share your thoughts',
                   fontSize: 16,
@@ -149,14 +150,12 @@ class PlatformReviewScreen extends StatelessWidget {
                       contentPadding: EdgeInsets.all(16.w),
                     ),
                     onChanged: (value) {
-                      // Trigger rebuild to enable/disable button
                       selectedRating.refresh();
                     },
                   ),
                 ),
                 32.height,
 
-                /// Submit Button
                 Obx(
                       () => controller.isLoading.value
                       ? Center(

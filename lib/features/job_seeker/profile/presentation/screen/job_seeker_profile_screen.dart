@@ -8,14 +8,12 @@ import 'package:embeyi/features/job_seeker/setting/presentation/screen/job_seeke
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:embeyi/core/services/storage/storage_keys.dart';
 import '../../../../../core/component/bottom_nav_bar/common_bottom_bar.dart';
 import '../../../../../core/component/image/common_image.dart';
 import '../../../../../core/component/other_widgets/item.dart';
 import '../../../../../core/component/text/common_text.dart';
 import '../../../../../core/config/api/api_end_point.dart';
 import '../controller/profile_controller.dart';
-import '../../../../../core/utils/constants/app_images.dart';
 import '../../../../../core/utils/constants/app_string.dart';
 import 'my_profile_screen.dart';
 import 'favorite_list_screen.dart';

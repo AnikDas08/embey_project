@@ -45,9 +45,9 @@ class CompanyOverviewController extends GetxController {
 
   String get companyLogo => companyData.value?.data.user.image ?? '';
   String get overviewDescription => companyData.value?.data.user.overview ?? '';
-  String get  aboutDescription=> companyData.value?.data?.user?.aboutUs ?? '';
+  String get  aboutDescription=> companyData.value?.data.user.aboutUs ?? '';
 
-  String get tagline => companyData.value?.data?.user?.role ?? 'Recruiter';
+  String get tagline => companyData.value?.data.user.role ?? 'Recruiter';
 
   /*String get overviewDescription {
     final user = companyData.value?.data?.user;
@@ -62,7 +62,7 @@ class CompanyOverviewController extends GetxController {
   }*/
 
   List<String> get galleryImages {
-    final gallery = companyData.value?.data?.gallery;
+    final gallery = companyData.value?.data.gallery;
     if (gallery == null || gallery.isEmpty) return [];
 
 
@@ -87,21 +87,19 @@ class CompanyOverviewController extends GetxController {
   }*/
 
   List<CompanyJobItemdata> get companyJobs {
-    final jobs = companyData.value?.data?.recentJobs;
+    final jobs = companyData.value?.data.recentJobs;
     if (jobs == null || jobs.isEmpty) return [];
 
 
     return jobs.map((job) {
       // Handle thumbnail URL
       String? thumbnailUrl;
-      if (job.thumbnail != null) {
-        if (job.thumbnail!.startsWith('http')) {
-          thumbnailUrl = job.thumbnail;
-        } else {
-          thumbnailUrl = '${ApiEndPoint.imageUrl}${job.thumbnail}';
-        }
+      if (job.thumbnail.startsWith('http')) {
+        thumbnailUrl = job.thumbnail;
+      } else {
+        thumbnailUrl = '${ApiEndPoint.imageUrl}${job.thumbnail}';
       }
-
+    
       return CompanyJobItemdata(
         id: job.id,
         title: job.title ?? 'Job Title',

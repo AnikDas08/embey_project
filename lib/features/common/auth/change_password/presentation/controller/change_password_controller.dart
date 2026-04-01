@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 
 import '../../../../../../core/services/api/api_service.dart';
 import '../../../../../../core/config/api/api_end_point.dart';
-import '../../../../../../core/utils/app_utils.dart';
 
 class ChangePasswordController extends GetxController {
   bool isLoading = false;

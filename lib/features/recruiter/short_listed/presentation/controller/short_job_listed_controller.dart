@@ -1,6 +1,5 @@
 import 'package:embeyi/core/config/route/recruiter_routes.dart';
 import 'package:get/get.dart';
-import 'package:embeyi/core/utils/constants/app_images.dart';
 
 import '../../../../../core/services/api/api_service.dart';
 import '../../../../../core/utils/app_utils.dart';

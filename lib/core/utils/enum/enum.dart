@@ -1,3 +1,3 @@
 enum Status { loading, error, completed }
 
-enum UserRole { jobSeeker, employer }
+enum UserRole { jobSeeker , employer }

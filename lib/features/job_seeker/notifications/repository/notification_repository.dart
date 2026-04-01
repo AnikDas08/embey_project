@@ -1,7 +1,5 @@
 import '../../../../core/services/api/api_service.dart';
-import '../../../../core/config/api/api_end_point.dart';
 import '../../../recruiter/notifications/data/model/notification_model.dart';
-import '../data/model/notification_model.dart';
 
 Future<List<NotificationModel>> notificationRepository(int page) async {
   var response = await ApiService.get(

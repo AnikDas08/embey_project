@@ -1,7 +1,6 @@
 // upcoming_interview_details_controller.dart
 
 import 'package:embeyi/core/config/api/api_end_point.dart';
-import 'package:embeyi/features/recruiter/interview/data/model/interview_details.dart' show ApplicationData;
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';

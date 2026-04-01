@@ -72,7 +72,6 @@ class ApiService {
         ),
       );
     }
-
     // 2. Use the modifiable map here
     modifiableBody.forEach((key, value) {
       formData.fields.add(MapEntry(key, value));

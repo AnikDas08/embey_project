@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'constants/app_colors.dart';
@@ -9,7 +10,7 @@ class Utils {
       title,
       message,
       colorText: AppColors.white,
-      backgroundColor: AppColors.black,
+      backgroundColor: Colors.green,
       snackPosition: SnackPosition.BOTTOM,
     );
   }

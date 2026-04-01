@@ -1,6 +1,5 @@
 import 'package:embeyi/core/component/text/common_text.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
-import 'package:embeyi/core/utils/constants/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:embeyi/core/component/image/common_image.dart';
 import 'package:embeyi/core/utils/extensions/extension.dart';
@@ -104,6 +103,8 @@ class JobCard extends StatelessWidget {
         _buildJobTitleRow(),
         6.height,
         _buildCompanyName(),
+        8.height,
+        _jobFind(),
         8.height,
         _buildJobTypeTags(),
         10.height,

@@ -1,10 +1,7 @@
 import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:embeyi/core/services/api/api_service.dart';
-import 'package:embeyi/core/services/storage/storage_services.dart';
 import 'package:embeyi/core/utils/app_utils.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'dart:convert';
 
 import '../../data/model/resume_model.dart';
 

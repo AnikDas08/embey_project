@@ -1,5 +1,3 @@
-import 'package:embeyi/core/utils/app_utils.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../../core/services/api/api_service.dart';

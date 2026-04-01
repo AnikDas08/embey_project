@@ -9,7 +9,6 @@ import 'package:embeyi/features/job_seeker/jobs/presentation/screen/jobs_screen.
 import 'package:embeyi/features/job_seeker/jobs/presentation/screen/job_details_screen.dart';
 import 'package:embeyi/features/job_seeker/jobs/presentation/screen/company_overview_screen.dart';
 import 'package:embeyi/features/job_seeker/jobs/presentation/screen/webview_screen_here.dart';
-import 'package:embeyi/features/job_seeker/profile/presentation/screen/payment_history_screen.dart';
 import 'package:embeyi/features/job_seeker/profile/presentation/screen/profile/add_education_screen.dart';
 import 'package:embeyi/features/job_seeker/profile/presentation/screen/profile/add_work_experience_screen.dart';
 import 'package:get/get.dart';
@@ -17,7 +16,6 @@ import 'package:get/get.dart';
 // Job Seeker imports
 import '../../../features/job_seeker/message/presentation/screen/job_seeker_chat_screen.dart';
 import '../../../features/job_seeker/message/presentation/screen/message_screen.dart';
-import '../../../features/job_seeker/notifications/presentation/screen/job_seeker_notifications_screen.dart';
 import '../../../features/job_seeker/profile/presentation/screen/job_seeker_profile_screen.dart';
 import '../../../features/job_seeker/profile/presentation/screen/profile/edit_profile.dart';
 import '../../../features/job_seeker/profile/presentation/screen/profile/personal_info_screen.dart';

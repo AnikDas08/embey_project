@@ -227,7 +227,7 @@ class EducationScreenResume extends StatelessWidget {
                   ),
                   16.width,
                   // Delete Icon
-                  GestureDetector(
+                  /*GestureDetector(
                     onTap: () {
                       _showDeleteDialog(context, controller, index);
                     },
@@ -236,7 +236,7 @@ class EducationScreenResume extends StatelessWidget {
                       color: Colors.red,
                       size: 20.sp,
                     ),
-                  ),
+                  ),*/
                 ],
               ),
             ],

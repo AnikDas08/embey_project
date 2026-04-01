@@ -45,8 +45,10 @@ class RecruiterHomeController extends GetxController {
   }
   void setupScrollListener() {
     scrollController.addListener(() {
-      if (scrollController.position.pixels >= scrollController.position.maxScrollExtent * 0.8) {
-        if (!isLoadingMore.value && hasMoreData.value) {
+      // Check if user is near the bottom
+      if (scrollController.position.pixels >= scrollController.position.maxScrollExtent * 0.9) {
+        // Added !isLoadingJobs.value check to prevent multiple triggers at once
+        if (!isLoadingMore.value && hasMoreData.value && !isLoadingJobs.value) {
           loadMoreJobs();
         }
       }
@@ -113,41 +115,50 @@ class RecruiterHomeController extends GetxController {
   Future<void> getJobs({int page = 1, bool isInitial = false}) async {
     if (isInitial) {
       isLoadingJobs.value = true;
-      recentJobs.clear();
       currentPage.value = 1;
       hasMoreData.value = true;
+      // Don't clear the list immediately to avoid a blank screen during refresh
     }
-    update();
+
     try {
       final response = await ApiService.get(
           "${ApiEndPoint.job_all}?page=$page",
           header: {"Authorization": "Bearer ${LocalStorage.token}"}
       );
+
       if (response.statusCode == 200) {
         final jobModel = RecruiterJobModel.fromJson(response.data);
+        final List<JobData> newJobs = jobModel.data ?? [];
 
-        // Update pagination info
+        // Update Pagination info
         if (response.data['pagination'] != null) {
           totalPages.value = response.data['pagination']['totalPage'] ?? 1;
           currentPage.value = page;
-          // Check if there's more data
-          hasMoreData.value = currentPage.value < totalPages.value;
-        }
-        if (isInitial) {
-          recentJobs.value = jobModel.data.toList();
+          // Strict check for more data
+          hasMoreData.value = currentPage.value < totalPages.value && newJobs.isNotEmpty;
         } else {
-          recentJobs.addAll(jobModel.data.toList());
+          hasMoreData.value = false;
+        }
+
+        if (isInitial) {
+          recentJobs.assignAll(newJobs); // assignAll is better for GetX reactivity
+        } else {
+          // Prevent adding duplicate jobs if the scroll listener fires twice
+          for (var job in newJobs) {
+            if (!recentJobs.any((existingJob) => existingJob.id == job.id)) {
+              recentJobs.add(job);
+            }
+          }
         }
       } else {
         Utils.errorSnackBar(response.statusCode, response.message);
       }
     } catch (e) {
       Utils.errorSnackBar(0, e.toString());
-    }
-    if (isInitial) {
+    } finally {
       isLoadingJobs.value = false;
+      update();
     }
-    update();
   }
   Future<void> loadMoreJobs() async {
     if (isLoadingMore.value || !hasMoreData.value) return;

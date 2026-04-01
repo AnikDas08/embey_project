@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:embeyi/core/component/pop_up/success_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';

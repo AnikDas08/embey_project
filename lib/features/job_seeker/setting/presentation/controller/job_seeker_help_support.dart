@@ -2,8 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../../../core/config/api/api_end_point.dart';
-import '../../../../../core/services/api/api_service.dart';
 
 class JobSeekerHelpSupportController extends GetxController {
 

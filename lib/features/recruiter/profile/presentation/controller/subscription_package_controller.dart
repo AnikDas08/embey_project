@@ -1,5 +1,4 @@
 import 'package:embeyi/core/component/pop_up/success_dialog.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../../core/services/api/api_service.dart';
@@ -30,7 +29,7 @@ class RecruiterSubscriptionController extends GetxController {
       // Replace with your actual API endpoint
       final response = await ApiService.get('package?type=employee'); // or your API method
 
-      if (response.statusCode == 200 && response.statusCode != null) {
+      if (response.statusCode == 200) {
         packages.value = (response.data['data'] as List)
             .map((json) => PackageModel.fromJson(json))
             .toList();

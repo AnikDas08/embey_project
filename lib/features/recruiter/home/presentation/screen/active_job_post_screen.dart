@@ -13,28 +13,84 @@ class ActiveJobPostScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // If you already registered the controller in a binding, use Get.find.
+    // Otherwise, keep Get.put(ActiveJobPostController()).
     final controller = Get.put(ActiveJobPostController());
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      //dffgfdg fgfgf
-      //sdfsdfdsf
-      ///
       appBar: _buildAppBar(),
       body: Column(
         children: [
           Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.all(16.r),
-                child: _buildJobsList(controller),
-              ),
+            child: RefreshIndicator(
+              color: AppColors.primaryColor,
+              onRefresh: () => controller.getJobs(isInitial: true),
+              child: Obx(() {
+                // 1. Initial Loading State
+                if (controller.isLoadingJob.value && controller.recentJobs.isEmpty) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                // 2. Empty State (Wrapped in ListView so RefreshIndicator works)
+                if (controller.recentJobs.isEmpty) {
+                  return ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      SizedBox(height: 200.h),
+                      Center(child: CommonText(text: 'No active jobs found')),
+                    ],
+                  );
+                }
+
+                // 3. Main Scrollable List
+                return ListView.builder(
+                  controller: controller.scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.all(16.r),
+                  itemCount: controller.recentJobs.length + 1, // +1 for footer
+                  itemBuilder: (context, index) {
+                    if (index == controller.recentJobs.length) {
+                      return _buildFooter(controller);
+                    }
+
+                    final job = controller.recentJobs[index];
+                    return RecruiterJobCard(
+                      jobTitle: job.title,
+                      location: job.location,
+                      isFullTime: job.isFullTime,
+                      isRemote: job.isRemote,
+                      candidateCount: job.totalApplications,
+                      deadline: job.formattedDeadline,
+                      thumbnailImage: job.thumbnail,
+                      userImages: job.userImages,
+                      onTap: () {
+                        Get.toNamed(RecruiterRoutes.jobCardDetails,
+                            arguments: {"postId": job.id});
+                      },
+                    );
+                  },
+                );
+              }),
             ),
           ),
           _buildCreateJobButton(controller),
         ],
       ),
     );
+  }
+
+  Widget _buildFooter(ActiveJobPostController controller) {
+    return Obx(() => Padding(
+      padding: EdgeInsets.symmetric(vertical: 20.h),
+      child: Center(
+        child: controller.isLoadingMore.value
+            ? const CircularProgressIndicator()
+            : (!controller.hasMoreData.value && controller.recentJobs.isNotEmpty)
+            ? const Text("No more jobs to load", style: TextStyle(color: Colors.grey))
+            : const SizedBox.shrink(),
+      ),
+    ));
   }
 
   PreferredSizeWidget _buildAppBar() {
@@ -47,91 +103,22 @@ class ActiveJobPostScreen extends StatelessWidget {
       ),
       title: Text(
         'Active Job Post',
-        style: TextStyle(
-          fontSize: 18.sp,
-          fontWeight: FontWeight.w700,
-          color: AppColors.black,
-        ),
+        style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700, color: AppColors.black),
       ),
       centerTitle: true,
-    );
-  }
-
-  Widget _buildJobsList(ActiveJobPostController controller) {
-    return Obx(
-          () {
-        if (controller.isLoadingJob.value) {
-          return Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 24.h),
-              child: CircularProgressIndicator(
-                color: AppColors.primaryColor,
-              ),
-            ),
-          );
-        }
-
-        if (controller.recentJobs.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 24.h),
-              child: CommonText(
-                text: 'No recent jobs found',
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w400,
-                color: AppColors.secondaryText,
-              ),
-            ),
-          );
-        }
-
-        return ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: controller.recentJobs.length,
-          itemBuilder: (context, index) {
-            final job = controller.recentJobs[index];
-            return RecruiterJobCard(
-              jobTitle: job.title,
-              location: job.location,
-              isFullTime: job.isFullTime,
-              isRemote: job.isRemote,
-              candidateCount: job.totalApplications,
-              deadline: job.formattedDeadline,
-              thumbnailImage: job.thumbnail,
-              userImages: job.userImages, // Pass the list here
-              onTap: () {
-                Get.toNamed(RecruiterRoutes.jobCardDetails, arguments: {
-                  "postId": job.id,
-                });
-              },
-            );
-          },
-        );
-      },
     );
   }
 
   Widget _buildCreateJobButton(ActiveJobPostController controller) {
     return Container(
       padding: EdgeInsets.all(16.r),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
+      decoration: BoxDecoration(color: Colors.white, boxShadow: [
+        BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, -2))
+      ]),
       child: SafeArea(
         child: CommonButton(
           titleText: 'Create New Job Post',
           buttonHeight: 50.h,
-          buttonRadius: 8.r,
-          titleSize: 16.sp,
-          titleWeight: FontWeight.w700,
           onTap: controller.createNewJobPost,
         ),
       ),

@@ -1,8 +1,5 @@
 // controllers/applied_details_controller.dart
 
-import 'package:embeyi/core/services/api/api_service.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 class ApplicationDetail {
   final String id;

@@ -17,7 +17,7 @@ import 'widgets/recruiter_job_card.dart';
 
 class RecruiterHomeScreen extends StatelessWidget {
   RecruiterHomeScreen({super.key});
-  final RecruiterHomeController controller = Get.put(RecruiterHomeController());
+  final controller = Get.find<RecruiterHomeController>();
 
   @override
   Widget build(BuildContext context) {
@@ -30,24 +30,37 @@ class RecruiterHomeScreen extends StatelessWidget {
             Expanded(
               child: RefreshIndicator(
                 color: AppColors.primaryColor,
-                onRefresh: () async {
-                  await controller.refreshData();
-                },
-                child: SingleChildScrollView(
-                  controller: controller.scrollController,
+                onRefresh: () async => await controller.refreshData(),
+                child: Obx(() => ListView.builder(
+                  controller: controller.scrollController, // ATTACH THIS
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      16.height,
-                      _buildStatsGrid(),
-                      24.height,
-                      _buildRecentJobsSection(),
-                      16.height,
-                    ],
-                  ),
-                ),
+                  // Items = StatsGrid(0) + Header(1) + Jobs(length) + Footer(last)
+                  itemCount: 3 + controller.recentJobs.length,
+                  itemBuilder: (context, index) {
+                    if (index == 0) return Padding(padding: EdgeInsets.only(top: 16.h), child: _buildStatsGrid());
+                    if (index == 1) return Padding(padding: EdgeInsets.symmetric(vertical: 24.h), child: _buildRecentJobsSectionHeader());
+
+                    // Footer Logic
+                    if (index == controller.recentJobs.length + 2) {
+                      return _buildListFooter();
+                    }
+
+                    // Job Card Logic
+                    final job = controller.recentJobs[index - 2];
+                    return RecruiterJobCard(
+                      jobTitle: job.title,
+                      location: job.location,
+                      isFullTime: job.isFullTime,
+                      isRemote: job.isRemote,
+                      candidateCount: job.totalApplications,
+                      deadline: job.formattedDeadline,
+                      thumbnailImage: job.thumbnail,
+                      userImages: job.userImages,
+                      onTap: () => Get.toNamed(RecruiterRoutes.jobCardDetails, arguments: {"postId": job.id}),
+                    );
+                  },
+                )),
               ),
             ),
           ],
@@ -184,7 +197,6 @@ class RecruiterHomeScreen extends StatelessWidget {
   Widget _buildStatsGrid() {
     return Obx(() {
       final summary = controller.profileData.value?.overviewSummary;
-
       return GridView.count(
         crossAxisCount: 2,
         shrinkWrap: true,
@@ -229,7 +241,42 @@ class RecruiterHomeScreen extends StatelessWidget {
       );
     });
   }
-  Widget _buildRecentJobsSection() {
+
+  // Replacement for Section Header
+  Widget _buildRecentJobsSectionHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        CommonText(text: 'Recent Job Post', fontSize: 18.sp, fontWeight: FontWeight.w600, color: AppColors.black),
+        GestureDetector(
+          onTap: () => RecruiterRoutes.goToAllJobPost(),
+          child: Row(
+            children: [
+              CommonText(text: 'See All', fontSize: 14.sp, fontWeight: FontWeight.w600, color: AppColors.primaryColor),
+              4.width,
+              Icon(Icons.arrow_forward, size: 16.sp, color: AppColors.primaryColor),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+// New Footer Helper
+  Widget _buildListFooter() {
+    return Obx(() => Padding(
+      padding: EdgeInsets.symmetric(vertical: 16.h),
+      child: Center(
+        child: controller.isLoadingMore.value
+            ? CircularProgressIndicator(color: AppColors.primaryColor)
+            : (!controller.hasMoreData.value && controller.recentJobs.isNotEmpty)
+            ? CommonText(text: 'No more jobs to load', fontSize: 12.sp, color: AppColors.secondaryText)
+            : const SizedBox.shrink(),
+      ),
+    ));
+  }
+
+  /*Widget _buildRecentJobsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -270,7 +317,7 @@ class RecruiterHomeScreen extends StatelessWidget {
       ],
     );
   }
-
+*/
   Widget _buildJobsList() {
     return Obx(
           () {

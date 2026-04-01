@@ -122,6 +122,7 @@ class EducationScreen extends StatelessWidget {
     );
   }
 
+
   Widget _buildEducationCard({
     required BuildContext context,
     required String degree,
@@ -172,6 +173,7 @@ class EducationScreen extends StatelessWidget {
                   height: 20,
                 ),
               ),
+
             ],
           ),
           SizedBox(height: 8.h),

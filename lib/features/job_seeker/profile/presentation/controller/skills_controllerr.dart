@@ -39,7 +39,7 @@ class SkillsController extends GetxController {
       final response = await ApiService.get(ApiEndPoint.user);
       print("response $response");
 
-      if (response.statusCode == 200 && response.data != null) {
+      if (response.statusCode == 200) {
         final responseData = response.data;
 
         if (responseData is Map<String, dynamic>) {
@@ -113,7 +113,7 @@ class SkillsController extends GetxController {
   /// Update Skills (Send to API)
   Future<void> updateSkills() async {
     final token = LocalStorage.token;
-    if (token == null || token.isEmpty) {
+    if (token.isEmpty) {
       Utils.errorSnackBar(0, "Token not found, please login again");
       return;
     }

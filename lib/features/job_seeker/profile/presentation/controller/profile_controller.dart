@@ -1,7 +1,6 @@
 import 'package:embeyi/core/component/pop_up/otp_pop_up.dart';
 import 'package:embeyi/core/component/pop_up/password_pop_up.dart';
 import 'package:embeyi/features/job_seeker/profile/presentation/screen/payment_history_screen.dart';
-import 'package:embeyi/features/recruiter/profile/presentation/screen/payment_history_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:embeyi/core/services/storage/storage_services.dart';

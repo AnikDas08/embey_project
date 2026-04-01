@@ -140,7 +140,7 @@ class JobsScreen extends StatelessWidget {
                     final location = jobPost.location ?? 'Location not specified';
                     final jobTitle = jobPost.title ?? 'No Title Specified';
                     final companyName = jobPost.recruiter ?? 'Company N/A';
-                    final job_board = jobPost.jobsBoard ?? 'JOBARMAN';
+                    final job_board = jobPost.jobsBoard ?? 'N/A';
       
                     String timePosted = '01 Dec 25';
                     if (jobPost.deadline != null) {

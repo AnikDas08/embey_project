@@ -1,4 +1,3 @@
-import 'package:embeyi/core/component/image/common_image.dart';
 import 'package:embeyi/core/component/text/common_text.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/core/utils/extensions/extension.dart';
@@ -9,7 +8,6 @@ import 'package:get/get.dart';
 
 import '../../../../../core/config/route/recruiter_routes.dart';
 import '../../../home/presentation/widgets/recruiter_job_card.dart';
-import '../controller/job_history_controller.dart';
 
 // Overview Summary Stats Widget
 class CompanyOverviewStats extends StatelessWidget {

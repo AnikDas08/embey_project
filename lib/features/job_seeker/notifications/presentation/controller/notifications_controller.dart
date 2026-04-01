@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import '../../../../../core/services/api/api_service.dart';
 import '../../../../recruiter/notifications/data/model/notification_model.dart';
 import '../../../home/presentation/controller/home_controller.dart';
-import '../../data/model/notification_model.dart';
 import '../../repository/notification_repository.dart';
 
 class NotificationsController extends GetxController {

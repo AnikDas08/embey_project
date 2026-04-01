@@ -2,7 +2,6 @@
 
 import 'package:embeyi/core/component/appbar/common_appbar.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
-import 'package:embeyi/core/utils/constants/app_images.dart';
 import 'package:embeyi/core/utils/extensions/extension.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -45,13 +44,13 @@ class _CompanyOverviewScreenState extends State<CompanyOverviewScreen> {
             children: [
               // Hero Header with Company Image and Logo
               CompanyHeroHeader(
-                companyImage: (controller.companyImage == null || controller.companyImage.isEmpty)
+                companyImage: (controller.companyImage.isEmpty)
                     ? "assets/images/noImage.png"
                     : controller.companyImage.startsWith('http')
                     ? controller.companyImage
                     : '${ApiEndPoint.imageUrl}${controller.companyImage}',
 
-                companyLogo: (controller.companyLogo == null || controller.companyLogo.isEmpty)
+                companyLogo: (controller.companyLogo.isEmpty)
                     ? "assets/images/noImage.png"
                     : controller.companyLogo.startsWith('http')
                     ? controller.companyLogo

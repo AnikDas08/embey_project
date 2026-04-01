@@ -1,5 +1,3 @@
-import 'package:embeyi/core/component/bottom_nav_bar/common_bottom_bar.dart';
-import 'package:embeyi/core/component/button/common_button.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 import 'package:embeyi/core/utils/extensions/extension.dart';
 import 'package:embeyi/features/recruiter/home/presentation/widgets/recruiter_job_card.dart';

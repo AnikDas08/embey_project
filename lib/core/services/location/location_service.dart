@@ -18,13 +18,11 @@ class LocationService {
     }
     return serviceEnabled;
   }
-
   static Future<bool> locationPermission() async {
     LocationPermission permission = await Geolocator.checkPermission();
     if (kDebugMode) {
       print(permission);
     }
-
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (kDebugMode) {

@@ -1,7 +1,6 @@
 import 'package:embeyi/core/component/image/common_image.dart';
 import 'package:embeyi/core/services/storage/storage_services.dart';
 import 'package:embeyi/core/utils/constants/app_icons.dart';
-import 'package:embeyi/core/utils/enum/enum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -100,7 +99,7 @@ class _CommonBottomNavBarState extends State<CommonBottomNavBar> {
     appLog(LocalStorage.userRole, source: "user role");
     appLog(index, source: "index");
     appLog(widget.currentIndex, source: "widget current index");
-    print("User Role : 😍😍😍😍${LocalStorage.userRole!.name}");
+    print("User Role : 😍😍😍😍${LocalStorage.userRole.name}");
 
     if (LocalStorage.role=="jobSeeker") {
       // Job Seeker Navigation

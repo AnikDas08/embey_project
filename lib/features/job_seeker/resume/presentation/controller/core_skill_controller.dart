@@ -1,10 +1,7 @@
-import 'package:embeyi/core/config/route/app_routes.dart';
 import 'package:embeyi/core/services/api/api_service.dart';
-import 'package:embeyi/features/job_seeker/profile/presentation/screen/job_seeker_profile_screen.dart';
 import 'package:embeyi/features/job_seeker/resume/presentation/screen/project_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../../core/services/storage/storage_services.dart';
 import '../../data/model/resume_model.dart';
 
 class CoreSkillsNewController extends GetxController {
@@ -244,7 +241,7 @@ class CoreSkillsNewController extends GetxController {
         await Future.delayed(const Duration(milliseconds: 500));
         Get.back(result: true);
       } else {
-        final errorData = response.data is Map ? response.data : {};
+        final errorData = response.data;
         throw Exception(
             errorData['message'] ?? 'Failed to update core skills');
       }

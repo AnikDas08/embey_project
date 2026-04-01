@@ -9,7 +9,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 import 'package:open_file/open_file.dart';
 
-import '../../../../../core/config/route/recruiter_routes.dart';
 import '../../../../../core/services/api/api_service.dart';
 
 class RecruiterResumeController extends GetxController {

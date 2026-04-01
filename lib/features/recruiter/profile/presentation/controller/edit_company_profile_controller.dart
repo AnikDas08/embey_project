@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:embeyi/core/utils/constants/app_images.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../../core/config/api/api_end_point.dart';

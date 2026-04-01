@@ -21,11 +21,10 @@ class AppliedDetailsController extends GetxController {
 
   Future<void> fetchApplicationDetails() async {
     isLoading.value = true;
-
     try {
       final response = await ApiService.get('application/$applicationId');
 
-      if (response.statusCode == 200 && response.data != null) {
+      if (response.statusCode == 200) {
         final data = response.data;
 
         if (data['success'] == true && data['data'] != null) {

@@ -13,7 +13,6 @@ import 'package:embeyi/features/recruiter/profile/presentation/screen/career_spo
 import 'package:embeyi/features/recruiter/profile/presentation/screen/company_profile_screen.dart';
 import 'package:embeyi/features/recruiter/profile/presentation/screen/job_history_screen.dart';
 import 'package:embeyi/features/recruiter/profile/presentation/screen/my_subscription_screen.dart';
-import 'package:embeyi/features/recruiter/profile/presentation/screen/payment_history_screen.dart';
 import 'package:embeyi/features/recruiter/profile/presentation/screen/platform_review_screen.dart';
 import 'package:embeyi/features/recruiter/profile/presentation/screen/subscription_pack_screen.dart';
 import 'package:embeyi/features/recruiter/short_listed/presentation/screen/short_job_listed_screen.dart';

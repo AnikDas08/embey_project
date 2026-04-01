@@ -7,11 +7,10 @@ import '../../../../../core/utils/app_utils.dart';
 import '../../../home/data/model/job_model.dart';
 
 class RecruiterJobPostController extends GetxController {
-  final RxInt selectedTabIndex = 0.obs; // 0 = Active, 1 = Closed
+  final RxInt selectedTabIndex = 0.obs;
   final RxList<JobData> recentJobs = <JobData>[].obs;
   final RxBool isLoadingJob = false.obs;
 
-  // Pagination variables
   final RxInt currentPage = 1.obs;
   final RxInt totalPages = 1.obs;
   final RxBool isLoadingMore = false.obs;
@@ -21,8 +20,8 @@ class RecruiterJobPostController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    getJobs(page: 1, isInitial: true);
     setupScrollListener();
+    getJobs(page: 1, isInitial: true);
   }
 
   @override
@@ -31,49 +30,54 @@ class RecruiterJobPostController extends GetxController {
     super.onClose();
   }
 
+  void resetPagination() {
+    currentPage.value = 1;
+    hasMoreData.value = true;
+    isLoadingMore.value = false;
+    isLoadingJob.value = false; // Ensure this isn't stuck at true
+  }
+
   void setupScrollListener() {
     scrollController.addListener(() {
-      if (scrollController.position.pixels >= scrollController.position.maxScrollExtent * 0.8) {
-        if (!isLoadingMore.value && hasMoreData.value) {
+      // Trigger when user scrolls 90% down
+      if (scrollController.position.pixels >= scrollController.position.maxScrollExtent * 0.9) {
+        if (!isLoadingMore.value && hasMoreData.value && !isLoadingJob.value) {
           loadMoreJobs();
         }
       }
     });
   }
 
-  /// Fetches jobs based on the current selectedTabIndex
   Future<void> getJobs({int page = 1, bool isInitial = false}) async {
     if (isInitial) {
       isLoadingJob.value = true;
-      recentJobs.clear();
-      currentPage.value = 1;
       hasMoreData.value = true;
+      currentPage.value = 1;
     }
 
     try {
-      // Determine status string based on tab index
       final statusQuery = selectedTabIndex.value == 0 ? "active" : "closed";
-
       final response = await ApiService.get(
         "${ApiEndPoint.job_all}?status=$statusQuery&page=$page",
       );
 
       if (response.statusCode == 200) {
         final jobModel = RecruiterJobModel.fromJson(response.data);
+        final List<JobData> fetchedJobs = jobModel.data ?? [];
 
-        // Update pagination info
         if (response.data['pagination'] != null) {
           totalPages.value = response.data['pagination']['totalPage'] ?? 1;
           currentPage.value = page;
-
-          // Check if there's more data
+          // Check if we have more pages to load
           hasMoreData.value = currentPage.value < totalPages.value;
+        } else {
+          hasMoreData.value = false;
         }
 
         if (isInitial) {
-          recentJobs.value = jobModel.data.toList();
+          recentJobs.assignAll(fetchedJobs);
         } else {
-          recentJobs.addAll(jobModel.data.toList());
+          recentJobs.addAll(fetchedJobs);
         }
       } else {
         Utils.errorSnackBar(response.statusCode, response.message);
@@ -81,49 +85,28 @@ class RecruiterJobPostController extends GetxController {
     } catch (e) {
       Utils.errorSnackBar(0, e.toString());
     } finally {
-      if (isInitial) {
-        isLoadingJob.value = false;
-      }
+      isLoadingJob.value = false;
     }
   }
 
   Future<void> loadMoreJobs() async {
-    if (isLoadingMore.value || !hasMoreData.value) return;
-
     isLoadingMore.value = true;
-
-    try {
-      await getJobs(page: currentPage.value + 1);
-    } finally {
-      isLoadingMore.value = false;
-    }
+    await getJobs(page: currentPage.value + 1);
+    isLoadingMore.value = false;
   }
 
-  /// This is the key fix: update index AND fetch new data
   void selectTab(int index) {
-    if (selectedTabIndex.value == index) return; // Prevent redundant calls
+    if (selectedTabIndex.value == index) return;
     selectedTabIndex.value = index;
-
-    // Reset pagination when switching tabs
-    currentPage.value = 1;
-    hasMoreData.value = true;
-    recentJobs.clear();
-
     getJobs(page: 1, isInitial: true);
   }
 
-  /// Refresh data with pull-to-refresh
   Future<void> refreshData() async {
-    currentPage.value = 1;
-    hasMoreData.value = true;
     await getJobs(page: 1, isInitial: true);
   }
 
-  void createNewJobPost() {
-    RecruiterRoutes.goToCreateJobPost();
-  }
+  void createNewJobPost() => RecruiterRoutes.goToCreateJobPost();
 
-  // Navigation with arguments
   void viewJobDetails(String jobId) {
     Get.toNamed(RecruiterRoutes.jobCardDetails, arguments: {"postId": jobId});
   }

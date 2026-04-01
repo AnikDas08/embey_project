@@ -5,7 +5,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../../core/services/api/api_service.dart';
-import '../../../../../core/utils/constants/app_colors.dart';
 
 class HelpSupportController extends GetxController {
   final ImagePicker _picker = ImagePicker();

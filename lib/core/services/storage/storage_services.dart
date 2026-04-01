@@ -44,7 +44,6 @@ class LocalStorage {
           element.name == localStorage.getString(LocalStorageKeys.userRole),
       orElse: () => UserRole.jobSeeker,
     );
-
     appLog(userId, source: "Local Storage");
   }
 

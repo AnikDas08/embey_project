@@ -1,4 +1,3 @@
-import 'package:embeyi/core/component/image/common_image.dart';
 import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
 // import 'package:embeyi/core/utils/constants/app_images.dart'; // No longer needed

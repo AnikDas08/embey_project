@@ -1,4 +1,3 @@
-import 'package:embeyi/core/config/route/app_routes.dart';
 import 'package:embeyi/core/config/route/recruiter_routes.dart';
 import 'package:embeyi/core/services/api/api_service.dart';
 import 'package:get/get.dart';

@@ -1,10 +1,6 @@
-import 'package:embeyi/core/component/bottom_nav_bar/common_bottom_bar.dart';
-import 'package:embeyi/core/component/bottom_shit/filder_bottom_shit.dart';
 import 'package:embeyi/core/component/card/job_card.dart';
 import 'package:embeyi/core/config/route/job_seeker_routes.dart';
-import 'package:embeyi/core/utils/constants/app_images.dart';
 import 'package:embeyi/features/job_seeker/home/presentation/controller/category_detailcontroller.dart';
-import 'package:embeyi/features/job_seeker/home/presentation/widgets/auto_apply.dart';
 import 'package:embeyi/features/job_seeker/home/presentation/widgets/home_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -158,6 +154,7 @@ class CategoryDetails extends StatelessWidget {
 
                     // Determine job properties safely
                     final jobType = jobPost.jobType?.toUpperCase();
+                    final jobBoard = jobPost.jobsBoard;
                     final isFullTime = jobType == 'FULL_TIME';
                     final isRemote = jobType == 'REMOTE';
 
@@ -180,6 +177,7 @@ class CategoryDetails extends StatelessWidget {
                         location: location,
                         jobTitle: jobTitle,
                         salaryRange: salaryRange,
+                        job_board: jobBoard??"N/A",
                         timePosted: timePosted,
                         isFullTime: isFullTime,
                         companyLogo: companyLogo,

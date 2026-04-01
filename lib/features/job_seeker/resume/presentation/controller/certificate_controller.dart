@@ -120,8 +120,7 @@ class CertificationController extends GetxController {
       final certificationsJson = certifications.map((certification) {
         return {
           'title': certification.title,
-          if (certification.description != null &&
-              certification.description!.isNotEmpty)
+          if (certification.description.isNotEmpty)
             'description': certification.description,
           if (certification.link != null && certification.link!.isNotEmpty)
             'link': certification.link,
@@ -184,8 +183,7 @@ class CertificationController extends GetxController {
         return {
           if (certification.id.isNotEmpty) '_id': certification.id,
           'title': certification.title,
-          if (certification.description != null &&
-              certification.description!.isNotEmpty)
+          if (certification.description.isNotEmpty)
             'description': certification.description,
           if (certification.link != null && certification.link!.isNotEmpty)
             'link': certification.link,
@@ -213,7 +211,7 @@ class CertificationController extends GetxController {
         await Future.delayed(const Duration(milliseconds: 500));
         Get.back(result: true);
       } else {
-        final errorData = response.data is Map ? response.data : {};
+        final errorData = response.data;
         throw Exception(
             errorData['message'] ?? 'Failed to update certifications');
       }

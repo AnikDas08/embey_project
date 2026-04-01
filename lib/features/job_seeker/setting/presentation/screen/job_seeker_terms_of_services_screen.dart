@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import '../../../../../core/component/other_widgets/common_loader.dart';
 import '../../../../../core/component/screen/error_screen.dart';
 import '../../../../../core/component/text/common_text.dart';
-import '../controller/privacy_policy_controller.dart';
 import '../../../../../core/utils/constants/app_string.dart';
 import '../../../../../core/utils/enum/enum.dart';
 

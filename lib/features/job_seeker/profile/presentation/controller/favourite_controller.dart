@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../core/config/api/api_end_point.dart';
 import '../../../../../core/services/api/api_service.dart';
@@ -36,7 +35,7 @@ class FavouriteController extends GetxController {
 
     try {
       final token = LocalStorage.token;
-      if (token == null || token.isEmpty) {
+      if (token.isEmpty) {
         Utils.errorSnackBar(0, "Token not found, please login again");
         return;
       }
@@ -50,7 +49,7 @@ class FavouriteController extends GetxController {
       print("Response Status: ${response.statusCode}");
       print("Response Data: ${response.data}");
 
-      if (response.statusCode == 200 && response.data != null) {
+      if (response.statusCode == 200) {
         final favouriteResponse = FavouriteResponse.fromJson(response.data);
 
         if (page == 1) {
@@ -82,7 +81,7 @@ class FavouriteController extends GetxController {
   Future<void> removeFavourite(String favouriteId, int index) async {
     try {
       final token = LocalStorage.token;
-      if (token == null || token.isEmpty) {
+      if (token.isEmpty) {
         Utils.errorSnackBar(0, "Token not found, please login again");
         return;
       }
@@ -134,7 +133,7 @@ class FavouriteController extends GetxController {
 
     try {
       final token = LocalStorage.token;
-      if (token == null || token.isEmpty) {
+      if (token.isEmpty) {
         Utils.errorSnackBar(0, "Token not found, please login again");
         return;
       }
@@ -180,7 +179,7 @@ class FavouriteController extends GetxController {
           print("✅ Removed from favourites");
         } else {
           // Add the new favorite to the list
-          if (response.data != null && response.data['data'] != null) {
+          if (response.data['data'] != null) {
             final newFavorite = FavouriteItem.fromJson(response.data['data']);
             favouriteList.insert(0, newFavorite);
           }

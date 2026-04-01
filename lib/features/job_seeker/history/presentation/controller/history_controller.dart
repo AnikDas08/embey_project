@@ -89,7 +89,7 @@ class HistoryController extends GetxController with GetSingleTickerProviderState
         'application?page=${currentPage.value}&limit=10',
       );
 
-      if (response.statusCode == 200 && response.data != null) {
+      if (response.statusCode == 200) {
         final applicationResponse = ApplicationResponse.fromJson(response.data);
 
         if (applicationResponse.success) {
@@ -143,7 +143,7 @@ class HistoryController extends GetxController with GetSingleTickerProviderState
         'application?status=REJECTED&page=${currentPage.value}&limit=10',
       );
 
-      if (response.statusCode == 200 && response.data != null) {
+      if (response.statusCode == 200) {
         final applicationResponse = ApplicationResponse.fromJson(response.data);
 
         if (applicationResponse.success) {
@@ -200,7 +200,7 @@ class HistoryController extends GetxController with GetSingleTickerProviderState
         'application?status=INTERVIEW&interview_type=$interviewType&page=${currentPage.value}&limit=10',
       );
 
-      if (response.statusCode == 200 && response.data != null) {
+      if (response.statusCode == 200) {
         final applicationResponse = ApplicationResponse.fromJson(response.data);
 
         if (applicationResponse.success) {

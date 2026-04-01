@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import '../../../../../core/services/api/api_service.dart';
-import '../../data/model/job_details_model.dart';
 
 class JobDetailsController extends GetxController {
   final RxBool isLoading = true.obs;
@@ -55,7 +54,7 @@ class JobDetailsController extends GetxController {
 
       final response = await ApiService.get('job-post/$jobId');
 
-      if (response.statusCode == 200 && response.data != null) {
+      if (response.statusCode == 200) {
         final data = response.data;
 
         if (data['data'] != null) {
