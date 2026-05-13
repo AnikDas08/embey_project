@@ -1,4 +1,4 @@
-# Embeyi
+# Job Recruitment and Job Seeker App
 
 A comprehensive Flutter-based job recruitment and matching platform connecting job seekers with recruiters. Built with a feature-based architecture, real-time communication, and location-based services.
 
