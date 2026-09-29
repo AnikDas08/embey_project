@@ -79,13 +79,9 @@ class RecomendedJodController extends GetxController {
           autoApplHere.value = response.data['data']['isAutoApply'];
         }
 
-        Get.snackbar(
+        Utils.successSnackBar(
           "Success",
           "Auto Apply ${autoApplHere.value ? 'Enabled' : 'Disabled'}",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 2),
         );
 
         print("✅ Auto Apply toggled successfully: ${autoApplHere.value}");
@@ -93,21 +89,18 @@ class RecomendedJodController extends GetxController {
         // Revert to previous value on failure
         autoApplHere.value = previousValue;
 
-        Get.snackbar(
-          "Error",
-          response.message ?? "Failed to toggle Auto Apply",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
+        Utils.errorSnackBar(
+          "Auto Apply",
+          response.message,
         );
 
-        print("❌ Failed to toggle Auto Apply");
+        print("❌ Failed to toggle Auto Apply: ${response.message}");
       }
     } catch (e) {
       // Revert to previous value on exception
       autoApplHere.value = previousValue;
 
-      Utils.errorSnackBar(0, "Error: ${e.toString()}");
+      Utils.errorSnackBar("Error", e.toString());
       print("❌ Exception in toggleAutoApply: $e");
     } finally {
       isLoadingAutoApply.value = false;

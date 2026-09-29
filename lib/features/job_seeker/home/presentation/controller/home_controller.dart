@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../../core/config/api/api_end_point.dart';
 import '../../../../../core/services/api/api_service.dart';
@@ -17,6 +19,9 @@ class HomeController extends GetxController {
   UserData? profileData;
   RxList<String> bannerImages = <String>[].obs;
   final RxList<Map<String, dynamic>> categories = <Map<String, dynamic>>[].obs;
+  RxBool isLoadingCategories = false.obs;
+
+  static const String _categoriesCacheKey = 'cached_job_categories';
 
   RxList<JobPost> jobPost = <JobPost>[].obs;
   RxBool isLoadingJobs = false.obs;
@@ -51,6 +56,7 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _loadCachedCategories();
     getProfile();
     getBanner();
     fetchCategories();
@@ -63,6 +69,28 @@ class HomeController extends GetxController {
           (_) => _performSearch(),
       time: const Duration(milliseconds: 500),
     );
+  }
+
+  void _loadCachedCategories() {
+    try {
+      final cachedJson = LocalStorage.preferences?.getString(_categoriesCacheKey);
+      if (cachedJson != null && cachedJson.isNotEmpty) {
+        final List<dynamic> decoded = jsonDecode(cachedJson);
+        categories.value = decoded.map((item) => Map<String, dynamic>.from(item)).toList();
+        print("📦 Loaded ${categories.length} categories from cache");
+      }
+    } catch (e) {
+      print("Error loading cached categories: $e");
+    }
+  }
+
+  Future<void> _saveCategoriesToCache(List<Map<String, dynamic>> list) async {
+    try {
+      final prefs = LocalStorage.preferences ?? await SharedPreferences.getInstance();
+      await prefs.setString(_categoriesCacheKey, jsonEncode(list));
+    } catch (e) {
+      print("Error caching categories: $e");
+    }
   }
 
   @override
@@ -157,44 +185,44 @@ class HomeController extends GetxController {
     }
   }
   Future<void> fetchCategories() async {
+    if (categories.isEmpty) {
+      isLoadingCategories.value = true;
+    }
     try {
       final response = await ApiService.get(
         ApiEndPoint.Categorys,
         header: {
-          "Authorization": "Bearer ${LocalStorage.token}",
+          if (LocalStorage.token.isNotEmpty)
+            "Authorization": "Bearer ${LocalStorage.token}",
         },
       );
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data['data'];
+      if (response.statusCode == 200 && response.data != null) {
+        final List<dynamic>? data = response.data['data'];
 
-        categories.value = data.map((item) {
-          categoryImage.value = item['image'] ?? "assets/images/noImage.png";
-          categoryName.value = item['name'] ?? "";
-          categoryId = item['_id'] ?? "";
-          return {
-            "id": item['_id'] ?? "",
-            "name": item['name'] ?? "",
-            "image": item['image'] ?? "assets/images/noImage.png",
-          };
-        }).toList();
+        if (data != null && data.isNotEmpty) {
+          final List<Map<String, dynamic>> fetched = data.map((item) {
+            final id = item['_id'] ?? item['id'] ?? "";
+            final name = item['name'] ?? "";
+            final img = item['image'] ?? "";
+            return {
+              "id": id,
+              "name": name,
+              "image": img,
+            };
+          }).toList();
+
+          categories.value = fetched;
+          _saveCategoriesToCache(fetched);
+          print("✅ Loaded ${categories.length} categories from API");
+        }
       } else {
-        Get.snackbar(
-          "Error",
-          response.message ?? "Failed to load categories",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        print("⚠️ Failed to load categories: ${response.message}");
       }
     } catch (e) {
-      Get.snackbar(
-        "Error",
-        "An error occurred: ${e.toString()}",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      print("❌ Error fetching categories: $e");
+    } finally {
+      isLoadingCategories.value = false;
     }
   }
 
@@ -224,13 +252,9 @@ class HomeController extends GetxController {
           autoApplHere.value = response.data['data']['isAutoApply'];
         }
 
-        Get.snackbar(
+        Utils.successSnackBar(
           "Success",
           "Auto Apply ${autoApplHere.value ? 'Enabled' : 'Disabled'}",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 2),
         );
 
         print("✅ Auto Apply toggled successfully: ${autoApplHere.value}");
@@ -238,21 +262,18 @@ class HomeController extends GetxController {
         // Revert to previous value on failure
         autoApplHere.value = previousValue;
 
-        Get.snackbar(
-          "Error",
-          response.message ?? "Failed to toggle Auto Apply",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
+        Utils.errorSnackBar(
+          "Auto Apply",
+          response.message,
         );
 
-        print("❌ Failed to toggle Auto Apply");
+        print("❌ Failed to toggle Auto Apply: ${response.message}");
       }
     } catch (e) {
       // Revert to previous value on exception
       autoApplHere.value = previousValue;
 
-      Utils.errorSnackBar(0, "Error: ${e.toString()}");
+      Utils.errorSnackBar("Error", e.toString());
       print("❌ Exception in toggleAutoApply: $e");
     } finally {
       isLoadingAutoApply.value = false;

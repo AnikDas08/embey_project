@@ -159,8 +159,10 @@ class JobDetailsController extends GetxController {
   }
 
   String getCompanyName() {
-    if (recruiter_company.isNotEmpty) return recruiter_company;
-    return jobData.value?.recruiter.name ?? 'Company';
+    if (recruiter_company.trim().isNotEmpty && recruiter_company.trim() != 'N/A') return recruiter_company.trim();
+    final name = jobData.value?.recruiter.name;
+    if (name != null && name.trim().isNotEmpty && name.trim() != 'Company') return name.trim();
+    return 'N/A';
   }
 
   String getCompanyLogo() => jobData.value?.recruiter.image ?? '';

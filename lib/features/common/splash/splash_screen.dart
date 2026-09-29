@@ -33,16 +33,9 @@ class _SplashScreenState extends State<SplashScreen> {
     // Navigate based on login status and role
     if (LocalStorage.isLogIn) {
       // User is logged in, navigate to appropriate home screen based on role
-      if (LocalStorage.role=="jobSeeker") {
-        // Navigate to recruiter home
-        print("a 🤣🤣🤣🤣${LocalStorage.userRole.name}");
-        print("User Role : 😍😍😍😍 kdfdk ${LocalStorage.role}");
+      if (LocalStorage.userRole == UserRole.jobSeeker) {
         Get.offAllNamed(JobSeekerRoutes.home);
       } else {
-        // Navigate to job seeker home
-        print("b 🤣🤣🤣🤣${LocalStorage.userRole.name}");
-        print("User Role : 😍😍😍😍 kdfdk ${LocalStorage.role}");
-        LocalStorage.userRole==UserRole.employer;
         Get.offAllNamed(RecruiterRoutes.home);
       }
     } else {

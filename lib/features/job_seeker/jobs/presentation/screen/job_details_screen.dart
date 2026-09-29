@@ -99,7 +99,7 @@ class JobDetailsScreen extends StatelessWidget {
                           imageSrc: controller.getThumbnail().isNotEmpty
                               ? controller.getThumbnail().startsWith("http")?controller.getThumbnail():ApiEndPoint.imageUrl+controller.getThumbnail()
                               : AppImages.jobDetails,
-                          fill: BoxFit.cover,
+                          fill: BoxFit.contain,
                           height: 220.h,
                           width: double.infinity,
                         ),

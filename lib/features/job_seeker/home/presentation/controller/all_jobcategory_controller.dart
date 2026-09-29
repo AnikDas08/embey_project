@@ -57,22 +57,10 @@ class AllJobCategoryController extends GetxController {
 
         update();
       } else {
-        Get.snackbar(
-          "Error",
-          response.message ?? "Failed to load categories",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        print("⚠️ Failed to load categories: ${response.message}");
       }
     } catch (e) {
-      Get.snackbar(
-        "Error",
-        "An error occurred: ${e.toString()}",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      print("❌ Error fetching categories: $e");
     }
   }
 

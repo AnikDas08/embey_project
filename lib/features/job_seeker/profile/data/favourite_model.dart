@@ -57,6 +57,7 @@ class JobPost {
   final String id;
   final String thumbnail;
   final String recruiter;
+  final String recruiterCompany;
   final String title;
   final String description;
   final String status;
@@ -78,6 +79,7 @@ class JobPost {
     required this.id,
     required this.thumbnail,
     required this.recruiter,
+    this.recruiterCompany = '',
     required this.title,
     required this.description,
     required this.status,
@@ -101,6 +103,7 @@ class JobPost {
       id: json['_id'] ?? '',
       thumbnail: json['thumbnail'] ?? '',
       recruiter: json['recruiter'] ?? '',
+      recruiterCompany: json['recruiter_company']?.toString() ?? '',
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       status: json['status'] ?? '',
@@ -122,6 +125,16 @@ class JobPost {
           ? GeoLocation.fromJson(json['gioLocation'])
           : null,
     );
+  }
+
+  String get companyName {
+    if (recruiterCompany.trim().isNotEmpty && recruiterCompany.trim() != 'N/A') {
+      return recruiterCompany.trim();
+    }
+    if (recruiter.trim().isNotEmpty && recruiter.trim() != 'N/A' && recruiter.trim() != 'Company N/A') {
+      return recruiter.trim();
+    }
+    return 'N/A';
   }
 
   // Helper method to format salary range

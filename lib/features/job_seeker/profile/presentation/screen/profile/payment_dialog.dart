@@ -160,7 +160,7 @@ class PaymentConfirmationDialog extends StatelessWidget {
                 Expanded(
                   child: CommonButton(
                     titleText: 'Cancel',
-                    onTap: () => Get.back(),
+                    onTap: () => Navigator.of(context).pop(),
                     buttonColor: Colors.grey.shade200,
                     titleColor: Colors.black87,
                     //borderRadius: 8,
@@ -174,7 +174,7 @@ class PaymentConfirmationDialog extends StatelessWidget {
                   child: CommonButton(
                     titleText: 'Pay Now',
                     onTap: () {
-                      Get.back();
+                      Navigator.of(context).pop();
                     },
                     isGradient: true,
                     titleColor: Colors.white,

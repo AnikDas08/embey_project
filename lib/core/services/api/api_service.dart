@@ -120,7 +120,7 @@ class ApiService {
     final headers = Map<String, String>.from(header);
     headers['Content-Type'] = 'multipart/form-data';
 
-    return _request(url, method, body: formData, header: header);
+    return _request(url, method, body: formData, header: headers);
   }
 
   /// ========== [ API REQUEST HANDLER ] ========== ///
@@ -165,9 +165,16 @@ class ApiService {
         return ApiResponseModel(408, {"message": AppString.requestTimeOut});
 
       case DioExceptionType.badResponse:
+        dynamic responseData = error.response?.data;
+        Map<dynamic, dynamic> finalData = {};
+        if (responseData is Map) {
+          finalData = responseData;
+        } else if (responseData is String) {
+          finalData = {"message": responseData};
+        }
         return ApiResponseModel(
           error.response?.statusCode,
-          error.response?.data,
+          finalData,
         );
 
       case DioExceptionType.connectionError:

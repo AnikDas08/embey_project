@@ -429,7 +429,7 @@ class _JobApplyPopupState extends State<JobApplyPopup> {
                     ),
                     4.height,
                     CommonText(
-                      text: widget.companyName,
+                      text: widget.companyName.trim().isEmpty ? 'N/A' : widget.companyName.trim(),
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                       color: AppColors.secondaryButton,

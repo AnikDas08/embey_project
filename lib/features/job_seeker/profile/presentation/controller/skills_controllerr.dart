@@ -148,7 +148,7 @@ class SkillsController extends GetxController {
         // Refresh profile data
         await getProfileRepo();
 
-        Get.back();
+        Utils.safeBack();
       } else {
         Utils.errorSnackBar(
             response.statusCode ?? 0,

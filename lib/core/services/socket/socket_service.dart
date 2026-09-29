@@ -26,7 +26,9 @@ class SocketServices {
     _socket.on("get-notification::${LocalStorage.userId}", (data) {
       appLog("================> get Data on socket: $data");
       NotificationService.showNotification(data);
-      Get.find<RecruiterHomeController>().readNotification();
+      if (Get.isRegistered<RecruiterHomeController>()) {
+        Get.find<RecruiterHomeController>().readNotification();
+      }
     });
   }
 

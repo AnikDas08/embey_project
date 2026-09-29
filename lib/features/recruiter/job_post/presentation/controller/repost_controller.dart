@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:embeyi/core/utils/helpers/other_helper.dart';
 import '../../../../../core/services/api/api_service.dart';
+import '../../../../../core/utils/app_utils.dart';
 import '../../../home/data/model/job_details_model.dart';
 
 class RepostController extends GetxController {
@@ -188,12 +189,13 @@ class RepostController extends GetxController {
       }
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        Utils.successSnackBar('Success', 'Post created successfully');
         Get.back(result: true);
-        Get.snackbar('Success', 'Post created successfully',
-            backgroundColor: Colors.green, colorText: Colors.white);
+      } else {
+        Utils.errorSnackBar('Error', response.message.toString());
       }
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      Utils.errorSnackBar('Error', e.toString());
     } finally {
       isLoading.value = false;
     }

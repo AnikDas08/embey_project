@@ -92,7 +92,7 @@ class JobCard extends StatelessWidget {
         color: AppColors.white,
       ),
       clipBehavior: Clip.antiAlias,
-      child: CommonImage(imageSrc: companyLogo, fill: BoxFit.cover),
+      child: CommonImage(imageSrc: companyLogo, fill: BoxFit.contain),
     );
   }
 
@@ -146,13 +146,22 @@ class JobCard extends StatelessWidget {
   }
 
   Widget _buildCompanyName() {
+    final String displayCompanyName = (companyName.trim().isEmpty ||
+            companyName.trim().toLowerCase() == 'company n/a' ||
+            companyName.trim().toLowerCase() == 'company name n/a' ||
+            companyName.trim().toLowerCase() == 'null')
+        ? 'N/A'
+        : companyName.trim();
+
     return Text(
-      companyName,
+      displayCompanyName,
       style: TextStyle(
         color: AppColors.secondaryButton,
         fontSize: 13.sp,
         fontWeight: FontWeight.w500,
       ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
     );
   }
   Widget _jobFind() {

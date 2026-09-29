@@ -77,7 +77,11 @@ class JobSeekerHomeScreen extends StatelessWidget {
                               isScrollControlled: true,
                               FilterBottomSheet(
                                 onApply: () {},
-                                onClose: () => Get.back(),
+                                onClose: () {
+                                  if (Navigator.of(context).canPop()) {
+                                    Navigator.of(context).pop();
+                                  }
+                                },
                               ),
                             );
                           },
@@ -124,10 +128,14 @@ class JobSeekerHomeScreen extends StatelessWidget {
                       child: Obx(() {
                         final categoriesList = controller.categories;
 
-                        if (categoriesList.isEmpty && controller.isLoadingJobs.value) {
+                        if (categoriesList.isEmpty && controller.isLoadingCategories.value) {
                           return SizedBox(
                             height: 120.h,
-                            child: const Center(child: CircularProgressIndicator()),
+                            child: const Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.primary,
+                              ),
+                            ),
                           );
                         }
 
@@ -135,9 +143,19 @@ class JobSeekerHomeScreen extends StatelessWidget {
                           return SizedBox(
                             height: 100.h,
                             child: Center(
-                              child: Text(
-                                'No categories available',
-                                style: TextStyle(fontSize: 14.sp, color: Colors.grey),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'No categories available',
+                                    style: TextStyle(fontSize: 14.sp, color: Colors.grey),
+                                  ),
+                                  SizedBox(width: 8.w),
+                                  IconButton(
+                                    icon: const Icon(Icons.refresh, size: 18, color: Colors.grey),
+                                    onPressed: () => controller.fetchCategories(),
+                                  ),
+                                ],
                               ),
                             ),
                           );
@@ -255,7 +273,7 @@ class JobSeekerHomeScreen extends StatelessWidget {
                                         return Padding(
                                           padding: EdgeInsets.only(bottom: 16.h),
                                           child: JobCard(
-                                            companyName: jobPost.recruiter ?? 'Company N/A',
+                                            companyName: jobPost.companyName,
                                             location: jobPost.location ?? 'Remote',
                                             jobTitle: jobPost.title ?? 'No Title',
                                             salaryRange: salaryRange,
@@ -322,7 +340,7 @@ class JobSeekerHomeScreen extends StatelessWidget {
                               return Padding(
                                 padding: EdgeInsets.only(bottom: 16.h),
                                 child: JobCard(
-                                  companyName: jobPost.recruiter ?? 'Company Name N/A',
+                                  companyName: jobPost.companyName,
                                   location: jobPost.location ?? 'Remote',
                                   jobTitle: jobPost.title ?? 'No Title',
                                   salaryRange: salaryRange,

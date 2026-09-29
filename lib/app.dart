@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import 'core/config/route/app_routes.dart';
 import 'core/config/theme/light_theme.dart';
+import 'core/utils/app_utils.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
       designSize: const Size(428, 926),
       child: GetMaterialApp(
         debugShowCheckedModeBanner: false,
-        navigatorKey: Get.key,
+        scaffoldMessengerKey: Utils.scaffoldMessengerKey,
         defaultTransition: Transition.fadeIn,
         theme: themeData,
         transitionDuration: const Duration(milliseconds: 300),

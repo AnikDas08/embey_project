@@ -78,6 +78,7 @@ class JobPost {
   final String? id;
   final String? thumbnail;
   final String? recruiter;
+  final String? recruiterCompany;
   final String? title;
   final String? description;
   final String? status;
@@ -101,6 +102,7 @@ class JobPost {
     this.id,
     this.thumbnail,
     this.recruiter,
+    this.recruiterCompany,
     this.title,
     this.description,
     this.status,
@@ -143,6 +145,7 @@ class JobPost {
       thumbnail: json['thumbnail'] as String?,
       // Use the helper to extract the recruiter name string (handles nested object or string)
       recruiter: _extractNestedName(json['recruiter']),
+      recruiterCompany: json['recruiter_company']?.toString() ?? _extractNestedName(json['recruiter_company']),
       title: json['title'] as String?,
       description: json['description'] as String?,
       status: json['status'] as String?,
@@ -174,6 +177,7 @@ class JobPost {
       '_id': id,
       'thumbnail': thumbnail,
       'recruiter': recruiter,
+      'recruiter_company': recruiterCompany,
       'title': title,
       'description': description,
       'status': status,
@@ -193,6 +197,17 @@ class JobPost {
       'is_favorite': isFavourite,
       'is_applied': isApplied,
     };
+  }
+
+  // Helper method to get company name
+  String get companyName {
+    if (recruiterCompany != null && recruiterCompany!.trim().isNotEmpty && recruiterCompany!.trim() != 'N/A') {
+      return recruiterCompany!.trim();
+    }
+    if (recruiter != null && recruiter!.trim().isNotEmpty && recruiter!.trim() != 'N/A' && recruiter!.trim() != 'Company N/A') {
+      return recruiter!.trim();
+    }
+    return 'N/A';
   }
 
   // Helper method to get salary range as string

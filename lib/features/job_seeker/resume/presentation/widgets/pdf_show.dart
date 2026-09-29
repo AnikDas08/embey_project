@@ -510,51 +510,32 @@ class PdfDownloadHelper {
   /// Save PDF to device
   static Future<void> _savePdf(pw.Document pdf, String fileName) async {
     try {
+      Directory? directory;
       if (Platform.isAndroid) {
-        // Request storage permission for Android
-        var status = await Permission.storage.status;
-        if (!status.isGranted) {
-          status = await Permission.storage.request();
-          if (!status.isGranted) {
-            throw Exception('Storage permission denied');
-          }
-        }
-
-        // For Android 11+ (API 30+)
-        if (await Permission.manageExternalStorage.isDenied) {
-          final manageStatus = await Permission.manageExternalStorage.request();
-          if (!manageStatus.isGranted) {
-            // Fallback to app-specific directory
-            final directory = await getApplicationDocumentsDirectory();
-            final file = File('${directory.path}/${fileName}_resume.pdf');
-            await file.writeAsBytes(await pdf.save());
-            await OpenFile.open(file.path);
-            return;
-          }
-        }
-
-        // Save to Downloads folder
-        final directory = Directory('/storage/emulated/0/Download');
-        if (!await directory.exists()) {
-          await directory.create(recursive: true);
-        }
-
-        final file = File('${directory.path}/${fileName}_resume.pdf');
-        await file.writeAsBytes(await pdf.save());
-        await OpenFile.open(file.path);
+        try {
+          directory = await getDownloadsDirectory();
+        } catch (_) {}
+        try {
+          directory ??= await getExternalStorageDirectory();
+        } catch (_) {}
       } else if (Platform.isIOS) {
-        // For iOS, save to app documents directory
-        final directory = await getApplicationDocumentsDirectory();
-        final file = File('${directory.path}/${fileName}_resume.pdf');
-        await file.writeAsBytes(await pdf.save());
-        await OpenFile.open(file.path);
-      } else {
-        // For other platforms
-        final directory = await getApplicationDocumentsDirectory();
-        final file = File('${directory.path}/${fileName}_resume.pdf');
-        await file.writeAsBytes(await pdf.save());
-        await OpenFile.open(file.path);
+        directory = await getApplicationDocumentsDirectory();
       }
+      directory ??= await getApplicationDocumentsDirectory();
+
+      if (!await directory.exists()) {
+        await directory.create(recursive: true);
+      }
+
+      final safeName = fileName
+          .replaceAll(RegExp(r'[^\w\s\-]'), '_')
+          .replaceAll(RegExp(r'\s+'), '_')
+          .trim();
+      final finalName = safeName.isEmpty ? 'Resume' : safeName;
+      final file = File('${directory.path}/${finalName}_resume.pdf');
+
+      await file.writeAsBytes(await pdf.save(), flush: true);
+      await OpenFile.open(file.path);
     } catch (e) {
       throw Exception('Failed to save PDF: $e');
     }

@@ -8,6 +8,7 @@ import '../../../../../../core/services/api/api_service.dart';
 import '../../../../../../core/config/api/api_end_point.dart';
 import '../../../../../../core/services/storage/storage_keys.dart';
 import '../../../../../../core/services/storage/storage_services.dart';
+import '../../../../../../core/utils/app_utils.dart';
 
 class SignInController extends GetxController {
   /// Sign in Button Loading variable
@@ -53,13 +54,9 @@ class SignInController extends GetxController {
         isLoading = false;
         update();
 
-        Get.snackbar(
+        Utils.errorSnackBar(
           "Error",
           "You are trying to login as the wrong user type",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
         );
         return; // Exit here if roles don't match
       }
@@ -68,13 +65,9 @@ class SignInController extends GetxController {
       isLoading = false;
       update();
 
-      Get.snackbar(
+      Utils.successSnackBar(
         "Success",
         "Login successful",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
       );
 
       // Save user data
@@ -87,9 +80,9 @@ class SignInController extends GetxController {
       LocalStorage.setString(LocalStorageKeys.token, LocalStorage.token);
 
       if(apiRole == "EMPLOYEE"){
-        LocalStorage.setString(LocalStorageKeys.userRole, UserRole.jobSeeker.toString());
+        LocalStorage.setString(LocalStorageKeys.userRole, UserRole.jobSeeker.name);
       } else {
-        LocalStorage.setString(LocalStorageKeys.userRole, UserRole.employer.toString());
+        LocalStorage.setString(LocalStorageKeys.userRole, UserRole.employer.name);
       }
 
       print("User Role Saved: ${LocalStorage.userRole}");
@@ -107,7 +100,7 @@ class SignInController extends GetxController {
     } else {
       isLoading = false;
       update();
-      Get.snackbar(response.statusCode.toString(), response.message);
+      Utils.errorSnackBar(response.statusCode.toString(), response.message);
     }
   }
 }

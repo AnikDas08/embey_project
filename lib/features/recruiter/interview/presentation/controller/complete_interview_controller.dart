@@ -85,22 +85,6 @@ class CompleteInterviewDetailsController extends GetxController {
     try {
       print("📥 Starting download for resume");
 
-      // Request permissions
-      if (Platform.isAndroid) {
-        var status = await Permission.storage.request();
-        if (status.isDenied) {
-          status = await Permission.manageExternalStorage.request();
-        }
-
-        if (status.isDenied || status.isPermanentlyDenied) {
-          Utils.errorSnackBar(
-            "Permission Denied",
-            "Please enable storage permission in settings",
-          );
-          return;
-        }
-      }
-
       isDownloading.value = true;
       downloadProgress.value = 0.0;
 
@@ -114,26 +98,26 @@ class CompleteInterviewDetailsController extends GetxController {
 
       // Get download directory
       Directory? directory;
-      String savePath;
-
       if (Platform.isAndroid) {
-        // Save to Downloads folder
-        directory = Directory('/storage/emulated/0/Download');
-        if (!await directory.exists()) {
-          await directory.create(recursive: true);
-        }
-
-        // Generate unique filename
-        final timestamp = DateTime.now().millisecondsSinceEpoch;
-        final fileName = 'Resume_$timestamp.pdf';
-        savePath = '${directory.path}/$fileName';
-      } else {
-        // iOS - save to app documents
+        try {
+          directory = await getDownloadsDirectory();
+        } catch (_) {}
+        try {
+          directory ??= await getExternalStorageDirectory();
+        } catch (_) {}
+      } else if (Platform.isIOS) {
         directory = await getApplicationDocumentsDirectory();
-        final timestamp = DateTime.now().millisecondsSinceEpoch;
-        final fileName = 'Resume_$timestamp.pdf';
-        savePath = '${directory.path}/$fileName';
       }
+      directory ??= await getApplicationDocumentsDirectory();
+
+      if (!await directory.exists()) {
+        await directory.create(recursive: true);
+      }
+
+      // Generate unique filename
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final fileName = 'Resume_$timestamp.pdf';
+      final savePath = '${directory.path}/$fileName';
 
       print("💾 Saving to: $savePath");
 
@@ -167,7 +151,7 @@ class CompleteInterviewDetailsController extends GetxController {
         final result = await OpenFile.open(savePath);
         print("Open file result: ${result.message}");
 
-        if (result.type != ResultType.done) {
+        if (result.type != ResultType.done && result.type != ResultType.noAppToOpen) {
           Utils.errorSnackBar("Error", "Could not open file: ${result.message}");
         }
       } else {

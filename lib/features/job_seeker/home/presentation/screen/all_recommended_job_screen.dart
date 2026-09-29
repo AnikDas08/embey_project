@@ -111,7 +111,7 @@ class AllRecommendedJobScreen extends StatelessWidget {
               final salaryRange = '\$$minSalary - \$$maxSalary/month';
               final location = jobPost.location ?? 'Location not specified';
               final jobTitle = jobPost.title ?? 'No Title Specified';
-              final companyName = jobPost.recruiter ?? 'Company N/A';
+              final companyName = jobPost.companyName;
               final job_board = jobPost.jobsBoard;
 
               String timePosted = '01 Dec 25';

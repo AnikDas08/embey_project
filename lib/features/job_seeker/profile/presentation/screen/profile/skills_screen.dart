@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../../../../../../core/component/text/common_text.dart';
 import '../../../../../../core/component/text_field/common_text_field.dart';
 import '../../../../../../core/component/button/common_button.dart';
+import '../../../../../../core/utils/app_utils.dart';
 import '../../controller/skills_controllerr.dart';
 
 class SkillsScreen extends StatelessWidget {
@@ -22,7 +23,13 @@ class SkillsScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, color: AppColors.black, size: 20.sp),
-          onPressed: () => Get.back(),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              Utils.safeBack(context: context);
+            }
+          },
         ),
         centerTitle: true,
         title: CommonText(

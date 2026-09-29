@@ -139,7 +139,7 @@ class CategoryDetails extends StatelessWidget {
 
                     // Get job and recruiter titles safely
                     final jobTitle = jobPost.title ?? 'No Title Specified';
-                    final companyName = jobPost.recruiter ?? 'Company N/A';
+                    final companyName = jobPost.companyName;
 
                     // Format deadline date
                     String timePosted = '01 Dec 25';
@@ -270,44 +270,59 @@ class _CategoryFilterBottomSheetState extends State<CategoryFilterBottomSheet> {
     super.dispose();
   }
 
+  void _closeSheet() {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    } else if (widget.onClose != null) {
+      widget.onClose!();
+    } else {
+      try {
+        Get.back();
+      } catch (_) {}
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(16.r),
-          topRight: Radius.circular(16.r),
+    return SafeArea(
+      top: false,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(16.r),
+            topRight: Radius.circular(16.r),
+          ),
         ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildHeader(),
-          Flexible(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 20.h),
-                  _buildCategoryInfo(),
-                  SizedBox(height: 20.h),
-                  _buildJobTypeSection(),
-                  SizedBox(height: 20.h),
-                  _buildJobLevelSection(),
-                  SizedBox(height: 20.h),
-                  _buildExperienceLevelSection(),
-                  SizedBox(height: 20.h),
-                  _buildSalaryRangeSection(),
-                  SizedBox(height: 24.h),
-                  _buildButtonsRow(),
-                  SizedBox(height: 24.h),
-                ],
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildHeader(),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 20.h),
+                    _buildCategoryInfo(),
+                    SizedBox(height: 20.h),
+                    _buildJobTypeSection(),
+                    SizedBox(height: 20.h),
+                    _buildJobLevelSection(),
+                    SizedBox(height: 20.h),
+                    _buildExperienceLevelSection(),
+                    SizedBox(height: 20.h),
+                    _buildSalaryRangeSection(),
+                    SizedBox(height: 24.h),
+                    _buildButtonsRow(),
+                    SizedBox(height: 24.h),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -326,7 +341,7 @@ class _CategoryFilterBottomSheetState extends State<CategoryFilterBottomSheet> {
           SizedBox(width: 24.w),
           Text('Filter Jobs', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600)),
           GestureDetector(
-            onTap: () => Get.back(),
+            onTap: _closeSheet,
             child: Icon(Icons.close, size: 24.sp),
           ),
         ],
@@ -513,12 +528,14 @@ class _CategoryFilterBottomSheetState extends State<CategoryFilterBottomSheet> {
             buttonRadius: 4,
             titleSize: 16,
             titleWeight: FontWeight.w600,
+            isGradient: false,
             buttonColor: AppColors.white,
-            titleColor: Colors.white,
+            titleColor: AppColors.primaryColor,
             borderColor: AppColors.primaryColor,
             onTap: () {
               widget.controller.clearFilters();
-              Get.back();
+              _closeSheet();
+              widget.onApply?.call();
             },
           ),
         ),
@@ -543,7 +560,7 @@ class _CategoryFilterBottomSheetState extends State<CategoryFilterBottomSheet> {
                 experienceLevel: selectedExperienceLevel,
               );
 
-              Get.back();
+              _closeSheet();
               widget.onApply?.call();
             },
           ),

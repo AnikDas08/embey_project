@@ -14,6 +14,7 @@ import '../../../../../core/component/other_widgets/item.dart';
 import '../../../../../core/component/text/common_text.dart';
 import '../../../../../core/config/api/api_end_point.dart';
 import '../controller/profile_controller.dart';
+import '../../../../../core/utils/app_utils.dart';
 import '../../../../../core/utils/constants/app_string.dart';
 import 'my_profile_screen.dart';
 import 'favorite_list_screen.dart';
@@ -230,50 +231,58 @@ final List<ProfileItemData> profileItems = [
 // Logout Dialog
 void _showLogoutDialog() {
   Get.dialog(
-    AlertDialog(
-      backgroundColor: AppColors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-      title: const CommonText(
-        text: 'Log Out',
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-      ),
-      content: CommonText(
-        text: 'Are you sure you want to log out?',
-        fontSize: 20,
-        fontWeight: FontWeight.w400,
-        color: AppColors.primaryText,
-        maxLines: 2,
-      ),
-      actions: [
-        Row(
-          children: [
-            Expanded(
-              child: CommonButton(
-                titleText: 'No',
-                buttonColor: AppColors.borderColor,
-                titleColor: AppColors.black,
-                borderColor: AppColors.borderColor,
-                isGradient: false,
-                onTap: () => Get.back(),
-              ),
-            ),
-            SizedBox(width: 16.w),
-            Expanded(
-              child: CommonButton(
-                titleText: 'Yes',
-                buttonColor: AppColors.red,
-                borderColor: AppColors.red,
-                titleColor: AppColors.white,
-                isGradient: false,
-                onTap: () {
-                  LocalStorage.removeAllPrefData();
-                },
-              ),
-            ),
-          ],
+    Builder(
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: const CommonText(
+          text: 'Log Out',
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
         ),
-      ],
+        content: CommonText(
+          text: 'Are you sure you want to log out?',
+          fontSize: 20,
+          fontWeight: FontWeight.w400,
+          color: AppColors.primaryText,
+          maxLines: 2,
+        ),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: CommonButton(
+                  titleText: 'No',
+                  buttonColor: AppColors.borderColor,
+                  titleColor: AppColors.black,
+                  borderColor: AppColors.borderColor,
+                  isGradient: false,
+                  onTap: () {
+                    if (Navigator.of(dialogContext).canPop()) {
+                      Navigator.of(dialogContext).pop();
+                    } else {
+                      Utils.safeBack();
+                    }
+                  },
+                ),
+              ),
+              SizedBox(width: 16.w),
+              Expanded(
+                child: CommonButton(
+                  titleText: 'Yes',
+                  buttonColor: AppColors.red,
+                  borderColor: AppColors.red,
+                  titleColor: AppColors.white,
+                  isGradient: false,
+                  onTap: () {
+                    LocalStorage.removeAllPrefData();
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     ),
   );
 }

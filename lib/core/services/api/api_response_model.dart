@@ -14,7 +14,23 @@ class ApiResponseModel {
     if (_statusCode == 502) {
       return AppString.startServer;
     }
-    return _data?['message']?.toString() ?? AppString.someThingWrong;
+    if (_data != null) {
+      final msg = _data!['message']?.toString();
+      if (msg != null && msg.trim().isNotEmpty) {
+        return msg.trim();
+      }
+      final error = _data!['error']?.toString();
+      if (error != null && error.trim().isNotEmpty) {
+        return error.trim();
+      }
+      if (_data!['errorMessages'] is List && (_data!['errorMessages'] as List).isNotEmpty) {
+        final firstError = (_data!['errorMessages'] as List).first;
+        if (firstError is Map && firstError['message'] != null) {
+          return firstError['message'].toString().trim();
+        }
+      }
+    }
+    return AppString.someThingWrong;
   }
 
   Map get data => _data ?? {};

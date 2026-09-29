@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../../core/services/api/api_service.dart';
+import '../../../../../core/utils/app_utils.dart';
 
 class HelpSupportController extends GetxController {
   final ImagePicker _picker = ImagePicker();
@@ -220,24 +221,18 @@ class HelpSupportController extends GetxController {
       }
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        Utils.successSnackBar("Successful", "Your message send to the support team successful");
         Get.back();
-        Get.snackbar("Successful", "Your message send to the support team successful");
       } else {
-        Get.snackbar(
+        Utils.errorSnackBar(
           'Error',
           response.data['message'] ?? 'Failed to submit request',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
         );
       }
     } catch (e) {
-      Get.snackbar(
+      Utils.errorSnackBar(
         'Error',
         'An unexpected error occurred: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
       );
     } finally {
       isLoading.value = false;

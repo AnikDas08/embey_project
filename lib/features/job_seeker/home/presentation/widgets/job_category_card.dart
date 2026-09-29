@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:embeyi/core/component/text/common_text.dart';
 import 'package:embeyi/core/config/api/api_end_point.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
@@ -26,6 +27,60 @@ class JobCategoryCard extends StatelessWidget {
     this.isJobCountVisible = true,
   });
 
+  Widget _buildIcon() {
+    if (imageSrc.isEmpty) {
+      return Icon(
+        Icons.work_outline,
+        size: 32.sp,
+        color: iconColor ?? AppColors.primaryColor,
+      );
+    }
+
+    if (imageSrc.startsWith('assets/')) {
+      return Image.asset(
+        imageSrc,
+        width: 40.w,
+        height: 40.h,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => Icon(
+          Icons.work_outline,
+          size: 32.sp,
+          color: iconColor ?? AppColors.primaryColor,
+        ),
+      );
+    }
+
+    final fullUrl = imageSrc.startsWith('http://') || imageSrc.startsWith('https://')
+        ? imageSrc
+        : (imageSrc.startsWith('/') ? '${ApiEndPoint.imageUrl}$imageSrc' : '${ApiEndPoint.imageUrl}/$imageSrc');
+
+    return CachedNetworkImage(
+      imageUrl: fullUrl,
+      width: 40.w,
+      height: 40.h,
+      fit: BoxFit.contain,
+      placeholder: (context, url) => SizedBox(
+        width: 40.w,
+        height: 40.h,
+        child: Center(
+          child: SizedBox(
+            width: 16.w,
+            height: 16.h,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: AppColors.primaryColor.withOpacity(0.5),
+            ),
+          ),
+        ),
+      ),
+      errorWidget: (context, url, error) => Icon(
+        Icons.work_outline,
+        size: 32.sp,
+        color: iconColor ?? AppColors.primaryColor,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -35,7 +90,7 @@ class JobCategoryCard extends StatelessWidget {
         height: 80.h,
         padding: EdgeInsets.symmetric(horizontal: 5.w),
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: backgroundColor ?? AppColors.white,
           borderRadius: BorderRadius.circular(8.r),
           boxShadow: [
             BoxShadow(
@@ -48,12 +103,7 @@ class JobCategoryCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-        Image.network(
-        ApiEndPoint.imageUrl + imageSrc,
-          width: 40.w,
-          height: 40.h,
-          fit: BoxFit.cover,
-        ),
+            _buildIcon(),
             10.height,
             CommonText(
               text: title,

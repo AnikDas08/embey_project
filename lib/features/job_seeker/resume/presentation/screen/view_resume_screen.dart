@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../../../../../../core/component/text/common_text.dart';
 import '../../../../../../core/utils/constants/app_colors.dart';
 import '../../../../../../core/utils/extensions/extension.dart';
+import '../../../../../../core/utils/app_utils.dart';
 import '../../data/model/resume_model.dart';
 import '../widgets/pdf_show.dart';
 
@@ -168,7 +169,7 @@ class ViewResumeScreen extends StatelessWidget {
               ),
 
               /// Download Button
-              _buildDownloadButton(resume),
+              _buildDownloadButton(resume, context),
             ],
           ),
         );
@@ -176,53 +177,47 @@ class ViewResumeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDownloadButton(Resume resume) {
+  Widget _buildDownloadButton(Resume resume, BuildContext context) {
     return Padding(
       padding: EdgeInsets.all(16.w),
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
           onPressed: () async {
-            try {
-              // Show loading dialog
-              Get.dialog(
-                const Center(
-                  child: CircularProgressIndicator(
-                    color: AppColors.primary,
-                  ),
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => const Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.primary,
                 ),
-                barrierDismissible: false,
-              );
+              ),
+            );
 
+            try {
               // Generate and download PDF
               await PdfDownloadHelper.downloadResumePdf(resume);
 
               // Close loading dialog
-              Get.back();
+              if (context.mounted && Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              }
 
               // Show success message
-              Get.snackbar(
+              Utils.successSnackBar(
                 'Success',
                 'Resume downloaded successfully',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: Colors.green,
-                colorText: Colors.white,
-                duration: const Duration(seconds: 2),
               );
             } catch (e) {
               // Close loading dialog if open
-              if (Get.isDialogOpen ?? false) {
-                Get.back();
+              if (context.mounted && Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
               }
 
               // Show error message
-              Get.snackbar(
+              Utils.errorSnackBar(
                 'Error',
                 'Failed to download resume: $e',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: Colors.red,
-                colorText: Colors.white,
-                duration: const Duration(seconds: 3),
               );
             }
           },

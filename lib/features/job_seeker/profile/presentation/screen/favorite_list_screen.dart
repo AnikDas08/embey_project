@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../../../core/component/text/common_text.dart';
+import '../../../../../core/utils/app_utils.dart';
 import '../controller/favourite_controller.dart';
 
 class FavoriteListScreen extends StatelessWidget {
@@ -22,7 +23,13 @@ class FavoriteListScreen extends StatelessWidget {
         centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, color: AppColors.black, size: 20.sp),
-          onPressed: () => Get.back(),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              Utils.safeBack(context: context);
+            }
+          },
         ),
         title: const CommonText(
           text: 'Favorite List',
@@ -111,7 +118,7 @@ class FavoriteListScreen extends StatelessWidget {
               return Padding(
                 padding: EdgeInsets.only(bottom: 16.h),
                 child: JobCard(
-                  companyName: job.title,
+                  companyName: job.companyName,
                   location: job.location,
                   jobTitle: job.title,
                   salaryRange: job.salaryRange,
@@ -170,7 +177,7 @@ class FavoriteListScreen extends StatelessWidget {
           ),
           actions: [
             TextButton(
-              onPressed: () => Get.back(),
+              onPressed: () => Navigator.of(context).pop(),
               child: CommonText(
                 text: 'Cancel',
                 fontSize: 14.sp,
@@ -180,7 +187,7 @@ class FavoriteListScreen extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                Get.back(); // Close dialog
+                Navigator.of(context).pop(); // Close dialog
                 controller.removeFavourite(favouriteId, index);
               },
               child: CommonText(

@@ -62,65 +62,80 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     super.dispose();
   }
 
+  void _closeSheet() {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    } else if (widget.onClose != null) {
+      widget.onClose!();
+    } else {
+      try {
+        Get.back();
+      } catch (_) {}
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(16.r),
-          topRight: Radius.circular(16.r),
+    return SafeArea(
+      top: false,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(16.r),
+            topRight: Radius.circular(16.r),
+          ),
         ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Header
-          _buildHeader(context),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            _buildHeader(context),
 
-          // Content
-          Flexible(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 20.h),
+            // Content
+            Flexible(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 20.h),
 
-                  // Category Section
-                  _buildCategorySection(),
+                    // Category Section
+                    _buildCategorySection(),
 
-                  SizedBox(height: 20.h),
+                    SizedBox(height: 20.h),
 
-                  // Job Type Section (FULL_TIME, PART_TIME)
-                  _buildEmployeeTypeSection(),
+                    // Job Type Section (FULL_TIME, PART_TIME)
+                    _buildEmployeeTypeSection(),
 
-                  SizedBox(height: 20.h),
+                    SizedBox(height: 20.h),
 
-                  // Job Level Section (ENTRY_LEVEL, MID_LEVEL, SENIOR_LEVEL)
-                  _buildJobLevelSection(),
+                    // Job Level Section (ENTRY_LEVEL, MID_LEVEL, SENIOR_LEVEL)
+                    _buildJobLevelSection(),
 
-                  SizedBox(height: 20.h),
+                    SizedBox(height: 20.h),
 
-                  // Experience Level Section
-                  _buildExperienceLevelSection(),
+                    // Experience Level Section
+                    _buildExperienceLevelSection(),
 
-                  SizedBox(height: 20.h),
+                    SizedBox(height: 20.h),
 
-                  // Salary Range Section
-                  _buildSalaryRangeSection(),
+                    // Salary Range Section
+                    _buildSalaryRangeSection(),
 
-                  SizedBox(height: 24.h),
+                    SizedBox(height: 24.h),
 
-                  // Buttons Row
-                  _buildButtonsRow(),
+                    // Buttons Row
+                    _buildButtonsRow(),
 
-                  SizedBox(height: 24.h),
-                ],
+                    SizedBox(height: 24.h),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -148,7 +163,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
             color: AppColors.black,
           ),
           GestureDetector(
-            onTap: () => Get.back(),
+            onTap: _closeSheet,
             child: Icon(Icons.close, size: 24.sp, color: AppColors.black),
           ),
         ],
@@ -472,12 +487,13 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
             buttonRadius: 4,
             titleSize: 16,
             titleWeight: FontWeight.w600,
+            isGradient: false,
             buttonColor: AppColors.white,
-            titleColor: Colors.white,
+            titleColor: AppColors.primaryColor,
             borderColor: AppColors.primaryColor,
             onTap: () {
               controller.clearFilters();
-              Get.back();
+              _closeSheet();
               widget.onApply?.call();
             },
           ),
@@ -506,7 +522,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                 experienceLevel: selectedExperienceLevel,
               );
 
-              Get.back();
+              _closeSheet();
               widget.onApply?.call();
             },
           ),

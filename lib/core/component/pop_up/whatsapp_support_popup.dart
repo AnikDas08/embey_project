@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:embeyi/core/utils/constants/app_colors.dart';
+import 'package:embeyi/core/utils/app_utils.dart';
 import 'package:embeyi/core/component/text/common_text.dart';
 import 'package:embeyi/core/component/button/common_button.dart';
 import 'package:embeyi/core/component/text_field/common_text_field.dart';
@@ -76,24 +77,14 @@ class _WhatsappSupportPopupState extends State<WhatsappSupportPopup> {
                     if (widget.onSubmit != null) {
                       widget.onSubmit!();
                     }
-                    Get.snackbar(
+                    Utils.successSnackBar(
                       'Success',
                       'WhatsApp link added successfully!',
-                      backgroundColor: AppColors.primaryColor,
-                      colorText: AppColors.white,
-                      margin: EdgeInsets.all(16.w),
-                      borderRadius: 8.r,
-                      duration: const Duration(seconds: 1),
                     );
                   } else {
-                    Get.snackbar(
+                    Utils.errorSnackBar(
                       'Error',
                       'Please enter a valid WhatsApp link',
-                      backgroundColor: AppColors.red,
-                      colorText: AppColors.white,
-                      margin: EdgeInsets.all(16.w),
-                      borderRadius: 8.r,
-                      duration: const Duration(seconds: 1),
                     );
                   }
                 },
