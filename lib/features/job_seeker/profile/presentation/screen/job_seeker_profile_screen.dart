@@ -117,13 +117,17 @@ class JobSeekerProfileScreen extends StatelessWidget {
                         ),
                         8.width,
                         Obx(
-                              (){
+                          () {
+                            final plan = controller.subscriptionPlan.value;
+                            final hasPlan = plan.isNotEmpty && plan.toLowerCase() != 'none';
                             return CommonText(
-                              text: controller.subscriptionPlan.value,
+                              text: hasPlan ? plan : 'No Subscription',
                               textAlign: TextAlign.center,
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.secondaryPrimary,
+                              color: hasPlan
+                                  ? AppColors.secondaryPrimary
+                                  : AppColors.secondaryText,
                             );
                           },
                         ),

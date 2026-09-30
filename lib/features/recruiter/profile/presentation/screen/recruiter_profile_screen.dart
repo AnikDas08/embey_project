@@ -104,13 +104,19 @@ class RecruiterProfileScreen extends StatelessWidget {
                           ),
                           8.width,
                           Obx(
-                             ()=> CommonText(
-                              text: controller.subscription.value,
-                              textAlign: TextAlign.center,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.secondaryPrimary,
-                            ),
+                            () {
+                              final plan = controller.subscription.value;
+                              final hasPlan = plan.isNotEmpty && plan.toLowerCase() != 'none';
+                              return CommonText(
+                                text: hasPlan ? plan : 'No Subscription',
+                                textAlign: TextAlign.center,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: hasPlan
+                                    ? AppColors.secondaryPrimary
+                                    : AppColors.secondaryText,
+                              );
+                            },
                           ),
                         ],
                       ),

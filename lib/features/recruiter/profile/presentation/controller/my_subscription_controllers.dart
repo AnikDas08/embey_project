@@ -3,10 +3,13 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../../core/services/api/api_service.dart';
+import 'profile_controller.dart';
+import '../screen/subscription_pack_screen.dart';
 
 class RecruiterMySubscriptionController extends GetxController {
   final isLoading = true.obs;
   final errorMessage = ''.obs;
+  final hasSubscription = false.obs;
 
   // Subscription data
   final subscriptionId = ''.obs;
@@ -28,51 +31,97 @@ class RecruiterMySubscriptionController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _loadProfileFallback();
     fetchMySubscription();
+  }
+
+  void _loadProfileFallback() {
+    if (Get.isRegistered<RecruiterProfileController>()) {
+      final profile = Get.find<RecruiterProfileController>();
+      if (userName.value.isEmpty && profile.name.value.isNotEmpty) {
+        userName.value = profile.name.value;
+      }
+      if (userImage.value.isEmpty && profile.profileImages.value.isNotEmpty) {
+        userImage.value = profile.profileImages.value;
+      }
+      if (userEmail.value.isEmpty && profile.email.value.isNotEmpty) {
+        userEmail.value = profile.email.value;
+      }
+      if (userAddress.value.isEmpty && profile.address.value.isNotEmpty) {
+        userAddress.value = profile.address.value;
+      }
+    }
   }
 
   Future<void> fetchMySubscription() async {
     try {
       isLoading.value = true;
       errorMessage.value = '';
+      hasSubscription.value = false;
 
-      // Replace with your actual API endpoint
-      final response = await ApiService.get('subscription/subscribe'); // or your API method
+      _loadProfileFallback();
 
-      if (response.statusCode == 200) {
+      final response = await ApiService.get('subscription/subscribe');
+
+      if (response.statusCode == 200 && response.data != null) {
         final data = response.data["data"];
 
-        // Set subscription data
-        subscriptionId.value = data['_id'] ?? '';
-        packageName.value = data['name'] ?? '';
-        price.value = (data['price'] ?? 0).toDouble();
-        status.value = data['status'] ?? '';
-        txId.value = data['txId'] ?? '';
-        remainingDays.value = data['remainingDays'] ?? 0;
+        if (data != null && data is Map && (data['_id'] != null || data['name'] != null)) {
+          // Set subscription data
+          subscriptionId.value = data['_id']?.toString() ?? '';
+          packageName.value = data['name']?.toString() ?? '';
+          price.value = (data['price'] ?? 0).toDouble();
+          status.value = data['status']?.toString() ?? '';
+          txId.value = data['txId']?.toString() ?? '';
+          remainingDays.value = (data['remainingDays'] is num) ? (data['remainingDays'] as num).toInt() : 0;
 
-        // Format dates
-        if (data['startDate'] != null) {
-          startDate.value = _formatDate(data['startDate']);
-        }
-        if (data['endDate'] != null) {
-          endDate.value = _formatDate(data['endDate']);
-        }
+          // Format dates
+          if (data['startDate'] != null) {
+            startDate.value = _formatDate(data['startDate'].toString());
+          }
+          if (data['endDate'] != null) {
+            endDate.value = _formatDate(data['endDate'].toString());
+          }
 
-        // Set user data
-        if (data['user'] != null) {
-          final user = data['user'];
-          userName.value = user['name'] ?? '';
-          userEmail.value = user['email'] ?? '';
-          userImage.value = user['image'] ?? '';
-          userAddress.value = user['address'] ?? '';
-          userDesignation.value = user['designation'] ?? '';
+          // Set user data
+          if (data['user'] != null && data['user'] is Map) {
+            final user = data['user'];
+            userName.value = user['name']?.toString() ?? userName.value;
+            userEmail.value = user['email']?.toString() ?? userEmail.value;
+            userImage.value = user['image']?.toString() ?? userImage.value;
+            userAddress.value = user['address']?.toString() ?? userAddress.value;
+            userDesignation.value = user['designation']?.toString() ?? userDesignation.value;
+          }
+
+          hasSubscription.value = packageName.value.isNotEmpty || subscriptionId.value.isNotEmpty;
+        } else {
+          hasSubscription.value = false;
         }
       } else {
-        errorMessage.value = response.data['message'] ?? 'Failed to fetch subscription';
+        final msg = (response.data is Map ? response.data['message']?.toString() : '') ?? '';
+        final lowerMsg = msg.toLowerCase();
+        final isNoSubscription = response.statusCode == 404 ||
+            lowerMsg.contains('no subscription') ||
+            lowerMsg.contains('not found') ||
+            lowerMsg.contains('no active') ||
+            lowerMsg.contains('don\'t have') ||
+            lowerMsg.contains('not subscribed');
+
+        if (isNoSubscription) {
+          hasSubscription.value = false;
+          errorMessage.value = '';
+        } else {
+          errorMessage.value = msg.isNotEmpty ? msg : 'Failed to fetch subscription';
+        }
       }
     } catch (e) {
-      errorMessage.value = 'Error fetching subscription: $e';
-      print('Error: $e');
+      print('Error fetching subscription: $e');
+      if (e.toString().contains('null') || e.toString().contains('NoSuchMethodError')) {
+        hasSubscription.value = false;
+        errorMessage.value = '';
+      } else {
+        errorMessage.value = 'Error fetching subscription: $e';
+      }
     } finally {
       isLoading.value = false;
     }
@@ -95,18 +144,13 @@ class RecruiterMySubscriptionController extends GetxController {
 
   String get fullImageUrl {
     if (userImage.value.isEmpty) return '';
-    // Adjust this based on your API base URL
     if (userImage.value.startsWith('http')) {
       return userImage.value;
     }
-    return '${ApiEndPoint.baseUrl}${userImage.value}';
+    return '${ApiEndPoint.imageUrl}${userImage.value}';
   }
 
   void onRenewPack() {
-    // Navigate to subscription pack screen or show renewal dialog
-
-
-    // Or show a dialog
-    // Get.dialog(RenewalDialog());
+    Get.to(() => const RecruiterSubscriptionPackScreen());
   }
 }

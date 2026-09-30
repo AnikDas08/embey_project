@@ -266,6 +266,8 @@ class RecruiterSubscriptionPackScreen extends StatelessWidget {
                             Expanded(
                               child: CommonText(
                                 text: package.features[index],
+                                textAlign: TextAlign.start,
+                                maxLines: 10,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
                                 color: Colors.black,

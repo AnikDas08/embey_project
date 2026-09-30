@@ -32,66 +32,84 @@ class MySubscriptionScreen extends StatelessWidget {
 
                 if (controller.errorMessage.value.isNotEmpty) {
                   return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          size: 64.sp,
-                          color: Colors.red.shade300,
-                        ),
-                        16.height,
-                        CommonText(
-                          text: controller.errorMessage.value,
-                          fontSize: 14,
-                          color: Colors.red,
-                          textAlign: TextAlign.center,
-                        ),
-                        24.height,
-                        ElevatedButton(
-                          onPressed: controller.fetchMySubscription,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF3B4DE3),
-                            foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 32.w,
-                              vertical: 12.h,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24.w),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: 64.sp,
+                            color: Colors.red.shade300,
+                          ),
+                          16.height,
+                          CommonText(
+                            text: controller.errorMessage.value,
+                            fontSize: 14,
+                            color: Colors.red,
+                            textAlign: TextAlign.center,
+                          ),
+                          24.height,
+                          ElevatedButton(
+                            onPressed: controller.fetchMySubscription,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF3B4DE3),
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 32.w,
+                                vertical: 12.h,
+                              ),
+                            ),
+                            child: const CommonText(
+                              text: 'Retry',
+                              fontSize: 14,
+                              color: Colors.white,
                             ),
                           ),
-                          child: const CommonText(
-                            text: 'Retry',
-                            fontSize: 14,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 }
 
-                return SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24.w),
-                    child: Column(
-                      children: [
-                        32.height,
+                return RefreshIndicator(
+                  onRefresh: controller.fetchMySubscription,
+                  color: const Color(0xFF3B4DE3),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics(),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24.w),
+                      child: Column(
+                        children: [
+                          32.height,
 
-                        // Profile Section
-                        _buildProfileSection(controller),
+                          // Profile Section
+                          _buildProfileSection(controller),
 
-                        40.height,
+                          if (controller.hasSubscription.value) ...[
+                            40.height,
 
-                        // Subscription Details Table
-                        _buildSubscriptionTable(controller),
+                            // Subscription Details Table
+                            _buildSubscriptionTable(controller),
 
-                        40.height,
+                            40.height,
 
-                        // Renew Button
-                        _buildRenewButton(controller),
+                            // Renew Button
+                            _buildRenewButton(controller),
 
-                        40.height,
-                      ],
+                            40.height,
+                          ] else ...[
+                            32.height,
+
+                            // No Subscription Card
+                            _buildNoSubscriptionCard(),
+
+                            40.height,
+                          ],
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -134,6 +152,7 @@ class MySubscriptionScreen extends StatelessWidget {
 
   Widget _buildProfileSection(MySubscriptionController controller) {
     return Obx(() {
+      final hasSub = controller.hasSubscription.value;
       return Column(
         children: [
           // Profile Image
@@ -146,17 +165,25 @@ class MySubscriptionScreen extends StatelessWidget {
               border: Border.all(color: Colors.grey.shade200, width: 2),
             ),
             child: ClipOval(
-              child: Image.network(
-                ApiEndPoint.imageUrl+controller.userImage.value,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Icon(
-                    Icons.person,
-                    size: 50.sp,
-                    color: Colors.white,
-                  );
-                },
-              ),
+              child: controller.userImage.value.isNotEmpty
+                  ? Image.network(
+                      controller.fullImageUrl,
+                      width: 100.w,
+                      height: 100.w,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.person,
+                          size: 50.sp,
+                          color: Colors.white,
+                        );
+                      },
+                    )
+                  : Icon(
+                      Icons.person,
+                      size: 50.sp,
+                      color: Colors.white,
+                    ),
             ),
           ),
 
@@ -164,21 +191,23 @@ class MySubscriptionScreen extends StatelessWidget {
 
           // Name
           CommonText(
-            text: controller.userName.value,
+            text: controller.userName.value.isNotEmpty
+                ? controller.userName.value
+                : 'User Profile',
             fontSize: 20,
             fontWeight: FontWeight.w600,
             color: Colors.black87,
           ),
 
-          6.height,
-
-          // Designation
-          CommonText(
-            text: controller.userDesignation.value,
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            color: Colors.grey.shade600,
-          ),
+          if (controller.userDesignation.value.isNotEmpty) ...[
+            6.height,
+            CommonText(
+              text: controller.userDesignation.value,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: Colors.grey.shade600,
+            ),
+          ],
 
           12.height,
 
@@ -186,29 +215,40 @@ class MySubscriptionScreen extends StatelessWidget {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
             decoration: BoxDecoration(
-              color: controller.isActive
-                  ? const Color(0xFFFFF4E6)
-                  : Colors.grey.shade200,
+              color: hasSub
+                  ? (controller.isActive
+                      ? const Color(0xFFFFF4E6)
+                      : Colors.grey.shade200)
+                  : Colors.grey.shade100,
               borderRadius: BorderRadius.circular(20.r),
+              border: !hasSub ? Border.all(color: Colors.grey.shade300) : null,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.workspace_premium,
-                  color: controller.isActive
-                      ? const Color(0xFFFF9800)
+                  hasSub
+                      ? Icons.workspace_premium
+                      : Icons.card_membership_outlined,
+                  color: hasSub
+                      ? (controller.isActive
+                          ? const Color(0xFFFF9800)
+                          : Colors.grey.shade600)
                       : Colors.grey.shade600,
                   size: 18.sp,
                 ),
                 6.width,
                 CommonText(
-                  text: controller.packageName.value,
+                  text: hasSub
+                      ? controller.packageName.value
+                      : 'No Active Subscription',
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: controller.isActive
-                      ? const Color(0xFFFF9800)
-                      : Colors.grey.shade600,
+                  color: hasSub
+                      ? (controller.isActive
+                          ? const Color(0xFFFF9800)
+                          : Colors.grey.shade600)
+                      : Colors.grey.shade700,
                 ),
               ],
             ),
@@ -216,6 +256,83 @@ class MySubscriptionScreen extends StatelessWidget {
         ],
       );
     });
+  }
+
+  Widget _buildNoSubscriptionCard() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 28.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.grey.shade200, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF3B4DE3).withOpacity(0.06),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 72.w,
+            height: 72.w,
+            decoration: BoxDecoration(
+              color: const Color(0xFF3B4DE3).withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.workspace_premium_outlined,
+              size: 40.sp,
+              color: const Color(0xFF3B4DE3),
+            ),
+          ),
+          18.height,
+          const CommonText(
+            text: 'No Active Subscription',
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: Colors.black87,
+            textAlign: TextAlign.center,
+          ),
+          10.height,
+          CommonText(
+            text:
+                'You currently do not have an active subscription package. Subscribe to a plan to unlock auto-apply, unlimited job applications, and priority visibility to recruiters.',
+            fontSize: 13,
+            fontWeight: FontWeight.w400,
+            color: Colors.grey.shade600,
+            textAlign: TextAlign.center,
+            maxLines: 4,
+          ),
+          24.height,
+          SizedBox(
+            width: double.infinity,
+            height: 50.h,
+            child: ElevatedButton(
+              onPressed: () => Get.to(() => const SubscriptionPackScreen()),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3B4DE3),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                shadowColor: const Color(0xFF3B4DE3).withOpacity(0.3),
+              ),
+              child: const CommonText(
+                text: 'View Subscription Packs',
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildSubscriptionTable(MySubscriptionController controller) {
@@ -293,7 +410,7 @@ class MySubscriptionScreen extends StatelessWidget {
       width: double.infinity,
       height: 52.h,
       child: ElevatedButton(
-        onPressed: ()=>Get.to(() => const SubscriptionPackScreen()),
+        onPressed: () => Get.to(() => const SubscriptionPackScreen()),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF3B4DE3),
           foregroundColor: Colors.white,

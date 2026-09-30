@@ -156,8 +156,8 @@ class SignInScreen extends StatelessWidget {
                                     _socialLogin(AppImages.google, () {}),
                                     16.width,
                                     _socialLogin(AppImages.apple, () {}),
-                                    16.width,
-                                    _socialLogin(AppImages.linkedin, () {}),
+                                    // 16.width,
+                                    // _socialLogin(AppImages.linkedin, () {}),
                                   ],
                                 ),
 

@@ -40,16 +40,24 @@ class RecomendedJodController extends GetxController {
   RxList<String> selectedJobLevels = <String>[].obs;
   RxString selectedExperienceLevel = ''.obs;
   RxBool autoApplHere = false.obs;
+  RxBool isSearching = false.obs;
+  Worker? _searchDebouncer;
 
   @override
   void onInit() {
     super.onInit();
+    _searchDebouncer = debounce(
+      searchTerm,
+      (_) => _performSearch(),
+      time: const Duration(milliseconds: 500),
+    );
     getPost();
     getProfile();
   }
 
   @override
   void onClose() {
+    _searchDebouncer?.dispose();
     super.onClose();
   }
 
@@ -311,10 +319,14 @@ class RecomendedJodController extends GetxController {
 
   void searchJobs(String term) {
     searchTerm.value = term;
-    if (term.isNotEmpty) {
-      getPost(useFilter: true);
-    } else {
-      getPost(useFilter: false);
+  }
+
+  Future<void> _performSearch() async {
+    isSearching.value = true;
+    try {
+      await getPost(useFilter: searchTerm.value.isNotEmpty);
+    } finally {
+      isSearching.value = false;
     }
   }
 

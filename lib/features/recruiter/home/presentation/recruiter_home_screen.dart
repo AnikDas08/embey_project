@@ -77,14 +77,43 @@ class RecruiterHomeScreen extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       child: Row(
         children: [
-          // Logo
+          // Logo / Profile Image
           Obx(() {
+            final imagePath = controller.companyImage.value;
+            final imageUrl = imagePath.startsWith('http')
+                ? imagePath
+                : ApiEndPoint.imageUrl + imagePath;
+
             return ClipOval(
-              child: controller.companyImage.value.isNotEmpty
-                  ? CommonImage(
-                  imageSrc: ApiEndPoint.imageUrl + controller.companyImage.value,
-                  size: 64.sp)
-                  : CommonImage(imageSrc: AppImages.logo, size: 64.sp),
+              child: imagePath.isNotEmpty
+                  ? Image.network(
+                      imageUrl,
+                      height: 54.w,
+                      width: 54.w,
+                      fit: BoxFit.cover,
+                      errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
+                        return Container(
+                          height: 54.w,
+                          width: 54.w,
+                          color: Colors.grey.shade200,
+                          child: const Icon(
+                            Icons.person,
+                            size: 28,
+                            color: Colors.grey,
+                          ),
+                        );
+                      },
+                    )
+                  : Container(
+                      height: 54.w,
+                      width: 54.w,
+                      color: Colors.grey.shade200,
+                      child: const Icon(
+                        Icons.person,
+                        size: 28,
+                        color: Colors.grey,
+                      ),
+                    ),
             );
           }),
           8.width,
